@@ -13,7 +13,7 @@
     "dev:courier": "npm --prefix courier run dev",
     "build": "concurrently -n server,admin,client,seller,courier,bot -c bgGreen.black,bgMagenta.black,bgCyan.black,bgBlue.black,bgRed.black,bgYellow.black \"npm --prefix server run build\" \"npm --prefix admin run build\" \"npm --prefix client run build\" \"npm --prefix seller run build\" \"npm --prefix courier run build\" \"npm --prefix bot run build\"",
     "install:all": "npm install && npm --prefix server install && npm --prefix bot install && npm --prefix admin install && npm --prefix client install && npm --prefix seller install && npm --prefix courier install",
-    "prisma:generate": "npm --prefix server run prisma:generate",
+    "prisma:generate": "npm --prefix server run prisma:generate && npm --prefix bot run prisma:generate",
     "prisma:migrate": "npm --prefix server run prisma:migrate",
     "db:seed": "npm --prefix server run db:seed"
   },
