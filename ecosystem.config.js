@@ -19,7 +19,7 @@ module.exports = {
       cwd: './admin',
       script: 'npm',
       args: 'start',
-      env: { NODE_ENV: 'production', PORT: 60001 },
+      env: { NODE_ENV: 'production', PORT: 6001 },
     },
     {
       name: 'client',

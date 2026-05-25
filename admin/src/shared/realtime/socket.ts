@@ -23,8 +23,13 @@ function wsBaseUrl(): string {
 }
 
 export function getSocket(token: string): Socket {
-  if (cached && cachedToken === token && cached.connected) return cached;
+  // Token o'zgarmagan bo'lsa cached'ni qaytaramiz — socket.io o'zining
+  // reconnect logikasi bilan qayta ulanadi. `cached.connected` ni tekshirish
+  // har bir reconnect oynasida yangi socket yaratardi va eski'larining
+  // reconnect taymerlari fonda davom etardi.
+  if (cached && cachedToken === token) return cached;
   if (cached) {
+    cached.removeAllListeners();
     cached.disconnect();
     cached = null;
   }
@@ -43,6 +48,7 @@ export function getSocket(token: string): Socket {
 
 export function disconnectSocket(): void {
   if (cached) {
+    cached.removeAllListeners();
     cached.disconnect();
     cached = null;
     cachedToken = null;
