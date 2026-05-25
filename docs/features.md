@@ -49,9 +49,11 @@
 | ⬜ | User profile UI | first/last name, avatar — hali UI yo'q |
 | ⬜ | Phone change flow | Boshqa raqamga ko'chish (OTP_PURPOSE=PHONE_CHANGE) |
 | ⬜ | Super admin paroli almashtirish UI | Hozir faqat env'dan o'qiladi |
-| ⬜ | Rol boshqaruv UI | `/admin/dashboard/roles` placeholder, kod yo'q |
-| ⬜ | Permission tizimi | Permissions JSON bor, lekin tekshiruv yo'q |
-| ⬜ | User block/unblock UI | DB'da `isBlocked` field bor, UI yo'q |
+| ✅ | Rol boshqaruv UI | `/admin/dashboard/roles` — CRUD + permissions checklist |
+| 🟡 | Permission tizimi | Saqlanadi va UI da tahrirlanadi, lekin server enforcement yo'q |
+| ✅ | User block/unblock UI | `/admin/dashboard/customers` — bloklash + sessiya revoke |
+| ✅ | Audit log viewer | `/admin/dashboard/audit` — qidiruv, actor filter, JSON metadata |
+| ✅ | User role assign UI | "Rol" tugma — har bir foydalanuvchiga rol biriktirish |
 
 ---
 
@@ -266,13 +268,13 @@
 | ✅ | Dashboard placeholder | `/dashboard` |
 | ✅ | Login | super admin |
 | ✅ | Sidebar nav | barcha bo'limlar uchun link'lar |
-| ⬜ | Sellers ro'yxati + moderatsiya | `/dashboard/sellers` |
-| ⬜ | Customers ro'yxati | `/dashboard/customers` |
-| ⬜ | Couriers (TZ'da bor — kerak bo'lsa) | `/dashboard/couriers` |
+| 🟡 | Sellers ro'yxati | `/dashboard/sellers` — role=seller foydalanuvchilar (KYC/Store moderation alohida) |
+| ✅ | Customers ro'yxati | `/dashboard/customers` — qidiruv, blok, rol biriktirish |
+| 🟡 | Couriers | `/dashboard/couriers` — role=courier (transport hujjat alohida) |
 | ⬜ | Orders monitoring | `/dashboard/orders` |
 | ⬜ | Moderatsiya queue (mahsulot + do'kon) | yagona joy |
-| ⬜ | Roles boshqaruvi | `/dashboard/roles` — Role CRUD + permissions |
-| ⬜ | Audit log viewer | `/dashboard/audit` |
+| ✅ | Roles boshqaruvi | `/dashboard/roles` — CRUD + permissions checklist |
+| ✅ | Audit log viewer | `/dashboard/audit` — `docs/admin-user-management.md` |
 | ⬜ | Sozlamalar (komissiya %, yetkazib berish formulasi) | `/dashboard/settings` |
 | ⬜ | Statistika dashboard | bugungi/oylik tushum, top sotuvchi va h.k. |
 | ⬜ | Moliya (Finance) | `/dashboard/finance` — payout history |
