@@ -75,6 +75,12 @@ model User {
   stores          Store[]
   createdProducts Product[] @relation("ProductCreator")
 
+  // Marketplace v1 back-relations
+  uploads         UploadedFile[]
+  reviews         Review[]
+  productRequests ProductRequest[]
+  notifications   Notification[]
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -205,19 +211,41 @@ model AuditLog {
 // ═════════════════════════════════════════════════════════════
 
 // ─── Category tree ───
+//
+// `type` drives delivery behavior. FOOD requires geo-aware ordering (nearest
+// store), distance-based delivery fee and an ETA window. MARKETPLACE products
+// (electronics, construction, household, …) still know the store location but
+// don't filter by radius and the per-km fee can be different per category.
+// Category-level defaults can be overridden by Store.deliveryRadiusKm etc.
+
+enum CategoryType {
+  FOOD
+  MARKETPLACE
+}
 
 model Category {
-  id        String     @id @default(cuid())
-  slug      String     @unique
+  id        String       @id @default(cuid())
+  slug      String       @unique
   name      String
   nameRu    String?
   parentId  String?
-  parent    Category?  @relation("CategoryTree", fields: [parentId], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  children  Category[] @relation("CategoryTree")
+  parent    Category?    @relation("CategoryTree", fields: [parentId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  children  Category[]   @relation("CategoryTree")
   iconUrl   String?
   imageUrl  String?
-  sortOrder Int        @default(0)
-  isActive  Boolean    @default(true)
+  sortOrder Int          @default(0)
+  isActive  Boolean      @default(true)
+  type      CategoryType @default(MARKETPLACE)
+
+  // Delivery defaults — used when Store-level overrides are null.
+  // `deliveryBaseFee` and `deliveryPerKmFee` are stored as Decimal(12,2) so we
+  // can do server-side fee math without floating-point drift.
+  deliveryRadiusKm     Int?
+  deliveryBaseFee      Decimal? @db.Decimal(12, 2)
+  deliveryPerKmFee     Decimal? @db.Decimal(12, 2)
+  deliveryEtaMinMinutes Int?
+  deliveryEtaMaxMinutes Int?
+  minOrderAmount       Decimal? @db.Decimal(12, 2)
 
   attributes CategoryAttribute[]
   products   Product[]
@@ -227,6 +255,7 @@ model Category {
 
   @@index([parentId])
   @@index([isActive])
+  @@index([type, isActive])
 }
 
 // ─── Brand ───
@@ -326,9 +355,15 @@ model Product {
   attributeValues ProductAttributeValue[]
   variants        ProductVariant[]
   images          ProductImage[]
+  reviews         Review[]
+  requests        ProductRequest[]
 
   rejectionReason String?   @db.Text
   publishedAt     DateTime?
+
+  // Cached aggregates — recomputed on review write / order delivery.
+  ratingAvg   Decimal @default(0) @db.Decimal(3, 2)
+  ratingCount Int     @default(0)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -424,20 +459,50 @@ model Store {
   bannerUrl   String?
   status      StoreStatus @default(PENDING)
 
+  // KYC
   inn       String?
   legalName String?
+
+  // Contact + presentation
+  phone   String?
+  address String? @db.Text
+
+  // Geo — used by nearest-seller queries (FOOD) and distance fee math.
+  // Stored as Decimal to keep precision; nullable until the seller picks a point.
+  // Bounding-box pre-filter then haversine refine: see GeoService.
+  latitude  Decimal? @db.Decimal(10, 7)
+  longitude Decimal? @db.Decimal(10, 7)
+
+  // Delivery — when null, category defaults are used.
+  deliveryRadiusKm  Int?
+  deliveryBaseFee   Decimal? @db.Decimal(12, 2)
+  deliveryPerKmFee  Decimal? @db.Decimal(12, 2)
+  deliveryEtaMinutes Int?
+  minOrderAmount    Decimal? @db.Decimal(12, 2)
+
+  // Operating state — `isOpen` is the manual "stop accepting orders" flag.
+  // `openingHours` is a weekly schedule (Json) consulted by isStoreOpenNow().
+  isOpen       Boolean @default(true)
+  openingHours Json?
 
   rejectionReason String?   @db.Text
   approvedAt      DateTime?
 
-  owner  User          @relation(fields: [ownerId], references: [id])
-  offers SellerOffer[]
+  owner    User             @relation(fields: [ownerId], references: [id])
+  offers   SellerOffer[]
+  reviews  Review[]
+  requests ProductRequest[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   @@index([ownerId])
   @@index([status])
+  // Bounding-box prefilter index — paired with a runtime haversine refine
+  // for accurate distance. MariaDB doesn't have native geospatial in our
+  // setup so two cheap composite indexes beat a single 2D index here.
+  @@index([latitude, longitude])
+  @@index([status, isOpen])
 }
 
 // ─── Seller Offer (Store × Variant) ───
@@ -468,4 +533,205 @@ model SellerOffer {
   @@unique([storeId, variantId])
   @@index([variantId, isActive, price])
   @@index([storeId])
+}
+
+// ═════════════════════════════════════════════════════════════
+// Marketplace v1 additions — uploads, reviews, product requests.
+// ═════════════════════════════════════════════════════════════
+
+// ─── UploadedFile — tracks every R2 object we issue a key for ───
+//
+// Lifecycle:
+//   1. Client calls POST /uploads/presign → server picks an R2 key, signs a
+//      PUT URL, persists the row in PENDING state.
+//   2. Client PUTs the file directly to R2 (no traffic through our box).
+//   3. Client calls POST /uploads/:id/complete → server verifies the object
+//      exists in R2, flips status to READY, returns the CDN URL.
+//   4. The caller (product create, store edit, …) attaches the upload.id
+//      to its entity. Orphan rows in PENDING are GC'd by a cron later.
+
+enum UploadStatus {
+  PENDING
+  READY
+  FAILED
+}
+
+enum UploadPurpose {
+  PRODUCT_IMAGE
+  STORE_LOGO
+  STORE_BANNER
+  USER_AVATAR
+  REVIEW_IMAGE
+  OTHER
+}
+
+model UploadedFile {
+  id         String        @id @default(cuid())
+  // R2 object key (bucket-relative path). UNIQUE so we never reuse a key.
+  key        String        @unique
+  // Public URL (CDN or R2 public bucket). Filled when status → READY.
+  url        String?
+  mimeType   String
+  // Size in bytes. Server-validates against per-purpose limits.
+  size       Int           @default(0)
+  status     UploadStatus  @default(PENDING)
+  purpose    UploadPurpose
+
+  // Soft link to the entity the upload belongs to (resolved at attach time).
+  entityType String?
+  entityId   String?
+
+  uploaderId String
+  uploader   User   @relation(fields: [uploaderId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime  @default(now())
+  readyAt   DateTime?
+
+  @@index([uploaderId])
+  @@index([entityType, entityId])
+  @@index([status, createdAt])
+}
+
+// ─── Review — verified-buyer ratings ───
+//
+// Only buyers whose Order was DELIVERED can leave a review (enforced in
+// ReviewsService.create when the orders module ships; until then a
+// placeholder gate accepts any authenticated user but the row carries
+// `verified=false`).
+
+model Review {
+  id        String   @id @default(cuid())
+  productId String
+  storeId   String
+  userId    String
+  // orderId is set when verification succeeds — kept nullable so the row can
+  // exist before orders ship.
+  orderId   String?
+
+  rating    Int      // 1..5 — checked at the service layer
+  text      String?  @db.Text
+  imageUrls Json     @default("[]") // array of CDN URLs (capped at 5)
+
+  // Verified = bought-and-delivered. Unverified reviews can still be shown
+  // but get a different badge in the UI.
+  verified  Boolean  @default(false)
+  isVisible Boolean  @default(true) // moderation flag — admin can hide
+
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  store   Store   @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([productId, userId, orderId])
+  @@index([productId, isVisible, createdAt])
+  @@index([storeId, isVisible])
+  @@index([userId])
+}
+
+// ─── ProductRequest — "I need this" pings from buyers ───
+//
+// Created when a buyer hits "Notify me when restocked" on an unavailable
+// product. De-duplicated per (productId, userId) — re-clicking refreshes
+// the timestamp and adds an extra `count`.
+
+enum ProductRequestStatus {
+  NEW
+  NOTIFIED
+  FULFILLED
+  DISMISSED
+}
+
+model ProductRequest {
+  id        String               @id @default(cuid())
+  productId String
+  // The store the buyer is interested in; null means "any seller".
+  storeId   String?
+  userId    String
+  note      String?              @db.Text
+  count     Int                  @default(1)
+  status    ProductRequestStatus @default(NEW)
+
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  store   Store?  @relation(fields: [storeId], references: [id], onDelete: SetNull)
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt    DateTime  @default(now())
+  notifiedAt   DateTime?
+  fulfilledAt  DateTime?
+
+  @@unique([productId, userId, storeId])
+  @@index([productId, status])
+  @@index([storeId, status])
+  @@index([userId])
+}
+
+// ═════════════════════════════════════════════════════════════
+// Notifications v1 — realtime + persisted.
+//
+// Sent by SuperAdmin (or SYSTEM events later), delivered to:
+//   - a single user, OR
+//   - every user holding a given role slug ("seller", "courier", …), OR
+//   - everyone (broadcast).
+//
+// A Notification row is created per **recipient** so we keep simple read
+// state and per-user history. Broadcasts fan-out to N rows on send — fine
+// up to ~100k users, beyond that we move to a `NotificationBroadcast` +
+// per-user `Read` join. Optimise when the metric hurts, not before.
+// ═════════════════════════════════════════════════════════════
+
+enum NotificationType {
+  INFO       // neutral
+  SUCCESS    // positive (order accepted, payout sent)
+  WARNING    // attention (low stock, KYC issue)
+  DANGER     // urgent (account blocked, fraud alert)
+  ANNOUNCE   // marketing / system-wide
+}
+
+enum NotificationChannel {
+  IN_APP    // pushed via Socket.IO + persisted (default)
+  TELEGRAM  // queued for the bot worker (optional add-on)
+}
+
+enum NotificationSenderType {
+  SUPER_ADMIN
+  USER
+  SYSTEM
+}
+
+model Notification {
+  id            String           @id @default(cuid())
+  recipientId   String
+  recipient     User             @relation(fields: [recipientId], references: [id], onDelete: Cascade)
+
+  // Who sent this. For SUPER_ADMIN/USER, `senderId` holds the actor id;
+  // SYSTEM events leave it null.
+  senderType    NotificationSenderType
+  senderId      String?
+
+  title         String
+  body          String?          @db.Text
+  type          NotificationType @default(INFO)
+
+  // Free-form payload for click-through actions: { orderId, link, ... }.
+  data          Json?
+
+  // Whether the in-app socket push succeeded at least once (otherwise the
+  // client will pick it up on next /notifications/mine fetch).
+  delivered     Boolean          @default(false)
+  // Optional Telegram bot fan-out — set when the bot has actually sent it.
+  telegramSent  Boolean          @default(false)
+
+  readAt        DateTime?
+
+  // When the same logical message is sent to many users, share a groupId so
+  // we can show "Sent to 230 sellers" in the admin history.
+  groupId       String?
+
+  createdAt     DateTime         @default(now())
+
+  @@index([recipientId, readAt])
+  @@index([recipientId, createdAt])
+  @@index([groupId])
 }

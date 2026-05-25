@@ -1,13 +1,18 @@
+import { Type } from 'class-transformer';
 import {
   IsBoolean,
+  IsEnum,
   IsInt,
+  IsNumber,
   IsOptional,
   IsString,
   IsUrl,
+  Max,
   MaxLength,
   Min,
   MinLength,
 } from 'class-validator';
+import { CategoryType } from '@prisma/client';
 
 export class CreateCategoryDto {
   @IsString()
@@ -47,4 +52,50 @@ export class CreateCategoryDto {
   @IsOptional()
   @IsBoolean()
   isActive?: boolean;
+
+  // ── Marketplace v1 additions ──
+  // FOOD: enforces radius + distance-based delivery.
+  // MARKETPLACE (default): no radius gate, free fee schedule.
+  @IsOptional()
+  @IsEnum(CategoryType)
+  type?: CategoryType;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  @Max(100)
+  deliveryRadiusKm?: number;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsNumber()
+  @Min(0)
+  deliveryBaseFee?: number;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsNumber()
+  @Min(0)
+  deliveryPerKmFee?: number;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(0)
+  @Max(720)
+  deliveryEtaMinMinutes?: number;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(0)
+  @Max(720)
+  deliveryEtaMaxMinutes?: number;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsNumber()
+  @Min(0)
+  minOrderAmount?: number;
 }

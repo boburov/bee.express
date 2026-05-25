@@ -102,3 +102,34 @@ yopadi va `/login` ga qaytaradi.
 
 `POST /auth/logout { refreshToken }` — server refresh tokenni revoke qiladi. Front clear
 qiladi, `/login` ga ketadi.
+
+## Hodisalar tarixi va kelajak uchun belgilar
+
+### 2026-05-25 — Login 500 muammosi va refresh interceptor
+
+**Muammo:** `/api/auth/super-admin/login` 500 qaytarardi. Sabab — Prisma MariaDB
+adapter MySQL 8+ caching_sha2_password autentifikatsiyasida pool connection
+yarata olmasdi (`RSA public key is not available client side`).
+
+**Tuzatish:** `DATABASE_URL` ga `?allowPublicKeyRetrieval=true` qo'shildi
+(`server/.env`). MariaDB driver shu paramni qabul qiladi va RSA public key'ni
+serverdan olib keladi.
+
+> ⚠️ Production'da `useSSL=true` yoki user'ni `mysql_native_password` ga
+> o'tkazish kerak — `allowPublicKeyRetrieval` faqat lokal/SSL connection uchun.
+
+### Boshqa qatnashgan tuzatishlar
+
+- **SuperAdminLoginDto** — `password` field'idan `@MinLength(8)` olib tashlandi.
+  Login DTO'da format tekshiruvi noto'g'ri parolda **leaky 400** xabari beradi
+  ("password must be longer than..."). Format qoidasi SuperAdmin yaratish
+  yo'lida bo'lishi kerak; login esa har doim 401 ("Login yoki parol noto'g'ri")
+  qaytarsin.
+
+- **Refresh interceptor** — `cfg.url?.includes("/auth/")` o'rniga aniq
+  `NO_RETRY_PATHS` ro'yxati ishlatildi (`shouldSkipRefresh`). Eski versiya
+  `/auth/me` ham, `/auth/refresh` ham, login endpoint'larini ham bir xil
+  tashlardi — bu access token muddati tugagan paytda `/auth/me` chaqirig'i
+  avtomatik refresh qilmasligini va user'ni darhol logout qilishini bildirardi.
+  Yangi versiya faqat `auth/refresh`, login va logout endpoint'larini istisno
+  qiladi. To'rt panelda (admin, client, courier, seller) bir xil tuzatish qilindi.

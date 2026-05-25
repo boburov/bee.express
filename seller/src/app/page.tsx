@@ -2,7 +2,7 @@
 
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { useAuthStore } from "@/lib/auth-store";
+import { useAuthStore } from "@/shared/auth/store";
 
 export default function IndexPage() {
   const router = useRouter();

@@ -11,6 +11,7 @@ import {
   Wallet,
   ScrollText,
   Settings,
+  Bell,
   type LucideIcon,
 } from "lucide-react";
 
@@ -47,6 +48,7 @@ export const adminNav: NavSection[] = [
     title: "Operatsiya",
     items: [
       { href: "/dashboard/orders", label: "Buyurtmalar", icon: ShoppingBag },
+      { href: "/dashboard/notifications", label: "Bildirishnomalar", icon: Bell },
     ],
   },
   {

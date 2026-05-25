@@ -8,8 +8,14 @@ import { AuthModule } from './auth/auth.module';
 import { JwtAuthGuard } from './auth/guards/jwt-auth.guard';
 import { RolesGuard } from './auth/guards/roles.guard';
 import { CatalogModule } from './catalog/catalog.module';
+import { NotificationsModule } from './notifications/notifications.module';
 import { PrismaModule } from './prisma/prisma.module';
+import { ProductRequestsModule } from './product-requests/product-requests.module';
+import { PublicModule } from './public/public.module';
 import { QueueModule } from './queue/queue.module';
+import { ReviewsModule } from './reviews/reviews.module';
+import { SellerModule } from './seller/seller.module';
+import { UploadsModule } from './uploads/uploads.module';
 
 @Module({
   imports: [
@@ -19,6 +25,12 @@ import { QueueModule } from './queue/queue.module';
     AuthModule,
     CatalogModule,
     AdminModule,
+    UploadsModule,
+    SellerModule,
+    PublicModule,
+    ReviewsModule,
+    ProductRequestsModule,
+    NotificationsModule,
   ],
   controllers: [AppController],
   providers: [

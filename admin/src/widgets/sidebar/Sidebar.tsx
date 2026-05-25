@@ -14,7 +14,7 @@ export function Sidebar() {
 
   return (
     <aside className="w-64 shrink-0 border-r border-line bg-surface flex flex-col">
-      <div className="px-5 py-5 border-b border-line bg-gradient-soft">
+      <div className="px-5 py-[16.5px] border-b border-line bg-gradient-soft">
         <Logo size={32} />
       </div>
 

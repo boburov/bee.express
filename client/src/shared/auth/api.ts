@@ -45,11 +45,34 @@ async function tryRefresh(): Promise<string | null> {
   }
 }
 
+/**
+ * Endpoints that must NEVER trigger the refresh interceptor:
+ * - `/auth/refresh` itself (would loop)
+ * - login endpoints (no access token in play yet — a 401 here means wrong
+ *   credentials, not an expired session)
+ *
+ * Everything else, including `/auth/me`, may legitimately 401 with an
+ * expired access token and should be retried after refresh.
+ */
+const NO_RETRY_PATHS = [
+  "/auth/refresh",
+  "/auth/super-admin/login",
+  "/auth/phone/request",
+  "/auth/phone/verify",
+  "/auth/telegram/mini-app",
+  "/auth/logout",
+];
+
+function shouldSkipRefresh(url: string | undefined): boolean {
+  if (!url) return false;
+  return NO_RETRY_PATHS.some((p) => url.endsWith(p) || url.includes(`${p}?`));
+}
+
 api.interceptors.response.use(
   (r) => r,
   async (err: AxiosError) => {
     const cfg = err.config as (AxiosRequestConfig & { _retry?: boolean }) | undefined;
-    if (err.response?.status !== 401 || !cfg || cfg._retry || cfg.url?.includes("/auth/")) {
+    if (err.response?.status !== 401 || !cfg || cfg._retry || shouldSkipRefresh(cfg.url)) {
       return Promise.reject(err);
     }
     cfg._retry = true;

@@ -22,14 +22,21 @@ export function BottomNav() {
               <Link
                 href={item.href}
                 className={cn(
-                  "flex flex-col items-center justify-center gap-1 py-2.5 text-[11px] font-medium transition-colors",
-                  active ? "text-brand-600" : "text-ink-muted hover:text-ink",
+                  "flex flex-col items-center justify-center gap-1 py-2 text-[11px] font-medium transition-colors",
+                  active ? "text-brand-700" : "text-ink-muted hover:text-ink",
                 )}
               >
-                <Icon
-                  className={cn("h-5 w-5", active ? "text-brand-500" : "text-ink-muted")}
-                  strokeWidth={1.75}
-                />
+                <span
+                  className={cn(
+                    "inline-flex h-8 w-12 items-center justify-center rounded-full transition-colors",
+                    active ? "bg-brand-50" : "bg-transparent",
+                  )}
+                >
+                  <Icon
+                    className={cn("h-5 w-5", active ? "text-brand-600" : "text-ink-muted")}
+                    strokeWidth={active ? 2 : 1.75}
+                  />
+                </span>
                 <span>{item.label}</span>
               </Link>
             </li>

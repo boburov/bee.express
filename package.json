@@ -1,0 +1,23 @@
+{
+  "name": "bee-express",
+  "version": "1.0.0",
+  "private": true,
+  "description": "BeeExpress — uch tomonlama marketplace + delivery platformasi (server + 4 panel + bot).",
+  "scripts": {
+    "dev": "concurrently -k -n server,bot,admin,client,seller,courier -c bgGreen.black,bgYellow.black,bgMagenta.black,bgCyan.black,bgBlue.black,bgRed.black \"npm:dev:server\" \"npm:dev:bot\" \"npm:dev:admin\" \"npm:dev:client\" \"npm:dev:seller\" \"npm:dev:courier\"",
+    "dev:server": "npm --prefix server  run start:dev",
+    "dev:bot": "npm --prefix bot     run start:dev",
+    "dev:admin": "npm --prefix admin   run dev",
+    "dev:client": "npm --prefix client  run dev",
+    "dev:seller": "npm --prefix seller  run dev",
+    "dev:courier": "npm --prefix courier run dev",
+    "build": "concurrently -n server,admin,client,seller,courier,bot -c bgGreen.black,bgMagenta.black,bgCyan.black,bgBlue.black,bgRed.black,bgYellow.black \"npm --prefix server build\" \"npm --prefix admin build\" \"npm --prefix client build\" \"npm --prefix seller build\" \"npm --prefix courier build\" \"npm --prefix bot build\"",
+    "install:all": "npm install && npm --prefix server install && npm --prefix bot install && npm --prefix admin install && npm --prefix client install && npm --prefix seller install && npm --prefix courier install",
+    "prisma:generate": "npm --prefix server run prisma:generate",
+    "prisma:migrate": "npm --prefix server run prisma:migrate",
+    "db:seed": "npm --prefix server run db:seed"
+  },
+  "devDependencies": {
+    "concurrently": "^9.2.1"
+  }
+}

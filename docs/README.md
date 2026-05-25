@@ -23,6 +23,18 @@ Asosiy qoidalar:
 - [`catalog-v1.md`](./catalog-v1.md) — Kategoriya / brend / atribut katalog modullari.
 - [`admin-user-management.md`](./admin-user-management.md) — Admin Users + Audit + Roles
   modullari (server `admin/*` + admin panel `features/users|audit|roles`).
+- [`client-design-refresh.md`](./client-design-refresh.md) — Client (Mini App)
+  dizayn yangilash: emoji o'rniga Lucide ikonlar, `IconTile`, `Avatar`, polished
+  topbar/bottom-nav.
+- [`seller-panel-refresh.md`](./seller-panel-refresh.md) — Sotuvchi paneli dizayn +
+  auth refresh: premium orange, Josefin Sans, FSD struktura, rol-gating
+  token saqlashdan oldin.
+- [`marketplace-v1.md`](./marketplace-v1.md) — Marketplace backend qatlami: R2
+  uploads, seller stores/products/offers, public catalog (geo-aware), reviews,
+  product requests, FOOD vs MARKETPLACE delivery logikasi.
+- [`notifications-v1.md`](./notifications-v1.md) — Realtime notification tizimi:
+  Socket.IO gateway, admin yuborish UI, target picker (user/role/broadcast),
+  toast.
 - [`features.md`](./features.md) — Feature progresi va keyingi reja.
 
 ## Yangi hujjat qo'shganda nima qilish kerak

@@ -87,6 +87,13 @@ export class CategoryService {
         imageUrl: dto.imageUrl ?? null,
         sortOrder: dto.sortOrder ?? 0,
         isActive: dto.isActive ?? true,
+        type: dto.type ?? 'MARKETPLACE',
+        deliveryRadiusKm: dto.deliveryRadiusKm ?? null,
+        deliveryBaseFee: dto.deliveryBaseFee ?? null,
+        deliveryPerKmFee: dto.deliveryPerKmFee ?? null,
+        deliveryEtaMinMinutes: dto.deliveryEtaMinMinutes ?? null,
+        deliveryEtaMaxMinutes: dto.deliveryEtaMaxMinutes ?? null,
+        minOrderAmount: dto.minOrderAmount ?? null,
       },
     });
   }
@@ -122,6 +129,17 @@ export class CategoryService {
         ...(dto.imageUrl !== undefined && { imageUrl: dto.imageUrl || null }),
         ...(dto.sortOrder !== undefined && { sortOrder: dto.sortOrder }),
         ...(dto.isActive !== undefined && { isActive: dto.isActive }),
+        ...(dto.type !== undefined && { type: dto.type }),
+        ...(dto.deliveryRadiusKm !== undefined && { deliveryRadiusKm: dto.deliveryRadiusKm }),
+        ...(dto.deliveryBaseFee !== undefined && { deliveryBaseFee: dto.deliveryBaseFee }),
+        ...(dto.deliveryPerKmFee !== undefined && { deliveryPerKmFee: dto.deliveryPerKmFee }),
+        ...(dto.deliveryEtaMinMinutes !== undefined && {
+          deliveryEtaMinMinutes: dto.deliveryEtaMinMinutes,
+        }),
+        ...(dto.deliveryEtaMaxMinutes !== undefined && {
+          deliveryEtaMaxMinutes: dto.deliveryEtaMaxMinutes,
+        }),
+        ...(dto.minOrderAmount !== undefined && { minOrderAmount: dto.minOrderAmount }),
       },
     });
   }

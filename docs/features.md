@@ -23,7 +23,7 @@
 | ✅ | Client (Mini App) | `/client` — Next.js 16, Telegram WebApp SDK |
 | ✅ | Admin panel | `/admin` — Next.js 16, super admin auth |
 | ✅ | Shared Prisma schema | bot symlink qiladi → server `prisma/schema.prisma` |
-| ⬜ | Seller panel | Alohida app yoki admin'ning seller-mode'i — qaror kerak |
+| ✅ | Seller panel | `/seller` alohida Next.js app, FSD, premium dizayn, phone OTP + rol-gating |
 | ⬜ | Courier panel | TZ'da bor edi, ammo Uzum-style'da odatda tizimning ichida |
 | ⬜ | File/image hosting | Hozir lokal, keyin S3/Cloudflare R2 |
 | ⬜ | CI/CD | Yo'q — keyingi bosqichda |
@@ -283,13 +283,17 @@
 
 ## 13. Seller paneli
 
-**Qaror kerak:** seller paneli alohida Next.js app bo'ladimi yoki admin app'ning seller-mode'i?
+**Qaror qabul qilindi:** seller paneli **alohida Next.js app** (`/seller`).
+FSD, premium dizayn (Josefin Sans + brand-* tokens), phone OTP + rol-gating.
+To'liq spetsifikatsiya: [`seller-panel-refresh.md`](./seller-panel-refresh.md).
 
 | Status | Feature |
 |---|---|
-| ⬜ | Loyiha tuzilishi tanlash | Alohida `/seller` app yoki shared `/admin` |
-| ⬜ | Sotuvchi login | role=seller bo'lgan User'lar |
-| ⬜ | Do'kon yaratish wizard | KYC hujjat upload |
+| ✅ | Loyiha tuzilishi | Alohida `/seller` FSD app — admin/client bilan vizual paritet |
+| ✅ | Sotuvchi login | Phone OTP, rol "seller" `setTokens` dan oldin tekshiriladi |
+| ✅ | Dashboard skeleton | PageHeader + 5 ta StatCard + next-steps card |
+| ✅ | Sidebar nav | Boshqaruv / Mahsulotlar / Do'kon / Buyurtmalar / Moliya |
+| ⬜ | Do'kon yaratish wizard | KYC hujjat upload (`/dashboard/store`) |
 | ⬜ | Mahsulot qo'shish wizard | master qidirish + offer to'ldirish |
 | ⬜ | Mening offers'larim | narx/qoldiq tahrirlash |
 | ⬜ | Buyurtmalar (sotuvchiga kelgan) | qabul qilish, holatini yangilash |

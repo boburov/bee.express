@@ -9,18 +9,47 @@ if (!databaseUrl) throw new Error("DATABASE_URL is not set");
 const prisma = new PrismaClient({ adapter: new PrismaMariaDb(databaseUrl) });
 
 async function seedSystemRoles() {
-  await prisma.role.upsert({
-    where: { slug: "admin" },
-    update: { isSystem: true },
-    create: {
+  // Default system roles. `isSystem: true` makes them un-deletable from the
+  // admin UI (RolesService.remove throws). Slugs are referenced by:
+  //   - Server: @Roles("seller"|"courier"|"customer"|"admin")
+  //   - Frontend: hasSellerRole / RoleGuard allowed lists
+  // Adding a new system role here is the only change needed to expose it
+  // panel-wide.
+  const systemRoles = [
+    {
       slug: "admin",
       name: "Admin",
       description: "Tizim administratori — SuperAdmin tomonidan tayinlanadi.",
-      isSystem: true,
       permissions: ["*"],
     },
-  });
-  console.log("[seed] System role 'admin' ready.");
+    {
+      slug: "seller",
+      name: "Sotuvchi",
+      description: "Do'kon egasi — mahsulot, buyurtma va moliyani boshqaradi.",
+      permissions: ["seller.*"],
+    },
+    {
+      slug: "courier",
+      name: "Kuryer",
+      description: "Yetkazib beruvchi — buyurtmani sotuvchidan oladi va xaridorga yetkazadi.",
+      permissions: ["courier.*"],
+    },
+    {
+      slug: "customer",
+      name: "Xaridor",
+      description: "Mini App orqali buyurtma beruvchi foydalanuvchi.",
+      permissions: ["customer.*"],
+    },
+  ];
+
+  for (const role of systemRoles) {
+    await prisma.role.upsert({
+      where: { slug: role.slug },
+      update: { isSystem: true, name: role.name, description: role.description },
+      create: { ...role, isSystem: true },
+    });
+    console.log(`[seed] System role '${role.slug}' ready.`);
+  }
 }
 
 async function seedSuperAdmin() {
