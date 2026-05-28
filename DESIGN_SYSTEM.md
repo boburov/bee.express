@@ -81,23 +81,23 @@ Page background **deyarli har doim** `--color-surface-2` + (ixtiyoriy) yuqori ch
 burchakdagi soft radial gradient. Gradient hech qachon vsechelvek panelni
 ifloslanmasin — opacity past, content kontrasti saqlansin.
 
-## 3. Tipografiya — Josefin Sans
+## 3. Tipografiya — Plus Jakarta Sans
 
-**Asosiy shrift:** [Josefin Sans](https://fonts.google.com/specimen/Josefin+Sans)
-(`next/font/google`). Variable, og'irliklar 300–700.
+**Asosiy shrift:** [Plus Jakarta Sans](https://fonts.google.com/specimen/Plus+Jakarta+Sans)
+(`next/font/google`). Variable, og'irliklar 200–800.
 
 ```ts
-import { Josefin_Sans } from "next/font/google";
+import { Plus_Jakarta_Sans } from "next/font/google";
 
-const josefin = Josefin_Sans({
+const jakarta = Plus_Jakarta_Sans({
   subsets: ["latin", "latin-ext"],
-  variable: "--font-sans",
+  variable: "--font-jakarta",
   display: "swap",
 });
 ```
 
-`<html className={josefin.variable}>` qilib biriktiriladi. Tailwind `font-sans` token
-shu o'zgaruvchidan keladi.
+`<html className={jakarta.variable}>` qilib biriktiriladi. Tailwind `font-sans` token
+`var(--font-jakarta)` ni o'qiydi.
 
 ### Type scale
 
@@ -113,8 +113,8 @@ shu o'zgaruvchidan keladi.
 
 Weight: heading **600**, sub-heading **500**, body **400**, caption **500** uppercase.
 
-> Josefin Sans tabiatan baland va nozik. Heading uchun `tracking-tight` ishlating, body
-> uchun `tracking-normal`. Asla `font-bold` (700) dan og'irroq qilmang.
+> Plus Jakarta Sans modern geometric — heading uchun `tracking-tight`, body
+> uchun `tracking-normal`. 800 vazn faqat hero/display uchun, dashboard'larda 700 cheki.
 
 ## 4. Bo'shliq va o'lcham
 

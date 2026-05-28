@@ -1,14 +1,17 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { APP_GUARD } from '@nestjs/core';
+import { AddressesModule } from './addresses/addresses.module';
 import { AdminModule } from './admin/admin.module';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { AuthModule } from './auth/auth.module';
 import { JwtAuthGuard } from './auth/guards/jwt-auth.guard';
 import { RolesGuard } from './auth/guards/roles.guard';
+import { CartModule } from './cart/cart.module';
 import { CatalogModule } from './catalog/catalog.module';
 import { NotificationsModule } from './notifications/notifications.module';
+import { OrdersModule } from './orders/orders.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { ProductRequestsModule } from './product-requests/product-requests.module';
 import { PublicModule } from './public/public.module';
@@ -31,6 +34,9 @@ import { UploadsModule } from './uploads/uploads.module';
     ReviewsModule,
     ProductRequestsModule,
     NotificationsModule,
+    AddressesModule,
+    CartModule,
+    OrdersModule,
   ],
   controllers: [AppController],
   providers: [

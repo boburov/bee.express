@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import {
   Bell,
   ChevronRight,
@@ -15,8 +16,15 @@ import { PageHeader } from "@/shared/ui/PageHeader";
 import { LogoutButton } from "@/shared/auth/LogoutButton";
 import { useAuthStore } from "@/shared/auth/store";
 
-const sections = [
-  { icon: MapPin, label: "Saqlangan manzillar", hint: "Hali yo'q" },
+interface ProfileMenuItem {
+  icon: typeof MapPin;
+  label: string;
+  hint: string | null;
+  href?: string;
+}
+
+const sections: ProfileMenuItem[] = [
+  { icon: MapPin, label: "Saqlangan manzillar", hint: null, href: "/addresses" },
   { icon: Bell, label: "Bildirishnomalar", hint: "Telegram orqali" },
   { icon: Languages, label: "Til", hint: "O'zbek" },
   { icon: Shield, label: "Maxfiylik", hint: null },
@@ -77,11 +85,8 @@ export default function ProfilePage() {
         <ul className="divide-y divide-line-soft">
           {sections.map((item) => {
             const Icon = item.icon;
-            return (
-              <li
-                key={item.label}
-                className="flex items-center gap-3 px-5 py-3 text-sm text-ink-soft hover:bg-surface-3 cursor-pointer transition-colors"
-              >
+            const inner = (
+              <>
                 <span className="inline-flex h-8 w-8 items-center justify-center rounded-md bg-surface-3 text-ink-muted">
                   <Icon className="h-4 w-4" strokeWidth={1.75} />
                 </span>
@@ -90,6 +95,22 @@ export default function ProfilePage() {
                   <span className="text-xs text-ink-faint">{item.hint}</span>
                 ) : null}
                 <ChevronRight className="h-4 w-4 text-ink-faint" />
+              </>
+            );
+            return (
+              <li key={item.label}>
+                {item.href ? (
+                  <Link
+                    href={item.href}
+                    className="flex items-center gap-3 px-5 py-3 text-sm text-ink-soft hover:bg-surface-3 transition-colors"
+                  >
+                    {inner}
+                  </Link>
+                ) : (
+                  <div className="flex items-center gap-3 px-5 py-3 text-sm text-ink-soft hover:bg-surface-3 cursor-pointer transition-colors">
+                    {inner}
+                  </div>
+                )}
               </li>
             );
           })}

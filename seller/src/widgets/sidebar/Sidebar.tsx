@@ -2,13 +2,20 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useEffect } from "react";
+import { X } from "lucide-react";
 import { Logo } from "@/shared/ui/Logo";
 import { LogoutButton } from "@/shared/auth/LogoutButton";
 import { sellerNav } from "@/shared/config/nav";
 import { useAuthStore } from "@/shared/auth/store";
 import { cn } from "@/shared/lib/cn";
 
-export function Sidebar() {
+interface SidebarProps {
+  mobileOpen: boolean;
+  onClose: () => void;
+}
+
+export function Sidebar({ mobileOpen, onClose }: SidebarProps) {
   const pathname = usePathname();
   const me = useAuthStore((s) => s.me);
 
@@ -18,8 +25,36 @@ export function Sidebar() {
       ? `+${me.phone}`
       : "Sotuvchi";
 
+  useEffect(() => {
+    if (mobileOpen) onClose();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pathname]);
+
   return (
-    <aside className="w-64 shrink-0 border-r border-line bg-surface flex flex-col">
+    <>
+      {mobileOpen ? (
+        <button
+          type="button"
+          aria-label="Yopish"
+          onClick={onClose}
+          className="lg:hidden fixed inset-0 z-40 bg-ink/40 backdrop-blur-sm"
+        />
+      ) : null}
+      <aside
+        className={cn(
+          "w-64 shrink-0 border-r border-line bg-surface flex flex-col",
+          "fixed inset-y-0 left-0 z-50 transform transition-transform duration-200",
+          "lg:static lg:translate-x-0 lg:transition-none",
+          mobileOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0",
+        )}
+      ><button
+          type="button"
+          onClick={onClose}
+          aria-label="Yopish"
+          className="lg:hidden absolute right-3 top-3 inline-flex h-8 w-8 items-center justify-center rounded-md text-ink-muted hover:bg-surface-3"
+        >
+          <X className="h-4 w-4" strokeWidth={1.75} />
+        </button>
       <div className="px-5 py-[14px] border-b border-line bg-gradient-soft">
         <Logo size={32} />
       </div>
@@ -80,5 +115,6 @@ export function Sidebar() {
         <LogoutButton className="w-full justify-start" />
       </div>
     </aside>
+    </>
   );
 }

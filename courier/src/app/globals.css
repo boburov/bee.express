@@ -1,38 +1,102 @@
 @import "tailwindcss";
 
-/* BeeExpress — minimalist bee yellow + black on white. No dark mode. */
+/* BeeExpress — premium orange + yellow-orange accent + soft neutrals.
+ * Single source of truth: /DESIGN_SYSTEM.md
+ * `bee-*` is kept as an alias for backward compatibility with older pages —
+ * its hex values now match the new `brand-*` palette. New code uses `brand-*`.
+ */
 
 @theme {
-  --color-bee-50:  #FFFBEB;
-  --color-bee-100: #FEF3C7;
-  --color-bee-200: #FDE68A;
-  --color-bee-300: #FCD34D;
-  --color-bee-400: #FBBF24;
-  --color-bee-500: #FBC02D;
-  --color-bee-600: #F59E0B;
-  --color-bee-700: #D97706;
-  --color-bee-800: #B45309;
-  --color-bee-900: #78350F;
+  /* ── Brand: premium orange ── */
+  --color-brand-50:  #FFF7ED;
+  --color-brand-100: #FFEDD5;
+  --color-brand-200: #FED7AA;
+  --color-brand-300: #FDBA74;
+  --color-brand-400: #FB923C;
+  --color-brand-500: #F97316;
+  --color-brand-600: #EA580C;
+  --color-brand-700: #C2410C;
+  --color-brand-800: #9A3412;
+  --color-brand-900: #7C2D12;
 
-  --color-ink:        #0A0A0A;
+  /* ── Aliases (legacy `bee-*` now == brand) ── */
+  --color-bee-50:  #FFF7ED;
+  --color-bee-100: #FFEDD5;
+  --color-bee-200: #FED7AA;
+  --color-bee-300: #FDBA74;
+  --color-bee-400: #FB923C;
+  --color-bee-500: #F97316;
+  --color-bee-600: #EA580C;
+  --color-bee-700: #C2410C;
+  --color-bee-800: #9A3412;
+  --color-bee-900: #7C2D12;
+
+  /* ── Accent: yellow-orange (slight highlight) ── */
+  --color-accent-300: #FCD34D;
+  --color-accent-400: #FBBF24;
+  --color-accent-500: #F59E0B;
+
+  /* ── Neutrals (warm) ── */
+  --color-ink:        #0B0B0F;
   --color-ink-soft:   #27272A;
   --color-ink-muted:  #71717A;
   --color-ink-faint:  #A1A1AA;
   --color-line:       #E4E4E7;
-  --color-line-soft:  #F4F4F5;
+  --color-line-soft:  #F1F1F4;
   --color-surface:    #FFFFFF;
-  --color-surface-2:  #FAFAFA;
+  --color-surface-2:  #FAFAF9;
+  --color-surface-3:  #F5F5F4;
 
-  --font-sans: var(--font-josefin), system-ui, sans-serif;
+  /* ── Semantic ── */
+  --color-success: #16A34A;
+  --color-warning: #F59E0B;
+  --color-danger:  #DC2626;
+  --color-info:    #0EA5E9;
+
+  --font-sans: var(--font-jakarta), system-ui, sans-serif;
 }
 
-html, body {
-  background: var(--color-surface);
-  color: var(--color-ink);
+@layer base {
+  html, body {
+    background: var(--color-surface-2);
+    color: var(--color-ink);
+  }
+  body {
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
 }
 
-body {
-  font-family: var(--font-sans);
-  -webkit-font-smoothing: antialiased;
-  text-rendering: optimizeLegibility;
+@layer utilities {
+  .bg-gradient-warm {
+    background-image: linear-gradient(135deg, #FFF7ED 0%, #FFFFFF 45%, #FFFBEB 100%);
+  }
+  .bg-gradient-soft {
+    background-image:
+      radial-gradient(at 0% 0%, rgba(254, 215, 170, 0.45) 0%, transparent 55%),
+      radial-gradient(at 100% 0%, rgba(252, 211, 77, 0.35) 0%, transparent 50%);
+  }
+  .bg-gradient-premium {
+    background-image: linear-gradient(135deg, #F97316 0%, #FB923C 50%, #FBBF24 100%);
+  }
+
+  .shadow-card {
+    box-shadow:
+      0 1px 2px rgba(15, 15, 15, 0.04),
+      0 0 0 1px rgba(15, 15, 15, 0.04);
+  }
+  .shadow-pop {
+    box-shadow:
+      0 12px 32px -12px rgba(249, 115, 22, 0.18),
+      0 4px 12px rgba(15, 15, 15, 0.06);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }

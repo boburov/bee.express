@@ -37,6 +37,17 @@ Asosiy qoidalar:
   toast.
 - [`typography-unify.md`](./typography-unify.md) — To'rt panelda Josefin Sans
   bir xillashtirildi; courier paneli Geist'dan o'tkazildi.
+- [`typography-plus-jakarta.md`](./typography-plus-jakarta.md) — To'rt panel
+  Josefin Sans'dan Plus Jakarta Sans'ga o'tkazildi (yangi asosiy shrift).
+- [`cart-orders-v1.md`](./cart-orders-v1.md) — Savat + buyurtma backend:
+  Address/Cart/Order modellari, sotuvchi bo'yicha split-checkout, status
+  state machine, pagination envelope.
+- [`ui-test-mobile-fixes.md`](./ui-test-mobile-fixes.md) — Playwright bilan
+  4 panel × 3 viewport UI test: admin/seller sidebar mobile drawer pattern,
+  courier panel palette migratsiyasi (sariq → orange).
+- [`cart-orders-ui-v1.md`](./cart-orders-ui-v1.md) — Mini App buyurtma
+  oqimi UI: /cart, /checkout, /orders, /orders/[id], /addresses sahifalar +
+  cart badge + status state machine + inline manzil yaratish.
 - [`features.md`](./features.md) — Feature progresi va keyingi reja.
 
 ## Yangi hujjat qo'shganda nima qilish kerak

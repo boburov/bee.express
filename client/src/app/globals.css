@@ -47,7 +47,7 @@
   --color-danger:  #DC2626;
   --color-info:    #0EA5E9;
 
-  --font-sans: var(--font-josefin), system-ui, sans-serif;
+  --font-sans: var(--font-jakarta), system-ui, sans-serif;
 }
 
 @layer base {

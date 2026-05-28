@@ -81,6 +81,11 @@ model User {
   productRequests ProductRequest[]
   notifications   Notification[]
 
+  // Cart & Orders v1
+  cart      Cart?
+  addresses Address[]
+  orders    Order[]
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -240,12 +245,12 @@ model Category {
   // Delivery defaults — used when Store-level overrides are null.
   // `deliveryBaseFee` and `deliveryPerKmFee` are stored as Decimal(12,2) so we
   // can do server-side fee math without floating-point drift.
-  deliveryRadiusKm     Int?
-  deliveryBaseFee      Decimal? @db.Decimal(12, 2)
-  deliveryPerKmFee     Decimal? @db.Decimal(12, 2)
+  deliveryRadiusKm      Int?
+  deliveryBaseFee       Decimal? @db.Decimal(12, 2)
+  deliveryPerKmFee      Decimal? @db.Decimal(12, 2)
   deliveryEtaMinMinutes Int?
   deliveryEtaMaxMinutes Int?
-  minOrderAmount       Decimal? @db.Decimal(12, 2)
+  minOrderAmount        Decimal? @db.Decimal(12, 2)
 
   attributes CategoryAttribute[]
   products   Product[]
@@ -474,11 +479,11 @@ model Store {
   longitude Decimal? @db.Decimal(10, 7)
 
   // Delivery — when null, category defaults are used.
-  deliveryRadiusKm  Int?
-  deliveryBaseFee   Decimal? @db.Decimal(12, 2)
-  deliveryPerKmFee  Decimal? @db.Decimal(12, 2)
+  deliveryRadiusKm   Int?
+  deliveryBaseFee    Decimal? @db.Decimal(12, 2)
+  deliveryPerKmFee   Decimal? @db.Decimal(12, 2)
   deliveryEtaMinutes Int?
-  minOrderAmount    Decimal? @db.Decimal(12, 2)
+  minOrderAmount     Decimal? @db.Decimal(12, 2)
 
   // Operating state — `isOpen` is the manual "stop accepting orders" flag.
   // `openingHours` is a weekly schedule (Json) consulted by isStoreOpenNow().
@@ -492,6 +497,7 @@ model Store {
   offers   SellerOffer[]
   reviews  Review[]
   requests ProductRequest[]
+  orders   Order[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -524,8 +530,10 @@ model SellerOffer {
   isActive     Boolean        @default(true)
   deliveryDays Int?
 
-  store   Store          @relation(fields: [storeId], references: [id], onDelete: Cascade)
-  variant ProductVariant @relation(fields: [variantId], references: [id], onDelete: Cascade)
+  store      Store          @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  variant    ProductVariant @relation(fields: [variantId], references: [id], onDelete: Cascade)
+  cartItems  CartItem[]
+  orderItems OrderItem[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -566,16 +574,16 @@ enum UploadPurpose {
 }
 
 model UploadedFile {
-  id         String        @id @default(cuid())
+  id       String        @id @default(cuid())
   // R2 object key (bucket-relative path). UNIQUE so we never reuse a key.
-  key        String        @unique
+  key      String        @unique
   // Public URL (CDN or R2 public bucket). Filled when status → READY.
-  url        String?
-  mimeType   String
+  url      String?
+  mimeType String
   // Size in bytes. Server-validates against per-purpose limits.
-  size       Int           @default(0)
-  status     UploadStatus  @default(PENDING)
-  purpose    UploadPurpose
+  size     Int           @default(0)
+  status   UploadStatus  @default(PENDING)
+  purpose  UploadPurpose
 
   // Soft link to the entity the upload belongs to (resolved at attach time).
   entityType String?
@@ -600,7 +608,7 @@ model UploadedFile {
 // `verified=false`).
 
 model Review {
-  id        String   @id @default(cuid())
+  id        String  @id @default(cuid())
   productId String
   storeId   String
   userId    String
@@ -608,14 +616,14 @@ model Review {
   // exist before orders ship.
   orderId   String?
 
-  rating    Int      // 1..5 — checked at the service layer
-  text      String?  @db.Text
-  imageUrls Json     @default("[]") // array of CDN URLs (capped at 5)
+  rating    Int // 1..5 — checked at the service layer
+  text      String? @db.Text
+  imageUrls Json    @default("[]") // array of CDN URLs (capped at 5)
 
   // Verified = bought-and-delivered. Unverified reviews can still be shown
   // but get a different badge in the UI.
-  verified  Boolean  @default(false)
-  isVisible Boolean  @default(true) // moderation flag — admin can hide
+  verified  Boolean @default(false)
+  isVisible Boolean @default(true) // moderation flag — admin can hide
 
   product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
   store   Store   @relation(fields: [storeId], references: [id], onDelete: Cascade)
@@ -657,9 +665,9 @@ model ProductRequest {
   store   Store?  @relation(fields: [storeId], references: [id], onDelete: SetNull)
   user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  createdAt    DateTime  @default(now())
-  notifiedAt   DateTime?
-  fulfilledAt  DateTime?
+  createdAt   DateTime  @default(now())
+  notifiedAt  DateTime?
+  fulfilledAt DateTime?
 
   @@unique([productId, userId, storeId])
   @@index([productId, status])
@@ -682,16 +690,16 @@ model ProductRequest {
 // ═════════════════════════════════════════════════════════════
 
 enum NotificationType {
-  INFO       // neutral
-  SUCCESS    // positive (order accepted, payout sent)
-  WARNING    // attention (low stock, KYC issue)
-  DANGER     // urgent (account blocked, fraud alert)
-  ANNOUNCE   // marketing / system-wide
+  INFO // neutral
+  SUCCESS // positive (order accepted, payout sent)
+  WARNING // attention (low stock, KYC issue)
+  DANGER // urgent (account blocked, fraud alert)
+  ANNOUNCE // marketing / system-wide
 }
 
 enum NotificationChannel {
-  IN_APP    // pushed via Socket.IO + persisted (default)
-  TELEGRAM  // queued for the bot worker (optional add-on)
+  IN_APP // pushed via Socket.IO + persisted (default)
+  TELEGRAM // queued for the bot worker (optional add-on)
 }
 
 enum NotificationSenderType {
@@ -701,37 +709,201 @@ enum NotificationSenderType {
 }
 
 model Notification {
-  id            String           @id @default(cuid())
-  recipientId   String
-  recipient     User             @relation(fields: [recipientId], references: [id], onDelete: Cascade)
+  id          String @id @default(cuid())
+  recipientId String
+  recipient   User   @relation(fields: [recipientId], references: [id], onDelete: Cascade)
 
   // Who sent this. For SUPER_ADMIN/USER, `senderId` holds the actor id;
   // SYSTEM events leave it null.
-  senderType    NotificationSenderType
-  senderId      String?
+  senderType NotificationSenderType
+  senderId   String?
 
-  title         String
-  body          String?          @db.Text
-  type          NotificationType @default(INFO)
+  title String
+  body  String?          @db.Text
+  type  NotificationType @default(INFO)
 
   // Free-form payload for click-through actions: { orderId, link, ... }.
-  data          Json?
+  data Json?
 
   // Whether the in-app socket push succeeded at least once (otherwise the
   // client will pick it up on next /notifications/mine fetch).
-  delivered     Boolean          @default(false)
+  delivered    Boolean @default(false)
   // Optional Telegram bot fan-out — set when the bot has actually sent it.
-  telegramSent  Boolean          @default(false)
+  telegramSent Boolean @default(false)
 
-  readAt        DateTime?
+  readAt DateTime?
 
   // When the same logical message is sent to many users, share a groupId so
   // we can show "Sent to 230 sellers" in the admin history.
-  groupId       String?
+  groupId String?
 
-  createdAt     DateTime         @default(now())
+  createdAt DateTime @default(now())
 
   @@index([recipientId, readAt])
   @@index([recipientId, createdAt])
   @@index([groupId])
+}
+
+// ═════════════════════════════════════════════════════════════
+// Cart & Orders v1
+//
+// Cart is per-user (lazy created). Items reference SellerOffer so we
+// keep the store↔variant↔price binding intact — checkout splits the cart
+// into one Order per Store, computes deliveryFee from the user's chosen
+// Address vs Store coordinates, and snapshots product/variant/image titles
+// so historical orders stay readable even after catalog edits.
+// ═════════════════════════════════════════════════════════════
+
+// ─── Address book (one user → many addresses) ───
+
+model Address {
+  id        String  @id @default(cuid())
+  userId    String
+  label     String // "Uy", "Ish", "Onamning uyi"
+  fullText  String  @db.Text // free-form text — street, building, apt
+  latitude  Decimal @db.Decimal(10, 7)
+  longitude Decimal @db.Decimal(10, 7)
+  notes     String? @db.Text // "domofon kodi 1234", instructions for the courier
+  isDefault Boolean @default(false)
+
+  user   User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  orders Order[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId, isDefault])
+  @@index([userId, createdAt])
+}
+
+// ─── Cart (one active per user) ───
+
+model Cart {
+  id        String     @id @default(cuid())
+  userId    String     @unique
+  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  items     CartItem[]
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+}
+
+model CartItem {
+  id            String  @id @default(cuid())
+  cartId        String
+  offerId       String
+  qty           Int     @default(1)
+  // Price captured at add-time. Re-fetched and re-validated against the live
+  // offer at checkout — drift triggers a "narx o'zgardi" prompt to the buyer.
+  priceSnapshot Decimal @db.Decimal(12, 2)
+
+  cart  Cart        @relation(fields: [cartId], references: [id], onDelete: Cascade)
+  offer SellerOffer @relation(fields: [offerId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([cartId, offerId])
+  @@index([offerId])
+}
+
+// ─── Orders ───
+//
+// One cart can produce N orders — one per Store. Each order locks in the
+// delivery address snapshot, fee math, and a copy of the buyer's contact
+// info as it was at order time.
+
+enum OrderStatus {
+  PENDING // submitted, awaiting seller accept
+  ACCEPTED // seller acknowledged
+  PREPARING // being prepared / packed
+  READY // ready for pickup / handoff to courier
+  ON_WAY // courier picked up, in transit
+  DELIVERED // completed
+  CANCELLED // cancelled by customer
+  REJECTED // declined by seller
+}
+
+enum PaymentMethod {
+  COD // cash on delivery — v1 default
+}
+
+model Order {
+  id          String @id @default(cuid())
+  // Human-readable, prefix + cuid suffix; populated by the service layer
+  // (NOT @default — we want "BEE-..." not a raw cuid).
+  orderNumber String @unique
+
+  userId    String
+  storeId   String
+  addressId String? // nullable — address may be deleted, but snapshot stays
+
+  status        OrderStatus   @default(PENDING)
+  paymentMethod PaymentMethod @default(COD)
+
+  // Money — Decimal(12,2) everywhere for no float drift.
+  subtotal    Decimal @db.Decimal(12, 2)
+  deliveryFee Decimal @default(0) @db.Decimal(12, 2)
+  total       Decimal @db.Decimal(12, 2)
+
+  // Snapshots — taken at order creation so the row is self-contained.
+  addressSnapshot Json? // { label, fullText, latitude, longitude, notes }
+  customerName    String?
+  customerPhone   BigInt
+  distanceKm      Decimal? @db.Decimal(6, 2)
+
+  notes           String? @db.Text // buyer's note to the seller
+  rejectionReason String? @db.Text // when status = REJECTED / CANCELLED
+
+  acceptedAt  DateTime?
+  deliveredAt DateTime?
+  cancelledAt DateTime?
+
+  user    User                 @relation(fields: [userId], references: [id])
+  store   Store                @relation(fields: [storeId], references: [id])
+  address Address?             @relation(fields: [addressId], references: [id], onDelete: SetNull)
+  items   OrderItem[]
+  history OrderStatusHistory[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId, createdAt])
+  @@index([storeId, status, createdAt])
+  @@index([status, createdAt])
+}
+
+model OrderItem {
+  id      String  @id @default(cuid())
+  orderId String
+  offerId String? // nullable — offer may be deleted, snapshot stays
+
+  // Snapshots — these survive catalog edits.
+  productTitle String
+  variantTitle String?
+  imageUrl     String?
+  price        Decimal @db.Decimal(12, 2) // per-unit at order time
+  qty          Int
+  subtotal     Decimal @db.Decimal(12, 2) // price * qty
+
+  order Order        @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  offer SellerOffer? @relation(fields: [offerId], references: [id], onDelete: SetNull)
+
+  @@index([orderId])
+  @@index([offerId])
+}
+
+model OrderStatusHistory {
+  id        String      @id @default(cuid())
+  orderId   String
+  status    OrderStatus
+  // Free-form actor id — userId for customer, storeOwnerId for seller, null for system.
+  // We don't FK because the actor type varies (user / super admin / system).
+  changedBy String?
+  note      String?     @db.Text
+
+  order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@index([orderId, createdAt])
 }

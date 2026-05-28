@@ -1,29 +1,137 @@
+"use client";
+
 import Link from "next/link";
-import { ArrowRight, PackageSearch } from "lucide-react";
+import { useState } from "react";
+import { ChevronRight, ShoppingBag } from "lucide-react";
+import { Badge } from "@/shared/ui/Badge";
 import { Button } from "@/shared/ui/Button";
+import { Card } from "@/shared/ui/Card";
 import { EmptyState } from "@/shared/ui/EmptyState";
 import { PageHeader } from "@/shared/ui/PageHeader";
+import { Spinner } from "@/shared/ui/Spinner";
+import { useOrders } from "@/features/orders/hooks";
+import { ORDER_STATUS_LIST, ORDER_STATUS_META } from "@/features/orders/status";
+import type { OrderStatus } from "@/features/orders/types";
+import { formatDateTime, formatSum } from "@/shared/lib/format";
+
+const PAGE_SIZE = 20;
 
 export default function OrdersPage() {
+  const [statusFilter, setStatusFilter] = useState<OrderStatus | undefined>(undefined);
+  const [page, setPage] = useState(1);
+
+  const { data, loading, error } = useOrders({ page, limit: PAGE_SIZE, status: statusFilter });
+
   return (
     <div className="flex flex-col gap-5">
       <PageHeader
-        title="Buyurtmalar"
-        description="Joriy buyurtmalar va o'tgan tarix shu yerda ko'rinadi."
+        title="Buyurtmalarim"
+        description="Buyurtma holatlari va tarix."
       />
 
-      <EmptyState
-        icon={<PackageSearch className="h-6 w-6" />}
-        title="Hozircha buyurtma yo'q"
-        description="Birinchi buyurtmangizdan keyin holatini real vaqtda kuzata olasiz: sotuvchi qabul qildi, kuryer yo'lda, yetkazildi."
-        action={
-          <Link href="/catalog">
-            <Button rightIcon={<ArrowRight className="h-4 w-4" />}>
-              Buyurtma boshlash
-            </Button>
-          </Link>
-        }
-      />
+      {/* Status chips — horizontal scroll on mobile for the long list */}
+      <div className="-mx-4 px-4 overflow-x-auto">
+        <ul className="flex gap-2 w-max pb-1">
+          <li>
+            <button
+              type="button"
+              onClick={() => { setStatusFilter(undefined); setPage(1); }}
+              className={`h-8 px-3 rounded-full text-xs font-medium transition-colors whitespace-nowrap ${
+                statusFilter === undefined
+                  ? "bg-brand-500 text-white"
+                  : "bg-surface-3 text-ink-soft hover:bg-line-soft"
+              }`}
+            >
+              Barchasi
+            </button>
+          </li>
+          {ORDER_STATUS_LIST.map((s) => {
+            const active = statusFilter === s;
+            return (
+              <li key={s}>
+                <button
+                  type="button"
+                  onClick={() => { setStatusFilter(s); setPage(1); }}
+                  className={`h-8 px-3 rounded-full text-xs font-medium transition-colors whitespace-nowrap ${
+                    active ? "bg-brand-500 text-white" : "bg-surface-3 text-ink-soft hover:bg-line-soft"
+                  }`}
+                >
+                  {ORDER_STATUS_META[s].label}
+                </button>
+              </li>
+            );
+          })}
+        </ul>
+      </div>
+
+      {loading && !data ? (
+        <div className="flex justify-center py-10"><Spinner /></div>
+      ) : error ? (
+        <p className="text-sm text-danger">{error}</p>
+      ) : !data || data.data.length === 0 ? (
+        <EmptyState
+          icon={<ShoppingBag className="h-6 w-6" />}
+          title={statusFilter ? "Bu holatda buyurtma yo'q" : "Hali buyurtma bermagansiz"}
+          description={statusFilter ? "Filterni o'zgartirib ko'ring yoki katalogni oching." : "Birinchi buyurtmangizni katalogdan tanlang."}
+          action={!statusFilter ? <Link href="/catalog"><Button>Katalogni ochish</Button></Link> : undefined}
+        />
+      ) : (
+        <>
+          <ul className="flex flex-col gap-3">
+            {data.data.map((o) => {
+              const meta = ORDER_STATUS_META[o.status];
+              return (
+                <li key={o.id}>
+                  <Link
+                    href={`/orders/${o.id}`}
+                    className="block rounded-xl border border-line bg-surface shadow-card hover:border-brand-200 transition-colors"
+                  >
+                    <div className="p-4 flex items-start gap-3">
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 mb-1">
+                          <h3 className="text-sm font-semibold text-ink truncate">{o.store.name}</h3>
+                          <Badge tone={meta.tone}>{meta.label}</Badge>
+                        </div>
+                        <p className="text-xs text-ink-muted">
+                          {o.orderNumber} · {formatDateTime(o.createdAt)}
+                        </p>
+                        <p className="text-xs text-ink-muted mt-1">
+                          {o.items.length} ta mahsulot · {formatSum(o.total)}
+                        </p>
+                      </div>
+                      <ChevronRight className="h-4 w-4 text-ink-faint mt-1 shrink-0" />
+                    </div>
+                  </Link>
+                </li>
+              );
+            })}
+          </ul>
+
+          {data.meta.totalPages > 1 ? (
+            <div className="flex items-center justify-between gap-3 mt-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setPage((p) => Math.max(1, p - 1))}
+                disabled={page <= 1}
+              >
+                Oldingi
+              </Button>
+              <span className="text-xs text-ink-muted">
+                {page} / {data.meta.totalPages}
+              </span>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setPage((p) => Math.min(data.meta.totalPages, p + 1))}
+                disabled={page >= data.meta.totalPages}
+              >
+                Keyingi
+              </Button>
+            </div>
+          ) : null}
+        </>
+      )}
     </div>
   );
 }

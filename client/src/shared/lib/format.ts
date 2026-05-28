@@ -24,3 +24,18 @@ export function formatDate(value: string | Date | null | undefined): string {
   if (Number.isNaN(d.getTime())) return "—";
   return DATE_FORMATTER.format(d);
 }
+
+const DATETIME_FORMATTER = new Intl.DateTimeFormat("uz-UZ", {
+  day: "2-digit",
+  month: "2-digit",
+  year: "numeric",
+  hour: "2-digit",
+  minute: "2-digit",
+});
+
+export function formatDateTime(value: string | Date | null | undefined): string {
+  if (!value) return "—";
+  const d = value instanceof Date ? value : new Date(value);
+  if (Number.isNaN(d.getTime())) return "—";
+  return DATETIME_FORMATTER.format(d);
+}

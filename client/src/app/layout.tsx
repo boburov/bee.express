@@ -1,11 +1,11 @@
 import type { Metadata, Viewport } from "next";
-import { Josefin_Sans } from "next/font/google";
+import { Plus_Jakarta_Sans } from "next/font/google";
 import Script from "next/script";
 import "./globals.css";
 
-const josefin = Josefin_Sans({
+const jakarta = Plus_Jakarta_Sans({
   subsets: ["latin", "latin-ext"],
-  variable: "--font-josefin",
+  variable: "--font-jakarta",
   display: "swap",
 });
 
@@ -29,7 +29,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html
       lang="uz"
-      className={`${josefin.variable} h-full antialiased`}
+      className={`${jakarta.variable} h-full antialiased`}
       suppressHydrationWarning
     >
       <head>
