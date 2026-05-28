@@ -1,20 +1,17 @@
 import type { Metadata, Viewport } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Josefin_Sans } from "next/font/google";
 import "./globals.css";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
+const josefin = Josefin_Sans({
+  subsets: ["latin", "latin-ext"],
+  variable: "--font-josefin",
+  display: "swap",
 });
 
 export const metadata: Metadata = {
   title: "BeeExpress Courier",
   description: "BeeExpress kuryer paneli",
+  icons: { icon: "/logo.png" },
 };
 
 export const viewport: Viewport = {
@@ -25,7 +22,7 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="uz" className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}>
+    <html lang="uz" className={`${josefin.variable} h-full antialiased`}>
       <body className="min-h-full bg-surface-2 text-ink">{children}</body>
     </html>
   );

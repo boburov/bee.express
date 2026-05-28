@@ -35,6 +35,8 @@ Asosiy qoidalar:
 - [`notifications-v1.md`](./notifications-v1.md) — Realtime notification tizimi:
   Socket.IO gateway, admin yuborish UI, target picker (user/role/broadcast),
   toast.
+- [`typography-unify.md`](./typography-unify.md) — To'rt panelda Josefin Sans
+  bir xillashtirildi; courier paneli Geist'dan o'tkazildi.
 - [`features.md`](./features.md) — Feature progresi va keyingi reja.
 
 ## Yangi hujjat qo'shganda nima qilish kerak
