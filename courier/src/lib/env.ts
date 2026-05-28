@@ -17,5 +17,9 @@ function required(name: string, value: string | undefined): string {
 
 export const env = {
   apiBaseUrl: required("NEXT_PUBLIC_API_URL", process.env.NEXT_PUBLIC_API_URL),
-  appName: "BeeExpress Admin",
+  botUsername: required(
+    "NEXT_PUBLIC_TELEGRAM_BOT_USERNAME",
+    process.env.NEXT_PUBLIC_TELEGRAM_BOT_USERNAME,
+  ),
+  appName: "BeeExpress Courier",
 } as const;

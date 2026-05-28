@@ -8,11 +8,12 @@ import { Input } from "@/components/ui/Input";
 import { Logo } from "@/components/Logo";
 import { api } from "@/lib/api";
 import { COURIER_ROLE_SLUG, hasCourierRole, useAuthStore } from "@/lib/auth-store";
+import { env } from "@/lib/env";
 import { formatPhone, normalizePhoneInput } from "@/lib/phone";
 
 type Step = "phone" | "code";
 
-const BOT_USERNAME = process.env.NEXT_PUBLIC_TELEGRAM_BOT_USERNAME ?? "bee_express_bot";
+const BOT_USERNAME = env.botUsername;
 
 export default function LoginPage() {
   const router = useRouter();

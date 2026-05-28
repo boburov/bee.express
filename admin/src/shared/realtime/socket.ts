@@ -17,7 +17,7 @@ let cached: Socket | null = null;
 let cachedToken: string | null = null;
 
 function wsBaseUrl(): string {
-  // env.apiBaseUrl looks like "http://localhost:4000/api"
+  // env.apiBaseUrl looks like "http://<host>/api"
   // → strip trailing /api so we point at the bare host.
   return env.apiBaseUrl.replace(/\/api\/?$/, "");
 }

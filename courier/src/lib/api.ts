@@ -1,10 +1,9 @@
 import axios, { AxiosError, AxiosRequestConfig } from "axios";
 import { useAuthStore } from "@/lib/auth-store";
-
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000/api";
+import { env } from "@/lib/env";
 
 export const api = axios.create({
-  baseURL: API_BASE_URL,
+  baseURL: env.apiBaseUrl,
   headers: { "Content-Type": "application/json" },
 });
 
@@ -29,7 +28,7 @@ async function tryRefresh(): Promise<string | null> {
   }
   try {
     const res = await axios.post(
-      `${API_BASE_URL}/auth/refresh`,
+      `${env.apiBaseUrl}/auth/refresh`,
       { refreshToken },
       { headers: { "Content-Type": "application/json" } },
     );

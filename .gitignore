@@ -2,6 +2,7 @@
 **dist**
 **build**
 **.env**
+!**/.env.example
 **.DS_Store**
 **.vscode**
 **.idea**
