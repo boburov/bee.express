@@ -81,23 +81,25 @@ Page background **deyarli har doim** `--color-surface-2` + (ixtiyoriy) yuqori ch
 burchakdagi soft radial gradient. Gradient hech qachon vsechelvek panelni
 ifloslanmasin — opacity past, content kontrasti saqlansin.
 
-## 3. Tipografiya — Plus Jakarta Sans
+## 3. Tipografiya — Inter
 
-**Asosiy shrift:** [Plus Jakarta Sans](https://fonts.google.com/specimen/Plus+Jakarta+Sans)
-(`next/font/google`). Variable, og'irliklar 200–800.
+**Asosiy shrift:** [Inter](https://fonts.google.com/specimen/Inter)
+(`next/font/google`). Variable, og'irliklar 100–900. Serius, minimal, OpenType
+features bilan boy — dashboard va product UI uchun standart sanoat tanlovi
+(Linear, Stripe, GitHub, Vercel — barchasi Inter ishlatadi).
 
 ```ts
-import { Plus_Jakarta_Sans } from "next/font/google";
+import { Inter } from "next/font/google";
 
-const jakarta = Plus_Jakarta_Sans({
+const inter = Inter({
   subsets: ["latin", "latin-ext"],
-  variable: "--font-jakarta",
+  variable: "--font-inter",
   display: "swap",
 });
 ```
 
-`<html className={jakarta.variable}>` qilib biriktiriladi. Tailwind `font-sans` token
-`var(--font-jakarta)` ni o'qiydi.
+`<html className={inter.variable}>` qilib biriktiriladi. Tailwind `font-sans` token
+`var(--font-inter)` ni o'qiydi.
 
 ### Type scale
 
@@ -113,8 +115,10 @@ const jakarta = Plus_Jakarta_Sans({
 
 Weight: heading **600**, sub-heading **500**, body **400**, caption **500** uppercase.
 
-> Plus Jakarta Sans modern geometric — heading uchun `tracking-tight`, body
-> uchun `tracking-normal`. 800 vazn faqat hero/display uchun, dashboard'larda 700 cheki.
+> Inter neytral va yuqori-x-height. Heading uchun `tracking-tight` (-0.01em),
+> body uchun `tracking-normal`. Dashboard'larda 700 cheki; 800-900 faqat
+> hero/display uchun. Numerik ma'lumotda `font-feature-settings: "tnum"`
+> ishlatish tavsiya etiladi (Inter `tabular-nums` ni qo'llab-quvvatlaydi).
 
 ## 4. Bo'shliq va o'lcham
 

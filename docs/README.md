@@ -38,7 +38,9 @@ Asosiy qoidalar:
 - [`typography-unify.md`](./typography-unify.md) — To'rt panelda Josefin Sans
   bir xillashtirildi; courier paneli Geist'dan o'tkazildi.
 - [`typography-plus-jakarta.md`](./typography-plus-jakarta.md) — To'rt panel
-  Josefin Sans'dan Plus Jakarta Sans'ga o'tkazildi (yangi asosiy shrift).
+  Josefin Sans'dan Plus Jakarta Sans'ga o'tkazildi (oldingi shrift).
+- [`typography-inter.md`](./typography-inter.md) — To'rt panel Plus Jakarta
+  Sans'dan Inter'ga o'tkazildi: serius minimalist sanoat standarti.
 - [`cart-orders-v1.md`](./cart-orders-v1.md) — Savat + buyurtma backend:
   Address/Cart/Order modellari, sotuvchi bo'yicha split-checkout, status
   state machine, pagination envelope.
@@ -48,6 +50,19 @@ Asosiy qoidalar:
 - [`cart-orders-ui-v1.md`](./cart-orders-ui-v1.md) — Mini App buyurtma
   oqimi UI: /cart, /checkout, /orders, /orders/[id], /addresses sahifalar +
   cart badge + status state machine + inline manzil yaratish.
+- [`seller-orders-ui-v1.md`](./seller-orders-ui-v1.md) — Sotuvchi paneli
+  buyurtmalar UI: /dashboard/orders ro'yxat + /dashboard/orders/[id] detail
+  + status transition tugmalari + Yandex Maps deeplink.
+- [`catalog-browse-ui-v1.md`](./catalog-browse-ui-v1.md) — Mini App katalog
+  ko'rib chiqish UI: /catalog (kategoriya tree), /c/[slug] (mahsulot grid),
+  /p/[slug] (galereya + offer'lar + savatga qo'sh). Order full-loop yopildi.
+- [`seed-demo.md`](./seed-demo.md) — O'zbek-localized demo seed: 12 kategoriya,
+  20 sotuvchi, 50 xaridor, 40+ mahsulot, 30 buyurtma. `npm run db:seed:demo`.
+- [`seller-store-ui-v1.md`](./seller-store-ui-v1.md) — Sotuvchi paneli do'kon
+  yaratish/tahrirlash UI: /dashboard/store + dashboard CTA + StatusBanner.
+- [`seller-products-ui-v1.md`](./seller-products-ui-v1.md) — Sotuvchi paneli
+  mahsulot CRUD UI: /dashboard/products + new wizard + [id] edit + inline
+  narx/qoldiq offer boshqaruv. Sotuvchi MVP yopildi.
 - [`features.md`](./features.md) — Feature progresi va keyingi reja.
 
 ## Yangi hujjat qo'shganda nima qilish kerak
