@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { AuditModule } from './audit/audit.module';
+import { ModerationModule } from './moderation/moderation.module';
 import { RolesModule } from './roles/roles.module';
 import { UsersModule } from './users/users.module';
 
@@ -8,6 +9,6 @@ import { UsersModule } from './users/users.module';
  * routes with @SuperAdminOnly() and uses PrismaService directly.
  */
 @Module({
-  imports: [UsersModule, AuditModule, RolesModule],
+  imports: [UsersModule, AuditModule, RolesModule, ModerationModule],
 })
 export class AdminModule {}

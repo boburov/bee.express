@@ -63,6 +63,9 @@ Asosiy qoidalar:
 - [`seller-products-ui-v1.md`](./seller-products-ui-v1.md) — Sotuvchi paneli
   mahsulot CRUD UI: /dashboard/products + new wizard + [id] edit + inline
   narx/qoldiq offer boshqaruv. Sotuvchi MVP yopildi.
+- [`admin-moderation-v1.md`](./admin-moderation-v1.md) — Admin paneli
+  moderatsiya: /dashboard/moderation tabs (products + stores) + approve/reject
+  + StoreStatus REJECTED enum qo'shildi.
 - [`features.md`](./features.md) — Feature progresi va keyingi reja.
 
 ## Yangi hujjat qo'shganda nima qilish kerak

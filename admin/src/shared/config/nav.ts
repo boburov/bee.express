@@ -8,6 +8,7 @@ import {
   Tags,
   Sparkles,
   ShieldCheck,
+  ShieldAlert,
   Wallet,
   ScrollText,
   Settings,
@@ -48,6 +49,7 @@ export const adminNav: NavSection[] = [
     title: "Operatsiya",
     items: [
       { href: "/dashboard/orders", label: "Buyurtmalar", icon: ShoppingBag },
+      { href: "/dashboard/moderation", label: "Moderatsiya", icon: ShieldAlert },
       { href: "/dashboard/notifications", label: "Bildirishnomalar", icon: Bell },
     ],
   },

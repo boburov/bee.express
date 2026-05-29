@@ -452,6 +452,7 @@ enum StoreStatus {
   ACTIVE
   SUSPENDED
   CLOSED
+  REJECTED
 }
 
 model Store {
