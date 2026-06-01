@@ -6,6 +6,6 @@
  */
 export const env = {
   apiBaseUrl:
-    process.env.NEXT_PUBLIC_API_URL ?? "http://161.97.96.229:60000/api",
+    process.env.NEXT_PUBLIC_API_URL ?? "http://api.beexpress.uz/api",
   appName: "BeeExpress Admin",
 } as const;
