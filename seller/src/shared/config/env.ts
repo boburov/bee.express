@@ -1,25 +1,13 @@
 /**
- * Public env vars exposed to the browser. Anything here must be prefixed
- * `NEXT_PUBLIC_` so Next.js inlines it into the client bundle.
+ * Public runtime config inlined into the browser bundle.
  *
- * Missing values are a configuration error, not a default-to-localhost — we
- * fail loudly at module load to surface the issue immediately instead of
- * letting requests silently hit the wrong host.
+ * The API URL is hardcoded here so the app works without any .env file. A
+ * `NEXT_PUBLIC_*` env var still overrides the default when one is provided.
  */
-function required(name: string, value: string | undefined): string {
-  if (!value) {
-    throw new Error(
-      `Missing env var ${name}. Set it in .env.local (dev) or your deployment platform (prod).`,
-    );
-  }
-  return value;
-}
-
 export const env = {
-  apiBaseUrl: required("NEXT_PUBLIC_API_URL", process.env.NEXT_PUBLIC_API_URL),
-  botUsername: required(
-    "NEXT_PUBLIC_TELEGRAM_BOT_USERNAME",
-    process.env.NEXT_PUBLIC_TELEGRAM_BOT_USERNAME,
-  ),
+  apiBaseUrl:
+    process.env.NEXT_PUBLIC_API_URL ?? "http://161.97.96.229:60000/api",
+  botUsername:
+    process.env.NEXT_PUBLIC_TELEGRAM_BOT_USERNAME ?? "bee_express_bot",
   appName: "BeeExpress Seller",
 } as const;
