@@ -2,6 +2,7 @@ import {
   BadRequestException,
   ForbiddenException,
   Injectable,
+  Logger,
   NotFoundException,
 } from '@nestjs/common';
 import {
@@ -11,6 +12,7 @@ import {
   type Prisma,
 } from '@prisma/client';
 import { AddressesService } from '../addresses/addresses.service';
+import { DispatchService } from '../contracts/dispatch.service';
 import { paginated, parsePagination } from '../common/pagination';
 import { computeDeliveryFee, decimalToNumber, haversineKm } from '../geo/geo';
 import { PrismaService } from '../prisma/prisma.service';
@@ -22,22 +24,28 @@ import { ORDER_INCLUDE, serializeOrder } from './order.serializer';
 /**
  * Allowed status transitions. Anything not listed here is rejected with a 400.
  *
- *   PENDING   → ACCEPTED | REJECTED | CANCELLED
- *   ACCEPTED  → PREPARING | CANCELLED
- *   PREPARING → READY | CANCELLED
- *   READY     → ON_WAY | CANCELLED
- *   ON_WAY    → DELIVERED
- *   DELIVERED → (terminal)
- *   CANCELLED → (terminal)
- *   REJECTED  → (terminal)
+ *   PENDING          → ACCEPTED | REJECTED | CANCELLED
+ *   ACCEPTED         → PREPARING | CANCELLED
+ *   PREPARING        → READY | CANCELLED
+ *   READY            → ON_WAY | CANCELLED
+ *   ON_WAY           → DELIVERED
+ *   COURIER_ASSIGNED → (courier-owned — seller has no moves)
+ *   DELIVERED        → (terminal)
+ *   CANCELLED        → (terminal)
+ *   REJECTED         → (terminal)
  *
- * Customer can only fire CANCELLED from PENDING. Seller drives the rest.
+ * Customer can only fire CANCELLED from PENDING. The seller drives up to READY.
+ * From READY the seller may still self-deliver (READY → ON_WAY) — e.g. a store
+ * with its own courier (TZ §3.4) — but normally a courier claims the order
+ * (READY → COURIER_ASSIGNED) and the courier machine in CourierService takes
+ * over. Once COURIER_ASSIGNED, the seller has no transitions.
  */
 const SELLER_TRANSITIONS: Record<OrderStatus, OrderStatus[]> = {
   PENDING: [OrderStatus.ACCEPTED, OrderStatus.REJECTED],
   ACCEPTED: [OrderStatus.PREPARING, OrderStatus.CANCELLED],
   PREPARING: [OrderStatus.READY, OrderStatus.CANCELLED],
   READY: [OrderStatus.ON_WAY, OrderStatus.CANCELLED],
+  COURIER_ASSIGNED: [],
   ON_WAY: [OrderStatus.DELIVERED],
   DELIVERED: [],
   CANCELLED: [],
@@ -46,9 +54,12 @@ const SELLER_TRANSITIONS: Record<OrderStatus, OrderStatus[]> = {
 
 @Injectable()
 export class OrdersService {
+  private readonly logger = new Logger(OrdersService.name);
+
   constructor(
     private readonly prisma: PrismaService,
     private readonly addresses: AddressesService,
+    private readonly dispatch: DispatchService,
   ) {}
 
   // ════════════════════════════════════════════════════════════════════
@@ -426,6 +437,14 @@ export class OrdersService {
         data: { orderId, status: next, changedBy: actorId, note },
       });
     });
+
+    // Once an order is READY, try to auto-assign it to a contracted courier.
+    // Best-effort: a dispatch failure must never undo the seller's transition.
+    if (next === OrderStatus.READY) {
+      await this.dispatch.onOrderReady(orderId).catch((e) => {
+        this.logger.warn(`dispatch onOrderReady(${orderId}) failed: ${String(e)}`);
+      });
+    }
   }
 
   private addressSnapshot(a: Address): Prisma.InputJsonValue {

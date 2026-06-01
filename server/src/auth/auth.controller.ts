@@ -1,4 +1,5 @@
 import { Body, Controller, Get, HttpCode, HttpStatus, Ip, Post, Req, UseGuards } from '@nestjs/common';
+import { Throttle } from '@nestjs/throttler';
 import type { Request } from 'express';
 import { CurrentUser } from './decorators/current-user.decorator';
 import { Public } from './decorators/public.decorator';
@@ -15,6 +16,8 @@ import type { Authenticated } from './types';
 export class AuthController {
   constructor(private readonly auth: AuthService) {}
 
+  // OTP delivery costs real money + can spam a victim's Telegram — keep it tight.
+  @Throttle({ default: { limit: 3, ttl: 60_000 } })
   @Public()
   @Post('phone/request')
   @HttpCode(HttpStatus.OK)
@@ -22,6 +25,9 @@ export class AuthController {
     return this.auth.requestPhoneOtp(dto, { ip, ua: req.headers['user-agent'] });
   }
 
+  // A few code attempts are legitimate; the per-OTP attempt counter (5) is the
+  // real guard, this just caps brute-force velocity per IP.
+  @Throttle({ default: { limit: 10, ttl: 60_000 } })
   @Public()
   @Post('phone/verify')
   @HttpCode(HttpStatus.OK)
@@ -36,6 +42,8 @@ export class AuthController {
     return this.auth.loginViaMiniApp(dto, { ip, ua: req.headers['user-agent'] });
   }
 
+  // Throttle password brute-force.
+  @Throttle({ default: { limit: 5, ttl: 60_000 } })
   @Public()
   @Post('super-admin/login')
   @HttpCode(HttpStatus.OK)

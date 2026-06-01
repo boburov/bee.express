@@ -85,6 +85,20 @@ export class R2Client {
     });
   }
 
+  /** Server-side upload of a buffer (used by the direct multipart endpoint). */
+  async putObject(key: string, body: Buffer, mimeType: string): Promise<void> {
+    const client = this.requireClient();
+    await client.send(
+      new PutObjectCommand({
+        Bucket: this.bucket,
+        Key: key,
+        Body: body,
+        ContentType: mimeType,
+        ContentLength: body.length,
+      }),
+    );
+  }
+
   /** Returns size + mime if the object exists. Used by `/complete` to verify. */
   async headObject(key: string): Promise<{ size: number; mimeType: string } | null> {
     const client = this.requireClient();

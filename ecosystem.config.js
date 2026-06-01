@@ -5,7 +5,9 @@ module.exports = {
       cwd: './server',
       script: 'npm',
       args: 'run start:prod',
-      env: { NODE_ENV: 'production', PORT: 4000 },
+      // Must match the port the panels' NEXT_PUBLIC_API_URL points at (and
+      // server/.env PORT). Behind nginx this is the upstream the API proxies to.
+      env: { NODE_ENV: 'production', PORT: 60000 },
     },
     {
       name: 'bot',

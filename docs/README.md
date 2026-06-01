@@ -66,6 +66,25 @@ Asosiy qoidalar:
 - [`admin-moderation-v1.md`](./admin-moderation-v1.md) — Admin paneli
   moderatsiya: /dashboard/moderation tabs (products + stores) + approve/reject
   + StoreStatus REJECTED enum qo'shildi.
+- [`courier-panel-v1.md`](./courier-panel-v1.md) — Kuryer Mini App to'liq oqimi:
+  COURIER_ASSIGNED holati + courier* maydonlar, bo'sh pool (geo + PII gating),
+  atomik accept, Oldim/Yetkazdim, daromad/tarix/profil. `/courier` modul + 6 sahifa.
+- [`courier-contracts-v1.md`](./courier-contracts-v1.md) — Do'kon↔kuryer kontrakt:
+  ariza→admin tasdiq→`courier` roli, kuryer so'rovi→sotuvchi tasdig'i, READY
+  buyurtmani kontraktli kuryerga avto-biriktirish + band bo'lsa pool fallback +
+  vaqtinchalik kontrakt. Server + kuryer/seller/admin paneli.
+- [`security-hardening-v1.md`](./security-hardening-v1.md) — Production xavfsizlik:
+  CORS allow-list, rate limiting (throttler), global exception filter, helmet,
+  super-admin parol guard, kuryer Telegram SDK + pm2 port fix.
+- [`uploads-images-v1.md`](./uploads-images-v1.md) — Rasm yuklash: direct multipart
+  `POST /uploads/direct` (lokal disk + R2), static serving, seller ImageUploader
+  (new/edit). Mahsulot yuklash zanjiri ishga tushdi.
+- [`food-service-radius-v1.md`](./food-service-radius-v1.md) — FOOD xizmat radiusi:
+  browse'da har do'kon o'z `deliveryRadiusKm` ichidagina ko'rinadi
+  (`effectiveFoodRadiusKm`), + seller xarita orqali joylashuv tanlash (Leaflet/OSM).
+- [`deployment-production.md`](./deployment-production.md) — Productionga chiqarish:
+  jarayonlar/portlar, env, pm2, nginx + HTTPS (Let's Encrypt), Telegram Mini App
+  HTTPS talabi, deploy checklist.
 - [`features.md`](./features.md) — Feature progresi va keyingi reja.
 
 ## Yangi hujjat qo'shganda nima qilish kerak

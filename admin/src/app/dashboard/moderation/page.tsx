@@ -3,6 +3,7 @@
 import { useState } from "react";
 import {
   AlertTriangle,
+  Bike,
   Check,
   MapPin,
   Package,
@@ -18,11 +19,27 @@ import { EmptyState } from "@/shared/ui/EmptyState";
 import { PageHeader } from "@/shared/ui/PageHeader";
 import { Spinner } from "@/shared/ui/Spinner";
 import { moderationApi } from "@/features/moderation/api";
-import { usePendingProducts, usePendingStores } from "@/features/moderation/hooks";
-import type { PendingProduct, PendingStore } from "@/features/moderation/types";
+import {
+  usePendingApplications,
+  usePendingProducts,
+  usePendingStores,
+} from "@/features/moderation/hooks";
+import type {
+  PendingApplication,
+  PendingProduct,
+  PendingStore,
+} from "@/features/moderation/types";
 import { formatDateTime, formatNumber, formatPhone, formatSum } from "@/shared/lib/format";
 
-type Tab = "products" | "stores";
+type Tab = "products" | "stores" | "applications";
+
+const TRANSPORT_LABELS: Record<string, string> = {
+  WALK: "Piyoda",
+  BICYCLE: "Velosiped",
+  MOTORBIKE: "Mototsikl",
+  CAR: "Mashina",
+  TRUCK: "Yuk mashinasi",
+};
 
 const PAGE_SIZE = 20;
 
@@ -32,6 +49,7 @@ export default function ModerationPage() {
 
   const productsState = usePendingProducts({ page, pageSize: PAGE_SIZE });
   const storesState = usePendingStores({ page, pageSize: PAGE_SIZE });
+  const applicationsState = usePendingApplications({ page, pageSize: PAGE_SIZE });
 
   // Per-item busy state (so one approve doesn't disable all buttons).
   const [busy, setBusy] = useState<{ id: string; action: "approve" | "reject" } | null>(null);
@@ -81,11 +99,34 @@ export default function ModerationPage() {
     finally { setBusy(null); }
   }
 
+  async function onApproveApp(a: PendingApplication) {
+    setBusy({ id: a.id, action: "approve" });
+    setActionError(null);
+    try {
+      await moderationApi.approveApplication(a.id);
+      await applicationsState.reload();
+    } catch (e) { setActionError(extractMsg(e)); }
+    finally { setBusy(null); }
+  }
+
+  async function onRejectApp(a: PendingApplication) {
+    const who = a.fullName || `${a.user?.firstName ?? ""} ${a.user?.lastName ?? ""}`.trim() || "kuryer";
+    const reason = prompt(`"${who}" arizasini rad etish sababi (kuryer ko'radi):`);
+    if (!reason || reason.length < 3) return;
+    setBusy({ id: a.id, action: "reject" });
+    setActionError(null);
+    try {
+      await moderationApi.rejectApplication(a.id, reason);
+      await applicationsState.reload();
+    } catch (e) { setActionError(extractMsg(e)); }
+    finally { setBusy(null); }
+  }
+
   return (
     <div className="flex flex-col gap-5">
       <PageHeader
         title="Moderatsiya"
-        description="Sotuvchilar yaratgan do'kon va mahsulotlarni ko'rib chiqing."
+        description="Do'kon, mahsulot va kuryer arizalarini ko'rib chiqing."
       />
 
       {/* Tabs */}
@@ -102,6 +143,13 @@ export default function ModerationPage() {
           Do'konlar
           {storesState.data && storesState.data.meta.total > 0 ? (
             <Badge tone="brand">{storesState.data.meta.total}</Badge>
+          ) : null}
+        </TabButton>
+        <TabButton active={tab === "applications"} onClick={() => { setTab("applications"); setPage(1); }}>
+          <Bike className="h-4 w-4" />
+          Kuryer arizalari
+          {applicationsState.data && applicationsState.data.meta.total > 0 ? (
+            <Badge tone="brand">{applicationsState.data.meta.total}</Badge>
           ) : null}
         </TabButton>
       </div>
@@ -124,7 +172,7 @@ export default function ModerationPage() {
           onApprove={onApproveProduct}
           onReject={onRejectProduct}
         />
-      ) : (
+      ) : tab === "stores" ? (
         <StoresList
           state={storesState}
           page={page}
@@ -132,6 +180,15 @@ export default function ModerationPage() {
           busy={busy}
           onApprove={onApproveStore}
           onReject={onRejectStore}
+        />
+      ) : (
+        <ApplicationsList
+          state={applicationsState}
+          page={page}
+          setPage={setPage}
+          busy={busy}
+          onApprove={onApproveApp}
+          onReject={onRejectApp}
         />
       )}
     </div>
@@ -384,6 +441,99 @@ function StoresList({
                   <p className="text-[11px] text-ink-faint">
                     Yaratilgan: {formatDateTime(s.createdAt)}
                   </p>
+                </div>
+              </Card>
+            </li>
+          );
+        })}
+      </ul>
+
+      <Pagination meta={data.meta} page={page} setPage={setPage} />
+    </>
+  );
+}
+
+// ─── Applications list ──────────────────────────────────────────────
+
+function ApplicationsList({
+  state, page, setPage, busy, onApprove, onReject,
+}: {
+  state: ReturnType<typeof usePendingApplications>;
+  page: number; setPage: (n: number | ((n: number) => number)) => void;
+  busy: { id: string; action: "approve" | "reject" } | null;
+  onApprove: (a: PendingApplication) => Promise<void>;
+  onReject: (a: PendingApplication) => Promise<void>;
+}) {
+  const { data, loading, error } = state;
+
+  if (loading && !data) return <div className="flex justify-center py-10"><Spinner /></div>;
+  if (error) return <p className="text-sm text-danger">{error}</p>;
+  if (!data || data.data.length === 0) {
+    return (
+      <EmptyState
+        icon={<Bike className="h-6 w-6" />}
+        title="Moderatsiyada ariza yo'q"
+        description="Foydalanuvchilar kuryer bo'lishga ariza topshirganda shu yerda paydo bo'ladi."
+      />
+    );
+  }
+
+  return (
+    <>
+      <ul className="flex flex-col gap-3">
+        {data.data.map((a) => {
+          const isBusy = busy?.id === a.id;
+          const name =
+            a.fullName ||
+            `${a.user?.firstName ?? ""} ${a.user?.lastName ?? ""}`.trim() ||
+            "—";
+          return (
+            <li key={a.id}>
+              <Card>
+                <div className="p-4 flex gap-4">
+                  <span className="inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-brand-50 text-brand-600">
+                    <Bike className="h-6 w-6" />
+                  </span>
+                  <div className="flex-1 min-w-0">
+                    <h3 className="text-sm font-semibold text-ink truncate">{name}</h3>
+                    <p className="text-xs text-ink-muted mt-0.5">
+                      {a.transportType ? (TRANSPORT_LABELS[a.transportType] ?? a.transportType) : "—"}
+                      {a.user ? (
+                        <>
+                          {" · "}
+                          <span className="font-mono">{formatPhone(a.user.phone)}</span>
+                        </>
+                      ) : null}
+                    </p>
+                    {a.note ? (
+                      <p className="text-xs text-ink-soft mt-2 line-clamp-3">{a.note}</p>
+                    ) : null}
+                    <p className="text-[11px] text-ink-faint mt-2">
+                      Topshirilgan: {formatDateTime(a.createdAt)}
+                    </p>
+                  </div>
+                  <div className="flex flex-col gap-2 shrink-0">
+                    <Button
+                      size="sm"
+                      onClick={() => onApprove(a)}
+                      loading={isBusy && busy?.action === "approve"}
+                      disabled={Boolean(busy)}
+                      leftIcon={<Check className="h-4 w-4" />}
+                    >
+                      Tasdiqlash
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => onReject(a)}
+                      loading={isBusy && busy?.action === "reject"}
+                      disabled={Boolean(busy)}
+                      leftIcon={<X className="h-4 w-4" />}
+                      className="text-danger border-red-200 hover:bg-red-50"
+                    >
+                      Rad etish
+                    </Button>
+                  </div>
                 </div>
               </Card>
             </li>

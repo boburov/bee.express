@@ -1,4 +1,5 @@
 import {
+  Bike,
   LayoutDashboard,
   Package,
   ShoppingBag,
@@ -37,6 +38,7 @@ export const sellerNav: NavSection[] = [
     title: "Operatsiya",
     items: [
       { href: "/dashboard/orders", label: "Buyurtmalar", icon: ShoppingBag },
+      { href: "/dashboard/contracts", label: "Kuryerlar", icon: Bike },
     ],
   },
   {

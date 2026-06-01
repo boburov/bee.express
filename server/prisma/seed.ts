@@ -62,6 +62,23 @@ async function seedSuperAdmin() {
     return;
   }
 
+  // In production, refuse to seed a weak/known-default password — a leaked
+  // default super-admin is a full platform compromise.
+  const WEAK = new Set([
+    "ChangeMe!2026",
+    "changeme",
+    "admin",
+    "password",
+    "12345678",
+    "superadmin",
+  ]);
+  if (process.env.NODE_ENV === "production" && (password.length < 12 || WEAK.has(password))) {
+    throw new Error(
+      "[seed] SUPERADMIN_PASSWORD productionda kuchsiz/standart bo'lishi mumkin emas " +
+        "(kamida 12 belgi va default qiymat emas).",
+    );
+  }
+
   const existing = await prisma.superAdmin.findUnique({ where: { username } });
   if (existing) {
     console.log(`[seed] SuperAdmin "${username}" already exists — skipping.`);

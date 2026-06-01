@@ -11,11 +11,12 @@ import { Spinner } from "@/shared/ui/Spinner";
 import { flattenCategories, useCategoriesTree } from "@/features/categories/api";
 import { sellerProductsApi } from "@/features/products/api";
 import type { CreateProductDto } from "@/features/products/types";
+import { ImageUploader, type UploaderItem } from "@/features/uploads/ImageUploader";
 
 /**
- * Single-form create wizard — title, category, description + optional initial
- * offer (price + stock). Backend creates a default variant; the seller can
- * add image uploads from the edit page later.
+ * Single-form create wizard — title, category, ≥1 image, description + optional
+ * initial offer (price + stock). Backend creates a default variant. Images are
+ * uploaded directly (POST /uploads/direct) and passed as imageUploadIds.
  *
  * "Wizard" is a soft term — TZ §19.2 spec calls for master search first but
  * v1 just lets the seller create master products directly. Search-existing
@@ -31,6 +32,7 @@ export default function NewProductPage() {
   const [description, setDescription] = useState("");
   const [price, setPrice] = useState("");
   const [stock, setStock] = useState("");
+  const [images, setImages] = useState<UploaderItem[]>([]);
 
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -45,6 +47,10 @@ export default function NewProductPage() {
     }
     if (!categoryId) {
       setError("Kategoriyani tanlang");
+      return;
+    }
+    if (images.length === 0) {
+      setError("Kamida bitta rasm yuklang");
       return;
     }
 
@@ -66,6 +72,7 @@ export default function NewProductPage() {
       description: description.trim() || undefined,
       price: priceNum,
       stock: stockNum,
+      imageUploadIds: images.map((i) => i.id),
     };
 
     setSubmitting(true);
@@ -146,6 +153,16 @@ export default function NewProductPage() {
                 className="w-full rounded-md border border-line bg-surface px-3 py-2 text-sm text-ink placeholder:text-ink-faint focus:outline-none focus:border-brand-300 focus:ring-2 focus:ring-brand-200"
               />
             </div>
+          </div>
+        </Card>
+
+        <Card>
+          <div className="p-4 border-b border-line-soft">
+            <h3 className="text-sm font-semibold text-ink">Rasmlar</h3>
+            <p className="text-xs text-ink-muted mt-1">Kamida bitta rasm majburiy.</p>
+          </div>
+          <div className="p-4">
+            <ImageUploader value={images} onChange={setImages} purpose="PRODUCT_IMAGE" />
           </div>
         </Card>
 

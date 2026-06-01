@@ -1,12 +1,24 @@
 "use client";
 
 import { FormEvent, useState } from "react";
+import dynamic from "next/dynamic";
 import { AlertTriangle, MapPin } from "lucide-react";
 import { Button } from "@/shared/ui/Button";
 import { Card } from "@/shared/ui/Card";
 import { Input } from "@/shared/ui/Input";
 import { storeApi } from "./api";
 import type { CreateStoreDto, Store } from "./types";
+
+// Leaflet is browser-only — load the picker client-side, never during SSR.
+const LocationPicker = dynamic(
+  () => import("./LocationPicker").then((m) => m.LocationPicker),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="h-70 w-full rounded-xl bg-surface-3 animate-pulse" />
+    ),
+  },
+);
 
 interface StoreFormProps {
   initial?: Store | null;
@@ -239,9 +251,19 @@ export function StoreForm({ initial, onSaved }: StoreFormProps) {
           >
             <MapPin className="h-3.5 w-3.5" /> Hozirgi joylashuvni olish
           </button>
+          <LocationPicker
+            lat={numOrUndef(latitude) ?? null}
+            lng={numOrUndef(longitude) ?? null}
+            radiusKm={numOrUndef(deliveryRadiusKm) ?? null}
+            onChange={(la, ln) => {
+              setLatitude(la.toFixed(6));
+              setLongitude(ln.toFixed(6));
+            }}
+          />
           <p className="text-[11px] text-ink-faint">
-            FOOD kategoriyasidagi xaridorlar do'koningizni faqat radius ichida ko'radi.
-            Yetkazib berish narxi shu koordinatadan masofa bo'yicha hisoblanadi.
+            {"Xaritani bosib yoki nishonni sudrab joylashuvni belgilang. To'q sariq doira — «Yetkazib berish» bo'limidagi "}
+            <strong>radius</strong>
+            {" bo'yicha chiziladi. FOOD kategoriyasidagi xaridorlar do'koningizni faqat shu radius ichida ko'radi."}
           </p>
         </div>
       </Card>
@@ -261,7 +283,7 @@ export function StoreForm({ initial, onSaved }: StoreFormProps) {
             value={deliveryRadiusKm}
             onChange={(e) => setDeliveryRadiusKm(e.target.value)}
             inputMode="numeric"
-            hint="Faqat shu masofada xaridorlarga ko'rinasiz"
+            hint="Xaritadagi doira shu radiusni ko'rsatadi — faqat shu masofadagi FOOD xaridorlarga ko'rinasiz"
           />
           <Input
             label="Asosiy narx (so'm)"

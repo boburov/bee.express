@@ -82,9 +82,15 @@ model User {
   notifications   Notification[]
 
   // Cart & Orders v1
-  cart      Cart?
-  addresses Address[]
-  orders    Order[]
+  cart          Cart?
+  addresses     Address[]
+  orders        Order[]   @relation("CustomerOrders")
+  // Orders this user is delivering (role = courier).
+  courierOrders Order[]   @relation("CourierOrders")
+
+  // Courier onboarding + store contracts (role = courier).
+  courierApplication CourierApplication?
+  courierContracts   CourierContract[]   @relation("CourierContracts")
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -494,11 +500,12 @@ model Store {
   rejectionReason String?   @db.Text
   approvedAt      DateTime?
 
-  owner    User             @relation(fields: [ownerId], references: [id])
-  offers   SellerOffer[]
-  reviews  Review[]
-  requests ProductRequest[]
-  orders   Order[]
+  owner     User              @relation(fields: [ownerId], references: [id])
+  offers    SellerOffer[]
+  reviews   Review[]
+  requests  ProductRequest[]
+  orders    Order[]
+  contracts CourierContract[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -817,8 +824,9 @@ enum OrderStatus {
   PENDING // submitted, awaiting seller accept
   ACCEPTED // seller acknowledged
   PREPARING // being prepared / packed
-  READY // ready for pickup / handoff to courier
-  ON_WAY // courier picked up, in transit
+  READY // ready for pickup — visible to couriers in the available pool
+  COURIER_ASSIGNED // a courier claimed it; heading to the store to pick up
+  ON_WAY // courier picked up, in transit to the customer
   DELIVERED // completed
   CANCELLED // cancelled by customer
   REJECTED // declined by seller
@@ -838,6 +846,14 @@ model Order {
   storeId   String
   addressId String? // nullable — address may be deleted, but snapshot stays
 
+  // Courier — set once a courier claims a READY order. Null while in the pool.
+  // onDelete: SetNull keeps the order (and its history) intact if a courier
+  // account is removed. `courierEarning` is the courier's cut of the delivery
+  // fee, snapshotted at assignment so later fee-formula changes don't rewrite
+  // past payouts.
+  courierId      String?
+  courierEarning Decimal? @db.Decimal(12, 2)
+
   status        OrderStatus   @default(PENDING)
   paymentMethod PaymentMethod @default(COD)
 
@@ -855,11 +871,14 @@ model Order {
   notes           String? @db.Text // buyer's note to the seller
   rejectionReason String? @db.Text // when status = REJECTED / CANCELLED
 
-  acceptedAt  DateTime?
-  deliveredAt DateTime?
-  cancelledAt DateTime?
+  acceptedAt        DateTime?
+  courierAssignedAt DateTime?
+  pickedUpAt        DateTime?
+  deliveredAt       DateTime?
+  cancelledAt       DateTime?
 
-  user    User                 @relation(fields: [userId], references: [id])
+  user    User                 @relation("CustomerOrders", fields: [userId], references: [id])
+  courier User?                @relation("CourierOrders", fields: [courierId], references: [id], onDelete: SetNull)
   store   Store                @relation(fields: [storeId], references: [id])
   address Address?             @relation(fields: [addressId], references: [id], onDelete: SetNull)
   items   OrderItem[]
@@ -871,6 +890,8 @@ model Order {
   @@index([userId, createdAt])
   @@index([storeId, status, createdAt])
   @@index([status, createdAt])
+  // Available-pool scan (status=READY, courierId=null) + a courier's own orders.
+  @@index([courierId, status, createdAt])
 }
 
 model OrderItem {
@@ -907,4 +928,82 @@ model OrderStatusHistory {
   createdAt DateTime @default(now())
 
   @@index([orderId, createdAt])
+}
+
+// ═════════════════════════════════════════════════════════════
+// Courier contracts v1 — onboarding + store↔courier dispatch.
+//
+// Flow (see docs/courier-contracts-v1.md):
+//   1. A person applies to become a courier (CourierApplication).
+//   2. SuperAdmin approves → the User is granted the `courier` role.
+//   3. The courier requests a contract with a Store (CourierContract).
+//   4. The seller approves it (PENDING → ACTIVE).
+//   5. When that store's order hits READY, DispatchService auto-assigns it to
+//      one available contracted courier. If none are free, the order falls back
+//      to the open pool; the pool courier who claims it gets a TEMPORARY
+//      contract so future orders can route to them too.
+// ═════════════════════════════════════════════════════════════
+
+enum CourierApplicationStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+// One application per User (re-applying after a reject flips it back to PENDING).
+// The User's role is granted on approval — until then the applicant has no
+// `courier` role and can only reach the onboarding endpoints + /apply screen.
+model CourierApplication {
+  id     String                   @id @default(cuid())
+  userId String                   @unique
+  user   User                     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  status CourierApplicationStatus @default(PENDING)
+
+  // Free-form onboarding data — vehicle + optional verification docs.
+  transportType String? // "bike" | "car" | "foot" | "scooter"
+  fullName      String?
+  note          String? @db.Text
+  documentUrls  Json    @default("[]") // array of READY UploadedFile URLs (passport / licence)
+
+  rejectionReason String?   @db.Text
+  reviewedAt      DateTime?
+  reviewedBy      String? // superAdmin id
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([status, createdAt])
+}
+
+enum CourierContractStatus {
+  PENDING // courier requested, awaiting seller
+  ACTIVE // seller approved — eligible for auto-dispatch
+  REJECTED // seller declined
+  REVOKED // ended by seller or courier
+}
+
+model CourierContract {
+  id        String                @id @default(cuid())
+  courierId String
+  courier   User                  @relation("CourierContracts", fields: [courierId], references: [id], onDelete: Cascade)
+  storeId   String
+  store     Store                 @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  status    CourierContractStatus @default(PENDING)
+
+  // Temporary contracts are auto-created by the pool fallback (a non-contracted
+  // courier claimed a READY order from this store). They expire so the loose
+  // association doesn't linger forever.
+  isTemporary Boolean   @default(false)
+  expiresAt   DateTime?
+
+  message         String?   @db.Text // courier's note when requesting
+  rejectionReason String?   @db.Text
+  approvedAt      DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([courierId, storeId]) // one contract per courier↔store pair
+  @@index([storeId, status]) // dispatch: a store's active couriers
+  @@index([courierId, status]) // a courier's contracts
 }

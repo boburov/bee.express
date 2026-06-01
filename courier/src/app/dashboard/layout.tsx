@@ -11,6 +11,7 @@ import { hasCourierRole, useAuthStore } from "@/lib/auth-store";
 const nav = [
   { href: "/dashboard", label: "Boshqaruv" },
   { href: "/dashboard/deliveries", label: "Yetkazmalar" },
+  { href: "/dashboard/stores", label: "Do'konlar" },
   { href: "/dashboard/history", label: "Tarix" },
   { href: "/dashboard/earnings", label: "Daromad" },
   { href: "/dashboard/profile", label: "Profil" },
@@ -35,20 +36,16 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       api
         .get("/auth/me")
         .then((r) => {
-          if (!hasCourierRole(r.data)) {
-            clear();
-            router.replace("/login");
-            return;
-          }
           setMe(r.data);
+          // Authenticated but not yet a courier → onboarding, not logout.
+          if (!hasCourierRole(r.data)) router.replace("/apply");
         })
         .catch(() => {
           clear();
           router.replace("/login");
         });
     } else if (!hasCourierRole(me)) {
-      clear();
-      router.replace("/login");
+      router.replace("/apply");
     }
   }, [hydrated, accessToken, me, setMe, clear, router]);
 

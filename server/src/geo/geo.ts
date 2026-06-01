@@ -4,6 +4,33 @@ import type { Prisma } from '@prisma/client';
 const EARTH_RADIUS_KM = 6371;
 
 /**
+ * Final fallback FOOD service radius (km) — used when neither the store nor its
+ * category set `deliveryRadiusKm`. Keeps the historical 10 km default.
+ */
+export const DEFAULT_FOOD_RADIUS_KM = 10;
+
+/**
+ * Hard cap on a store's service radius — mirrors CreateStoreDto `@Max(100)`.
+ * When a buyer supplies no `radiusKm`, we must scan at least this far in the
+ * bounding-box pre-filter so we don't drop a far store whose own (large) radius
+ * still reaches the buyer.
+ */
+export const MAX_FOOD_RADIUS_KM = 100;
+
+/**
+ * The radius (km) within which a FOOD store actually serves a buyer. The
+ * store's own override wins, then the category default, then the global
+ * fallback. This is the single gate for "do I see this store at all?" — applied
+ * identically at browse time (list/nearby) and on the product detail page.
+ */
+export function effectiveFoodRadiusKm(
+  storeRadiusKm: number | null | undefined,
+  categoryRadiusKm: number | null | undefined,
+): number {
+  return storeRadiusKm ?? categoryRadiusKm ?? DEFAULT_FOOD_RADIUS_KM;
+}
+
+/**
  * Great-circle distance in **kilometres** between two WGS-84 points.
  * Off-by-tens-of-metres for typical city deliveries; cheap and dependency-free.
  *

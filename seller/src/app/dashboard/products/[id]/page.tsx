@@ -12,6 +12,7 @@ import { Spinner } from "@/shared/ui/Spinner";
 import { sellerOffersApi, sellerProductsApi } from "@/features/products/api";
 import { useSellerProduct } from "@/features/products/hooks";
 import { PRODUCT_STATUS_META } from "@/features/products/status";
+import { ImageUploader, type UploaderItem } from "@/features/uploads/ImageUploader";
 import { formatSum } from "@/shared/lib/format";
 
 export default function SellerProductDetailPage() {
@@ -26,6 +27,11 @@ export default function SellerProductDetailPage() {
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
   const [removing, setRemoving] = useState(false);
+
+  // Newly-uploaded images, not yet attached to the product.
+  const [newImages, setNewImages] = useState<UploaderItem[]>([]);
+  const [savingImages, setSavingImages] = useState(false);
+  const [imgError, setImgError] = useState<string | null>(null);
 
   // Offer inline state — one per variant.
   // Stock is editable for the seller; price too. isActive toggle for visibility.
@@ -82,6 +88,25 @@ export default function SellerProductDetailPage() {
       setSaveError(Array.isArray(msg) ? msg[0] : msg || "Saqlanmadi");
     } finally {
       setSaving(false);
+    }
+  }
+
+  async function saveImages() {
+    if (!product || newImages.length === 0) return;
+    setSavingImages(true);
+    setImgError(null);
+    try {
+      await sellerProductsApi.update(product.id, {
+        imageUploadIds: newImages.map((i) => i.id),
+      });
+      setNewImages([]);
+      await reload();
+    } catch (err) {
+      const e = err as { response?: { data?: { message?: string | string[] } } };
+      const msg = e.response?.data?.message;
+      setImgError(Array.isArray(msg) ? msg[0] : msg || "Rasmlar saqlanmadi");
+    } finally {
+      setSavingImages(false);
     }
   }
 
@@ -279,12 +304,12 @@ export default function SellerProductDetailPage() {
         </ul>
       </Card>
 
-      {/* Images placeholder — R2 wired in a separate slice */}
+      {/* Images */}
       <Card>
         <div className="p-4 border-b border-line-soft">
           <h3 className="text-sm font-semibold text-ink">Rasmlar</h3>
         </div>
-        <div className="p-4">
+        <div className="p-4 flex flex-col gap-4">
           {product.images.length > 0 ? (
             <ul className="grid grid-cols-3 sm:grid-cols-5 gap-3">
               {product.images.map((img) => (
@@ -297,9 +322,25 @@ export default function SellerProductDetailPage() {
           ) : (
             <div className="flex items-center gap-3 text-sm text-ink-muted">
               <ShoppingBag className="h-5 w-5" />
-              <span>Rasm yo'q. Image upload tez orada (R2 sozlangach).</span>
+              <span>Hali rasm yo&apos;q. Quyidan yangi rasm qo&apos;shing.</span>
             </div>
           )}
+
+          <div className="border-t border-line-soft pt-4">
+            <p className="text-sm font-medium text-ink mb-2">Yangi rasm qo&apos;shish</p>
+            <ImageUploader value={newImages} onChange={setNewImages} purpose="PRODUCT_IMAGE" />
+            {imgError ? <p className="text-xs text-danger mt-2">{imgError}</p> : null}
+            {newImages.length > 0 ? (
+              <Button
+                className="mt-3"
+                size="sm"
+                loading={savingImages}
+                onClick={saveImages}
+              >
+                {newImages.length} ta rasmni saqlash
+              </Button>
+            ) : null}
+          </div>
         </div>
       </Card>
 

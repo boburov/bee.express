@@ -5,11 +5,18 @@ import {
   ServiceUnavailableException,
 } from '@nestjs/common';
 import { randomBytes } from 'node:crypto';
-import type { UploadedFile } from '@prisma/client';
+import { mkdir, writeFile } from 'node:fs/promises';
+import { dirname, join } from 'node:path';
+import { UploadPurpose, type UploadedFile } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { PresignUploadDto } from './dto/presign-upload.dto';
 import { R2Client } from './r2.client';
-import { UPLOAD_POLICIES, extensionFor } from './uploads.config';
+import {
+  UPLOAD_POLICIES,
+  extensionFor,
+  localUploadsDir,
+  uploadsPublicBaseUrl,
+} from './uploads.config';
 
 export interface PresignResult {
   uploadId: string;
@@ -88,6 +95,62 @@ export class UploadsService {
       },
       expiresInSeconds,
     };
+  }
+
+  /**
+   * Direct multipart upload. The browser POSTs the file to us; we store it
+   * (R2 if configured, otherwise local disk under UPLOADS_DIR served at
+   * /uploads-static) and return a READY upload row in one round-trip — no
+   * presign dance. This is the path the seller image-uploader uses.
+   */
+  async directUpload(opts: {
+    buffer: Buffer;
+    mimeType: string;
+    size: number;
+    purpose: UploadPurpose;
+    uploaderId: string;
+  }): Promise<CompletedUpload> {
+    const policy = UPLOAD_POLICIES[opts.purpose];
+    if (!policy) throw new BadRequestException("Noma'lum upload turi");
+    if (!policy.mimes.includes(opts.mimeType)) {
+      throw new BadRequestException(
+        `Ruxsat etilmagan fayl turi. Qabul qilinadi: ${policy.mimes.join(', ')}`,
+      );
+    }
+    if (opts.size > policy.maxBytes) {
+      throw new BadRequestException(
+        `Fayl juda katta. Maksimal: ${(policy.maxBytes / (1024 * 1024)).toFixed(0)} MB`,
+      );
+    }
+
+    const random = randomBytes(12).toString('hex');
+    const key = `${policy.prefix}/${random}.${extensionFor(opts.mimeType)}`;
+
+    let url: string;
+    if (this.r2.configured) {
+      await this.r2.putObject(key, opts.buffer, opts.mimeType);
+      url = this.r2.publicUrlFor(key);
+    } else {
+      // Local-disk fallback — works with zero external setup.
+      const dest = join(localUploadsDir(), key);
+      await mkdir(dirname(dest), { recursive: true });
+      await writeFile(dest, opts.buffer);
+      url = `${uploadsPublicBaseUrl()}/uploads-static/${key}`;
+    }
+
+    const row = await this.prisma.uploadedFile.create({
+      data: {
+        key,
+        mimeType: opts.mimeType,
+        size: opts.size,
+        status: 'READY',
+        readyAt: new Date(),
+        purpose: opts.purpose,
+        uploaderId: opts.uploaderId,
+        url,
+      },
+    });
+    return this.serialize(row);
   }
 
   async complete(id: string, uploaderId: string): Promise<CompletedUpload> {

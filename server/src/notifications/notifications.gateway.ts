@@ -13,6 +13,7 @@ import {
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 import type { JwtPayload } from '../auth/types';
+import { corsOptions } from '../common/cors';
 import { NotificationEvents, NotificationPushPayload } from './types';
 
 /**
@@ -29,7 +30,7 @@ import { NotificationEvents, NotificationPushPayload } from './types';
  * + auth and does not touch Prisma.
  */
 @WebSocketGateway({
-  cors: { origin: true, credentials: true },
+  cors: corsOptions(),
   path: '/socket.io',
 })
 export class NotificationsGateway

@@ -9,6 +9,7 @@
 **.eslintcache**
 **.prettiercache**
 **coverage**
+**uploads-data**
 **logs**
 **npm-debug.log**
 *.claude

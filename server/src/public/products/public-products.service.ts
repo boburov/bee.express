@@ -5,7 +5,10 @@ import {
   boundingBox,
   computeDeliveryFee,
   decimalToNumber,
+  DEFAULT_FOOD_RADIUS_KM,
+  effectiveFoodRadiusKm,
   haversineKm,
+  MAX_FOOD_RADIUS_KM,
 } from '../../geo/geo';
 import { PublicListProductsQueryDto } from './dto/list-products-query.dto';
 
@@ -67,13 +70,21 @@ export class PublicProductsService {
     }
 
     // Build the candidate store set for the user's location.
-    // For FOOD we restrict to stores within radius (bounding box pre-filter).
+    // For FOOD a store is shown ONLY when the buyer sits inside that store's
+    // *own* service radius (seller override → category default → fallback).
+    // MARKETPLACE ships everywhere, so geo only feeds distance/fee display.
     let nearbyStoreIds: string[] | null = null;
     const distanceByStore = new Map<string, number>();
 
     if (geoProvided) {
-      const radiusKm = query.radiusKm ?? category?.deliveryRadiusKm ?? 10;
-      const bbox = boundingBox(query.lat!, query.lng!, radiusKm);
+      const isFood = category?.type === 'FOOD';
+
+      // Bounding-box scan size. When the buyer caps the search with `radiusKm`
+      // we honour it; otherwise (FOOD) we scan as far as any store's own radius
+      // could legally reach so we don't drop a far store that still covers them.
+      const scanRadiusKm =
+        query.radiusKm ?? (isFood ? MAX_FOOD_RADIUS_KM : DEFAULT_FOOD_RADIUS_KM);
+      const bbox = boundingBox(query.lat!, query.lng!, scanRadiusKm);
       const candidates = await this.prisma.store.findMany({
         where: {
           status: 'ACTIVE',
@@ -81,23 +92,33 @@ export class PublicProductsService {
           latitude: { gte: bbox.latMin, lte: bbox.latMax },
           longitude: { gte: bbox.lngMin, lte: bbox.lngMax },
         },
-        select: { id: true, latitude: true, longitude: true },
+        select: { id: true, latitude: true, longitude: true, deliveryRadiusKm: true },
       });
+
       const within: string[] = [];
       for (const s of candidates) {
         const lat = decimalToNumber(s.latitude);
         const lng = decimalToNumber(s.longitude);
         if (lat === null || lng === null) continue;
         const d = haversineKm({ lat: query.lat!, lng: query.lng! }, { lat, lng });
-        if (d <= radiusKm) {
+        if (d > scanRadiusKm) continue;
+        distanceByStore.set(s.id, d);
+
+        if (isFood) {
+          // Seller's radius is the gate — a buyer outside it can't see the store.
+          const serviceRadius = effectiveFoodRadiusKm(
+            s.deliveryRadiusKm,
+            category?.deliveryRadiusKm,
+          );
+          if (d <= serviceRadius) within.push(s.id);
+        } else {
           within.push(s.id);
-          distanceByStore.set(s.id, d);
         }
       }
       nearbyStoreIds = within;
 
       // FOOD with empty nearby = no result fast-path.
-      if (category?.type === 'FOOD' && within.length === 0) {
+      if (isFood && within.length === 0) {
         return { items: [], total: 0, page, pageSize };
       }
     }
@@ -290,7 +311,6 @@ export class PublicProductsService {
       baseFee: decimalToNumber(product.category.deliveryBaseFee),
       perKmFee: decimalToNumber(product.category.deliveryPerKmFee),
     };
-    const radiusKm = product.category.deliveryRadiusKm ?? 10;
 
     const variants = product.variants.map((v) => ({
       ...v,
@@ -303,7 +323,11 @@ export class PublicProductsService {
           distanceKm = haversineKm(geo, { lat: sLat, lng: sLng });
           if (
             product.category.type === 'FOOD' &&
-            distanceKm > (o.store.deliveryRadiusKm ?? radiusKm)
+            distanceKm >
+              effectiveFoodRadiusKm(
+                o.store.deliveryRadiusKm,
+                product.category.deliveryRadiusKm,
+              )
           ) {
             // FOOD offer outside radius — exclude by signalling no delivery fee.
             return {

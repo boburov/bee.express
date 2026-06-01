@@ -34,6 +34,21 @@ export const UPLOAD_POLICIES: Record<UploadPurpose, PurposePolicy> = {
   OTHER:         { mimes: IMAGE_MIMES, maxBytes: 4 * MB, prefix: 'misc' },
 };
 
+/** Local-disk root for uploads when R2 is not configured. Served at /uploads-static. */
+export function localUploadsDir(): string {
+  return process.env.UPLOADS_DIR ?? `${process.cwd()}/uploads-data`;
+}
+
+/**
+ * Absolute base URL prefixed onto locally-stored files so the (cross-origin)
+ * panels can load them via <img>. Defaults to the API origin on this host.
+ */
+export function uploadsPublicBaseUrl(): string {
+  const explicit = process.env.UPLOADS_PUBLIC_BASE_URL;
+  if (explicit) return explicit.replace(/\/+$/, '');
+  return `http://localhost:${process.env.PORT ?? 60000}`;
+}
+
 /** Map a mime type to a file extension we'll use in the R2 key. */
 export function extensionFor(mime: string): string {
   switch (mime) {

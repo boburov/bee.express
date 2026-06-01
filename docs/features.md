@@ -24,8 +24,9 @@
 | ✅ | Admin panel | `/admin` — Next.js 16, super admin auth |
 | ✅ | Shared Prisma schema | bot symlink qiladi → server `prisma/schema.prisma` |
 | ✅ | Seller panel | `/seller` alohida Next.js app, FSD, premium dizayn, phone OTP + rol-gating |
-| ⬜ | Courier panel | TZ'da bor edi, ammo Uzum-style'da odatda tizimning ichida |
-| ⬜ | File/image hosting | Hozir lokal, keyin S3/Cloudflare R2 |
+| ✅ | Courier panel | `/courier` alohida Next.js app — bo'sh pool, accept, Oldim/Yetkazdim, daromad/tarix/profil. `docs/courier-panel-v1.md` |
+| ✅ | Courier contracts | Do'kon↔kuryer kontrakt: ariza→admin tasdiq→`courier` roli, sotuvchi tasdig'i, READY→avto-biriktirish + pool fallback + vaqtinchalik kontrakt. `docs/courier-contracts-v1.md` |
+| ✅ | File/image hosting | Direct upload `POST /uploads/direct` — lokal disk (default) yoki R2 (sozlansa). `docs/uploads-images-v1.md` |
 | ⬜ | CI/CD | Yo'q — keyingi bosqichda |
 | ⬜ | Production deployment | Yo'q — Docker + reverse proxy kerak |
 | ⬜ | Logging/monitoring | Faqat console — Sentry/Datadog kerak |

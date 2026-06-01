@@ -7,7 +7,7 @@ import { Card, CardBody, CardDescription, CardHeader, CardTitle } from "@/compon
 import { Input } from "@/components/ui/Input";
 import { Logo } from "@/components/Logo";
 import { api } from "@/lib/api";
-import { COURIER_ROLE_SLUG, hasCourierRole, useAuthStore } from "@/lib/auth-store";
+import { hasCourierRole, useAuthStore } from "@/lib/auth-store";
 import { env } from "@/lib/env";
 import { formatPhone, normalizePhoneInput } from "@/lib/phone";
 
@@ -21,7 +21,6 @@ export default function LoginPage() {
   const accessToken = useAuthStore((s) => s.accessToken);
   const setTokens = useAuthStore((s) => s.setTokens);
   const setMe = useAuthStore((s) => s.setMe);
-  const clear = useAuthStore((s) => s.clear);
 
   const [step, setStep] = useState<Step>("phone");
   const [phone, setPhone] = useState("");
@@ -82,18 +81,10 @@ export default function LoginPage() {
         expiresIn: data.expiresIn,
       });
       const me = await api.get("/auth/me");
-      if (!hasCourierRole(me.data)) {
-        try {
-          await api.post("/auth/logout", { refreshToken: data.refreshToken });
-        } catch {
-          /* best-effort */
-        }
-        clear();
-        setError(`Bu hisob ${COURIER_ROLE_SLUG} roliga ega emas. Administrator bilan bog'laning.`);
-        return;
-      }
       setMe(me.data);
-      router.replace("/dashboard");
+      // Couriers go straight to work; everyone else lands on the application
+      // screen where they can apply to become a courier.
+      router.replace(hasCourierRole(me.data) ? "/dashboard" : "/apply");
     } catch (err) {
       const msg =
         (err as { response?: { data?: { message?: string } } }).response?.data?.message ??
@@ -206,7 +197,8 @@ export default function LoginPage() {
         </Card>
 
         <p className="mt-6 text-center text-xs text-ink-muted">
-          Faqat kuryer roli berilgan hisoblar kirishi mumkin. Hisob yo&apos;qmi? Avval{" "}
+          Kuryer bo&apos;lmoqchimisiz? Kiring va ariza topshiring — admin tasdiqlagach panel
+          ochiladi. Hisob yo&apos;qmi? Avval{" "}
           <a
             href={`https://t.me/${BOT_USERNAME}`}
             target="_blank"
@@ -215,7 +207,7 @@ export default function LoginPage() {
           >
             @{BOT_USERNAME}
           </a>{" "}
-          botga /start bosib ro&apos;yxatdan o&apos;ting va administratorga murojaat qiling.
+          botga /start bosib ro&apos;yxatdan o&apos;ting.
         </p>
       </div>
     </main>

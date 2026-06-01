@@ -1,6 +1,11 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
-import { boundingBox, decimalToNumber, haversineKm } from '../../geo/geo';
+import {
+  boundingBox,
+  decimalToNumber,
+  effectiveFoodRadiusKm,
+  haversineKm,
+} from '../../geo/geo';
 
 @Injectable()
 export class PublicStoresService {
@@ -27,6 +32,7 @@ export class PublicStoresService {
         longitude: true,
         deliveryEtaMinutes: true,
         deliveryBaseFee: true,
+        deliveryRadiusKm: true,
       },
     });
 
@@ -36,7 +42,10 @@ export class PublicStoresService {
         const lng = decimalToNumber(s.longitude);
         if (lat === null || lng === null) return null;
         const d = haversineKm({ lat: opts.lat, lng: opts.lng }, { lat, lng });
+        // Buyer's "near me" cap AND the store's own service radius must hold —
+        // a store that won't deliver this far should not surface.
         if (d > opts.radiusKm) return null;
+        if (d > effectiveFoodRadiusKm(s.deliveryRadiusKm, null)) return null;
         return {
           id: s.id,
           slug: s.slug,

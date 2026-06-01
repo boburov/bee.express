@@ -77,3 +77,23 @@ export interface PendingStore {
   } | null;
   createdAt: string;
 }
+
+// ─── Courier application moderation ──────────────────────────────────
+
+export interface PendingApplication {
+  id: string;
+  status: "PENDING" | "APPROVED" | "REJECTED";
+  transportType: string | null;
+  fullName: string | null;
+  note: string | null;
+  documentUrls: string[];
+  rejectionReason: string | null;
+  reviewedAt: string | null;
+  createdAt: string;
+  user: {
+    id: string;
+    firstName: string | null;
+    lastName: string | null;
+    phone: string;
+  } | null;
+}

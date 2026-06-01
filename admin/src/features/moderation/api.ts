@@ -1,5 +1,10 @@
 import { api } from "@/shared/auth/api";
-import type { Paginated, PendingProduct, PendingStore } from "./types";
+import type {
+  Paginated,
+  PendingApplication,
+  PendingProduct,
+  PendingStore,
+} from "./types";
 
 export interface ListQuery {
   page?: number;
@@ -36,5 +41,22 @@ export const moderationApi = {
   },
   rejectStore: async (id: string, reason: string): Promise<void> => {
     await api.post(`/admin/moderation/stores/${id}/reject`, { reason });
+  },
+
+  // Courier applications
+  listApplications: async (
+    params: ListQuery = {},
+  ): Promise<Paginated<PendingApplication>> => {
+    const { data } = await api.get<Paginated<PendingApplication>>(
+      "/admin/moderation/courier-applications",
+      { params },
+    );
+    return data;
+  },
+  approveApplication: async (id: string): Promise<void> => {
+    await api.post(`/admin/moderation/courier-applications/${id}/approve`);
+  },
+  rejectApplication: async (id: string, reason: string): Promise<void> => {
+    await api.post(`/admin/moderation/courier-applications/${id}/reject`, { reason });
   },
 };
