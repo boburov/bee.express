@@ -13,7 +13,6 @@ export const metadata: Metadata = {
   title: "BeeExpress",
   description:
     "BeeExpress — yetkazib berish va marketplace platformasi. Telegram Mini App.",
-  icons: { icon: "/logo.png" },
 };
 
 export const viewport: Viewport = {

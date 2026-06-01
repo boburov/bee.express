@@ -12,7 +12,6 @@ const inter = Inter({
 export const metadata: Metadata = {
   title: "BeeExpress Courier",
   description: "BeeExpress kuryer paneli",
-  icons: { icon: "/logo.png" },
 };
 
 export const viewport: Viewport = {

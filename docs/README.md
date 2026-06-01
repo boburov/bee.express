@@ -85,6 +85,9 @@ Asosiy qoidalar:
 - [`deployment-production.md`](./deployment-production.md) — Productionga chiqarish:
   jarayonlar/portlar, env, pm2, nginx + HTTPS (Let's Encrypt), Telegram Mini App
   HTTPS talabi, deploy checklist.
+- [`brand-logo-favicon.md`](./brand-logo-favicon.md) — Yagona bee logosi: favicon
+  (`favicon.ico`/`icon.png`/`apple-icon.png` file-convention) + sidebar/topbar/login
+  header logosi to'rt panelda; courier emoji → haqiqiy logo.
 - [`features.md`](./features.md) — Feature progresi va keyingi reja.
 
 ## Yangi hujjat qo'shganda nima qilish kerak

@@ -1,16 +1,28 @@
+import Image from "next/image";
 import { cn } from "@/lib/cn";
 
-export function Logo({ className, size = 32 }: { className?: string; size?: number }) {
+interface LogoProps {
+  className?: string;
+  size?: number;
+  withWordmark?: boolean;
+}
+
+export function Logo({ className, size = 32, withWordmark = true }: LogoProps) {
   return (
-    <span className={cn("inline-flex items-center gap-2 font-semibold text-ink", className)}>
-      <span
-        aria-hidden
-        className="inline-flex items-center justify-center rounded-md bg-ink text-bee-500"
-        style={{ width: size, height: size, fontSize: size * 0.55 }}
-      >
-        🐝
-      </span>
-      <span className="tracking-tight">BeeExpress</span>
+    <span className={cn("inline-flex items-center gap-2.5 text-ink", className)}>
+      <Image
+        src="/logo.png"
+        alt="BeeExpress"
+        width={size}
+        height={size}
+        priority
+        className="rounded-lg object-contain"
+      />
+      {withWordmark ? (
+        <span className="font-semibold tracking-tight">
+          Bee<span className="text-brand-500">Express</span>
+        </span>
+      ) : null}
     </span>
   );
 }

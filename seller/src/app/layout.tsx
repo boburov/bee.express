@@ -11,7 +11,6 @@ const inter = Inter({
 export const metadata: Metadata = {
   title: "BeeExpress — Sotuvchi paneli",
   description: "BeeExpress sotuvchi paneli — mahsulot, buyurtma va moliya boshqaruvi.",
-  icons: { icon: "/logo.png" },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

@@ -12,7 +12,6 @@ export const metadata: Metadata = {
   title: "BeeExpress — Admin paneli",
   description:
     "BeeExpress platformasini boshqaruv markazi: sotuvchilar, kuryerlar, buyurtmalar, katalog.",
-  icons: { icon: "/logo.png" },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
