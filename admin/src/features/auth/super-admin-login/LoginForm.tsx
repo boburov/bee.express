@@ -2,7 +2,7 @@
 
 import { FormEvent, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Lock, User as UserIcon } from "lucide-react";
+import { Eye, EyeOff, Lock, User as UserIcon } from "lucide-react";
 import { Button } from "@/shared/ui/Button";
 import { Card, CardBody, CardDescription, CardHeader, CardTitle } from "@/shared/ui/Card";
 import { Input } from "@/shared/ui/Input";
@@ -22,6 +22,7 @@ export function SuperAdminLoginForm() {
 
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -74,12 +75,24 @@ export function SuperAdminLoginForm() {
           <Input
             label="Parol"
             name="password"
-            type="password"
+            type={showPassword ? "text" : "password"}
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             autoComplete="current-password"
             placeholder="••••••••"
             leftSlot={<Lock className="h-4 w-4" />}
+            rightSlot={
+              <button
+                type="button"
+                onClick={() => setShowPassword((v) => !v)}
+                disabled={loading}
+                aria-label={showPassword ? "Parolni yashirish" : "Parolni ko'rsatish"}
+                aria-pressed={showPassword}
+                className="flex items-center text-ink-muted transition-colors hover:text-ink disabled:opacity-50"
+              >
+                {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+              </button>
+            }
             required
             disabled={loading}
           />
