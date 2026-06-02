@@ -23,7 +23,12 @@ import { Card } from "@/components/ui/Card";
 import { Spinner } from "@/components/ui/Spinner";
 import { courierApi } from "@/features/deliveries/api";
 import { useCourierOrder } from "@/features/deliveries/hooks";
-import { COURIER_ACTION, COURIER_STATUS_META, yandexPin } from "@/features/deliveries/status";
+import {
+  COURIER_ACTION,
+  COURIER_STATUS_META,
+  googleMapsDir,
+  yandexPin,
+} from "@/features/deliveries/status";
 import { formatDateTime, formatDistance, formatPhoneNumber, formatSum } from "@/lib/format";
 
 // Leaflet is browser-only — load the route map client-side.
@@ -100,6 +105,7 @@ export default function DeliveryDetailPage() {
   const canRelease = order.status === "COURIER_ASSIGNED";
   const pickupNav = yandexPin(order.pickup.latitude, order.pickup.longitude);
   const dropoffNav = yandexPin(order.dropoff.latitude, order.dropoff.longitude);
+  const dropoffGoogle = googleMapsDir(order.dropoff.latitude, order.dropoff.longitude);
   const isDelivered = order.status === "DELIVERED";
   const pickupPt =
     order.pickup.latitude != null && order.pickup.longitude != null
@@ -162,9 +168,9 @@ export default function DeliveryDetailPage() {
                 href={dropoffNav}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-1 text-xs font-medium text-brand-700 hover:underline"
+                className="inline-flex items-center gap-1 text-xs font-medium text-ink-muted hover:underline"
               >
-                <Navigation className="h-3.5 w-3.5" /> Navigatsiya
+                <Navigation className="h-3.5 w-3.5" /> Yandex
               </a>
             ) : null}
           </div>
@@ -178,6 +184,16 @@ export default function DeliveryDetailPage() {
                 <span className="h-2.5 w-2.5 rounded-full bg-brand-500" /> Yetkazish (xaridor)
               </span>
             </div>
+            {dropoffGoogle ? (
+              <a
+                href={dropoffGoogle}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="mt-3 flex w-full items-center justify-center gap-2 rounded-lg bg-brand-500 px-4 py-2.5 text-sm font-semibold text-white hover:bg-brand-600"
+              >
+                <Navigation className="h-4 w-4" /> Google Maps orqali yo&apos;nalish
+              </a>
+            ) : null}
           </div>
         </Card>
       ) : null}

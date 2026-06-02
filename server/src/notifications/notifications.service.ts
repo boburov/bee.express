@@ -130,7 +130,12 @@ export class NotificationsService {
     });
     if (users.length === 0) return;
 
-    const text = dto.body ? `${dto.title}\n${dto.body}` : dto.title;
+    // Telegram messages stay lively with a type emoji — the in-app title/body
+    // remain emoji-free (Lucide icons there). App UI ≠ Telegram on purpose.
+    const emoji = TG_EMOJI[dto.type ?? 'INFO'] ?? '🔔';
+    const text = dto.body
+      ? `${emoji} ${dto.title}\n${dto.body}`
+      : `${emoji} ${dto.title}`;
     const deepLink = buildWebAppDeepLink(link);
     await Promise.all(
       users.map((u) =>
@@ -304,6 +309,15 @@ export class NotificationsService {
     };
   }
 }
+
+/** Type emoji prepended to Telegram messages (Telegram only — not the app UI). */
+const TG_EMOJI: Record<NotificationType, string> = {
+  INFO: '🔔',
+  SUCCESS: '✅',
+  WARNING: '⚠️',
+  DANGER: '❌',
+  ANNOUNCE: '📣',
+};
 
 /**
  * Build an absolute mini-app URL for the Telegram "Buyurtmani ko'rish" button,

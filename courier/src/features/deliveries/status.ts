@@ -45,3 +45,12 @@ export function yandexPin(lat: number | null, lng: number | null): string | null
   if (lat == null || lng == null) return null;
   return `https://yandex.uz/maps/?ll=${lng},${lat}&z=17&pt=${lng},${lat}`;
 }
+
+/**
+ * Google Maps turn-by-turn directions deeplink — opens navigation from the
+ * courier's current location to the destination, route already plotted.
+ */
+export function googleMapsDir(lat: number | null, lng: number | null): string | null {
+  if (lat == null || lng == null) return null;
+  return `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}&travelmode=driving`;
+}
