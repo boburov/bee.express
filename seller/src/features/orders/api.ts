@@ -25,4 +25,10 @@ export const sellerOrdersApi = {
     const { data } = await api.patch<Order>(`/seller/orders/${id}/status`, dto);
     return data;
   },
+  assignCourier: async (id: string, courierId: string): Promise<Order> => {
+    const { data } = await api.post<Order>(`/seller/orders/${id}/assign-courier`, {
+      courierId,
+    });
+    return data;
+  },
 };

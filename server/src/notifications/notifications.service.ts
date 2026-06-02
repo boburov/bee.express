@@ -1,11 +1,13 @@
 import {
   BadRequestException,
   Injectable,
+  Logger,
   NotFoundException,
 } from '@nestjs/common';
 import { randomBytes } from 'node:crypto';
 import { Prisma, type Notification, type NotificationType } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
+import { TelegramQueueService } from '../queue/telegram-queue.service';
 import { ListNotificationsQueryDto } from './dto/list-notifications-query.dto';
 import { SendNotificationDto } from './dto/send-notification.dto';
 import { NotificationsGateway } from './notifications.gateway';
@@ -18,9 +20,12 @@ interface SenderContext {
 
 @Injectable()
 export class NotificationsService {
+  private readonly logger = new Logger(NotificationsService.name);
+
   constructor(
     private readonly prisma: PrismaService,
     private readonly gateway: NotificationsGateway,
+    private readonly telegramQueue: TelegramQueueService,
   ) {}
 
   /**
@@ -94,11 +99,44 @@ export class NotificationsService {
       }),
     );
 
+    // Best-effort Telegram mirror — only for order/event notifications that
+    // carry a deep link (admin broadcasts/announcements have no link, so they
+    // don't spam Telegram). The in-app row above is the source of truth.
+    await this.pushTelegram(recipientIds, dto).catch((e) =>
+      this.logger.warn(`telegram enqueue failed: ${String(e)}`),
+    );
+
     return {
       groupId,
       recipients: persisted.length,
       skipped: 0,
     };
+  }
+
+  /** Enqueue a Telegram copy for recipients who have a linked Telegram account. */
+  private async pushTelegram(
+    recipientIds: string[],
+    dto: SendNotificationDto,
+  ): Promise<void> {
+    const link = (dto.data as { link?: string } | undefined)?.link;
+    if (!link || recipientIds.length === 0) return;
+
+    const users = await this.prisma.user.findMany({
+      where: { id: { in: recipientIds }, telegramId: { not: null } },
+      select: { telegramId: true },
+    });
+    if (users.length === 0) return;
+
+    const text = dto.body ? `${dto.title}\n${dto.body}` : dto.title;
+    await Promise.all(
+      users.map((u) =>
+        u.telegramId
+          ? this.telegramQueue
+              .publish({ telegramId: u.telegramId, text, link })
+              .catch(() => undefined)
+          : undefined,
+      ),
+    );
   }
 
   async listMine(userId: string, query: ListNotificationsQueryDto) {

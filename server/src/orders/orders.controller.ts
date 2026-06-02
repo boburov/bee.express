@@ -13,11 +13,18 @@ import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import type { Authenticated } from '../auth/types';
 import { CheckoutDto } from './dto/checkout.dto';
 import { ListOrdersQueryDto } from './dto/list-orders-query.dto';
+import { OrderQuoteDto } from './dto/order-quote.dto';
 import { OrdersService } from './orders.service';
 
 @Controller('orders')
 export class OrdersController {
   constructor(private readonly orders: OrdersService) {}
+
+  @Post('quote')
+  @HttpCode(HttpStatus.OK)
+  quote(@Body() dto: OrderQuoteDto, @CurrentUser() actor: Authenticated) {
+    return this.orders.quote(dto.addressId, this.requireUser(actor));
+  }
 
   @Post('checkout')
   @HttpCode(HttpStatus.CREATED)

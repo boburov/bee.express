@@ -7,3 +7,6 @@ import { config } from "./config";
  */
 export const redis = new Redis(config.redisUrl, { maxRetriesPerRequest: null });
 export const blockingRedis = new Redis(config.redisUrl, { maxRetriesPerRequest: null });
+// Dedicated blocking client for the Telegram-notify worker — ioredis serializes
+// commands per connection, so it must not share blockingRedis with the OTP worker.
+export const tgBlockingRedis = new Redis(config.redisUrl, { maxRetriesPerRequest: null });

@@ -70,6 +70,27 @@ export interface Order {
   updatedAt: string;
 }
 
+// ─── Checkout quote (pre-order deliverability + fee preview) ──────────
+
+export interface OrderQuoteStore {
+  storeId: string;
+  storeName: string;
+  deliverable: boolean;
+  reason: string | null;
+  distanceKm: number | null;
+  radiusKm: number | null;
+  deliveryFee: number;
+  subtotal: number;
+}
+
+export interface OrderQuote {
+  deliverable: boolean;
+  subtotal: number;
+  deliveryTotal: number;
+  total: number;
+  stores: OrderQuoteStore[];
+}
+
 export interface PaginationMeta {
   page: number;
   limit: number;

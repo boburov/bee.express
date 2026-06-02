@@ -13,6 +13,7 @@ import { AddressForm } from "@/features/addresses/AddressForm";
 import { useAddresses } from "@/features/addresses/hooks";
 import { useCartStore } from "@/features/cart/store";
 import { ordersApi } from "@/features/orders/api";
+import type { OrderQuote } from "@/features/orders/types";
 import { formatSum } from "@/shared/lib/format";
 
 /**
@@ -40,6 +41,8 @@ export default function CheckoutPage() {
   const [creatingAddress, setCreatingAddress] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [quote, setQuote] = useState<OrderQuote | null>(null);
+  const [quoteLoading, setQuoteLoading] = useState(false);
 
   useEffect(() => { fetchCart(); }, [fetchCart]);
 
@@ -52,7 +55,33 @@ export default function CheckoutPage() {
 
   const isEmpty = !cart || cart.itemCount === 0;
   const hasAddresses = (addresses?.length ?? 0) > 0;
-  const canSubmit = Boolean(selectedAddressId) && !isEmpty && !submitting;
+  const cartCount = cart?.itemCount ?? 0;
+
+  // Deliverability + fee preview for the chosen address (TZ §13). Refetched
+  // whenever the address or cart contents change.
+  useEffect(() => {
+    if (!selectedAddressId || cartCount === 0) {
+      setQuote(null);
+      return;
+    }
+    let cancelled = false;
+    setQuoteLoading(true);
+    ordersApi
+      .quote(selectedAddressId)
+      .then((q) => { if (!cancelled) setQuote(q); })
+      .catch(() => { if (!cancelled) setQuote(null); })
+      .finally(() => { if (!cancelled) setQuoteLoading(false); });
+    return () => { cancelled = true; };
+  }, [selectedAddressId, cartCount]);
+
+  const quoteByStore = new Map((quote?.stores ?? []).map((s) => [s.storeId, s]));
+  const undeliverable = Boolean(quote && !quote.deliverable);
+  const canSubmit =
+    Boolean(selectedAddressId) &&
+    !isEmpty &&
+    !submitting &&
+    !quoteLoading &&
+    !undeliverable;
 
   async function onSubmit() {
     if (!selectedAddressId || isEmpty) return;
@@ -199,9 +228,44 @@ export default function CheckoutPage() {
                     </li>
                   ))}
                 </ul>
-                <p className="text-[11px] text-ink-faint p-3 border-t border-line-soft">
-                  Yetkazib berish narxi do&apos;kon va manzilingiz orasidagi masofa bo&apos;yicha hisoblanadi.
-                </p>
+                {(() => {
+                  const q = quoteByStore.get(group.store.id);
+                  if (!selectedAddressId) {
+                    return (
+                      <p className="text-[11px] text-ink-faint p-3 border-t border-line-soft">
+                        Manzil tanlang — yetkazib berish narxi hisoblanadi.
+                      </p>
+                    );
+                  }
+                  if (quoteLoading && !q) {
+                    return (
+                      <p className="text-[11px] text-ink-faint p-3 border-t border-line-soft">
+                        Yetkazib berish hisoblanmoqda…
+                      </p>
+                    );
+                  }
+                  if (!q) {
+                    return (
+                      <p className="text-[11px] text-ink-faint p-3 border-t border-line-soft">
+                        Yetkazib berish narxi manzil bo&apos;yicha hisoblanadi.
+                      </p>
+                    );
+                  }
+                  if (!q.deliverable) {
+                    return (
+                      <p className="p-3 border-t border-line-soft text-xs text-danger flex items-start gap-2">
+                        <AlertTriangle className="h-3.5 w-3.5 mt-0.5 shrink-0" />
+                        <span>{q.reason ?? "Bu manzilga yetkazib bera olmaymiz"}</span>
+                      </p>
+                    );
+                  }
+                  return (
+                    <p className="text-[11px] text-ink-muted p-3 border-t border-line-soft">
+                      Yetkazib berish: {formatSum(q.deliveryFee)}
+                      {q.distanceKm !== null ? ` · ${q.distanceKm} km` : ""}
+                    </p>
+                  );
+                })()}
               </Card>
             ))}
           </section>
@@ -236,6 +300,20 @@ export default function CheckoutPage() {
             </Card>
           </section>
 
+          {undeliverable ? (
+            <Card>
+              <div className="p-4 flex items-start gap-3 text-sm text-danger">
+                <AlertTriangle className="h-4 w-4 mt-0.5 shrink-0" />
+                <div>
+                  <p className="font-medium">Bu manzilga yetkazib bera olmaymiz</p>
+                  <p className="text-ink-muted mt-0.5">
+                    Boshqa manzil tanlang yoki yetkazib berish radiusidagi sotuvchidan buyurtma bering.
+                  </p>
+                </div>
+              </div>
+            </Card>
+          ) : null}
+
           {error ? (
             <Card>
               <div className="p-4 flex items-start gap-3 text-sm text-danger">
@@ -246,13 +324,27 @@ export default function CheckoutPage() {
           ) : null}
 
           <Card>
-            <div className="p-4 flex items-center justify-between gap-3">
-              <div>
-                <p className="text-xs text-ink-muted">Mahsulotlar uchun</p>
-                <p className="text-lg font-semibold text-ink">{formatSum(cart!.subtotal)}</p>
-                <p className="text-[11px] text-ink-faint mt-0.5">+ yetkazib berish keyin qo&apos;shiladi</p>
+            <div className="p-4 flex flex-col gap-3">
+              <div className="flex flex-col gap-1 text-sm">
+                <div className="flex items-center justify-between">
+                  <span className="text-ink-muted">Mahsulotlar</span>
+                  <span className="text-ink tabular-nums">{formatSum(cart!.subtotal)}</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-ink-muted">Yetkazib berish</span>
+                  <span className="text-ink tabular-nums">
+                    {quoteLoading && !quote ? "…" : quote ? formatSum(quote.deliveryTotal) : "—"}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between pt-1.5 border-t border-line-soft">
+                  <span className="font-semibold text-ink">Jami</span>
+                  <span className="text-lg font-semibold text-ink tabular-nums">
+                    {quote ? formatSum(quote.total) : formatSum(cart!.subtotal)}
+                  </span>
+                </div>
               </div>
               <Button
+                block
                 onClick={onSubmit}
                 disabled={!canSubmit}
                 loading={submitting}

@@ -1,8 +1,15 @@
-import { Injectable, Logger } from '@nestjs/common';
+import {
+  BadRequestException,
+  ConflictException,
+  Injectable,
+  Logger,
+  NotFoundException,
+} from '@nestjs/common';
 import { OrderStatus, type Prisma } from '@prisma/client';
 import { decimalToNumber } from '../geo/geo';
 import { PrismaService } from '../prisma/prisma.service';
 import { NotificationsService } from '../notifications/notifications.service';
+import { OrderNotifierService } from '../notifications/order-notifier.service';
 import { estimateCourierEarning } from '../courier/courier.serializer';
 
 /**
@@ -31,7 +38,82 @@ export class DispatchService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly notifications: NotificationsService,
+    private readonly orderNotifier: OrderNotifierService,
   ) {}
+
+  /**
+   * Seller-driven manual assignment: route a READY order to a CHOSEN contracted
+   * courier. Request-driven (throws on invalid input) — unlike the fire-and-
+   * forget auto-dispatch. Reuses the exact atomic claim + earning + history +
+   * notify so the end state is identical to onOrderReady's auto-assign.
+   */
+  async assignToCourier(
+    orderId: string,
+    courierId: string,
+    actorId: string,
+  ): Promise<void> {
+    const order = await this.prisma.order.findUnique({
+      where: { id: orderId },
+      select: {
+        id: true,
+        storeId: true,
+        orderNumber: true,
+        deliveryFee: true,
+        status: true,
+        courierId: true,
+        store: { select: { name: true } },
+      },
+    });
+    if (!order) throw new NotFoundException('Buyurtma topilmadi');
+    if (order.status !== OrderStatus.READY || order.courierId) {
+      throw new ConflictException(
+        'Bu buyurtma tayyor emas yoki allaqachon biriktirilgan',
+      );
+    }
+
+    const courierIds = await this.activeContractCourierIds(order.storeId);
+    if (!courierIds.includes(courierId)) {
+      throw new BadRequestException(
+        "Bu kuryer do'kon bilan faol kontraktga ega emas",
+      );
+    }
+
+    const earning = estimateCourierEarning(decimalToNumber(order.deliveryFee) ?? 0);
+
+    const res = await this.prisma.order.updateMany({
+      where: { id: orderId, status: OrderStatus.READY, courierId: null },
+      data: {
+        courierId,
+        status: OrderStatus.COURIER_ASSIGNED,
+        courierAssignedAt: new Date(),
+        courierEarning: earning,
+      },
+    });
+    if (res.count === 0) {
+      throw new ConflictException('Bu buyurtma allaqachon olingan');
+    }
+
+    await this.prisma.orderStatusHistory.create({
+      data: {
+        orderId,
+        status: OrderStatus.COURIER_ASSIGNED,
+        changedBy: actorId,
+        note: 'Sotuvchi biriktirdi',
+      },
+    });
+
+    await this.notifyMany(
+      [courierId],
+      'Yangi buyurtma — pochta bor 📦',
+      `"${order.store.name}" buyurtmasi sizga biriktirildi (${order.orderNumber})`,
+      'SUCCESS',
+      { orderId: order.id, link: `/dashboard/deliveries/${order.id}` },
+    );
+    // Parity with courier self-accept: tell the customer a courier is on it.
+    await this.orderNotifier
+      .statusChanged(orderId, OrderStatus.COURIER_ASSIGNED)
+      .catch(() => undefined);
+  }
 
   async onOrderReady(orderId: string): Promise<void> {
     const order = await this.prisma.order.findUnique({

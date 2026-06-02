@@ -55,6 +55,8 @@ export function serializeOrder(order: HydratedOrder) {
       note: h.note,
       createdAt: h.createdAt,
     })),
+    courierId: order.courierId,
+    courierAssignedAt: order.courierAssignedAt,
     acceptedAt: order.acceptedAt,
     deliveredAt: order.deliveredAt,
     cancelledAt: order.cancelledAt,

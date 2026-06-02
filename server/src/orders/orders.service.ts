@@ -15,7 +15,12 @@ import { AddressesService } from '../addresses/addresses.service';
 import { DispatchService } from '../contracts/dispatch.service';
 import { OrderNotifierService } from '../notifications/order-notifier.service';
 import { paginated, parsePagination } from '../common/pagination';
-import { computeDeliveryFee, decimalToNumber, haversineKm } from '../geo/geo';
+import {
+  computeDeliveryFee,
+  decimalToNumber,
+  effectiveFoodRadiusKm,
+  haversineKm,
+} from '../geo/geo';
 import { PrismaService } from '../prisma/prisma.service';
 import { CheckoutDto } from './dto/checkout.dto';
 import { ListOrdersQueryDto } from './dto/list-orders-query.dto';
@@ -196,14 +201,17 @@ export class OrdersService {
             { lat: storeLat, lng: storeLng },
           );
 
-          // For FOOD, enforce the radius. For MARKETPLACE we don't gate.
+          // For FOOD, enforce the service radius (store override → category
+          // default → 10km fallback). Same gate as browse/quote so a buyer
+          // never reaches checkout for a store that can't reach them.
           if (primaryCategory?.type === 'FOOD') {
-            const radius =
-              decimalToNumber(store.deliveryRadiusKm) ??
-              primaryCategory.deliveryRadiusKm;
-            if (radius && distanceKm > radius) {
+            const radius = effectiveFoodRadiusKm(
+              decimalToNumber(store.deliveryRadiusKm),
+              primaryCategory.deliveryRadiusKm,
+            );
+            if (distanceKm > radius) {
               throw new BadRequestException(
-                `"${store.name}" yetkazib berish radiusi: ${radius}km, manzilingiz ${distanceKm.toFixed(1)}km`,
+                `Bu manzilga yetkazib bera olmaymiz — "${store.name}" ${radius} km radiusda ishlaydi (siz ${distanceKm.toFixed(1)} km uzoqdasiz)`,
               );
             }
           }
@@ -310,6 +318,150 @@ export class OrdersService {
     return { orders: orders.map(serializeOrder) };
   }
 
+  /**
+   * Pre-checkout deliverability + fee preview for the current cart against a
+   * chosen address. Mirrors checkout's per-store distance/radius/fee math but
+   * creates nothing — lets the UI show, per store, "yetkaziladi (X so'm)" or
+   * "bu manzilga yetkazib bera olmaymiz" BEFORE the buyer confirms (TZ §13).
+   */
+  async quote(addressId: string, userId: string) {
+    const address = await this.addresses.getOwnedOrThrow(addressId, userId);
+
+    const cart = await this.prisma.cart.findUnique({
+      where: { userId },
+      include: {
+        items: {
+          include: {
+            offer: {
+              include: {
+                store: true,
+                variant: {
+                  include: { product: { select: { categoryId: true } } },
+                },
+              },
+            },
+          },
+        },
+      },
+    });
+    if (!cart || cart.items.length === 0) {
+      return { deliverable: false, subtotal: 0, deliveryTotal: 0, total: 0, stores: [] };
+    }
+
+    const byStore = new Map<string, typeof cart.items>();
+    for (const it of cart.items) {
+      const sid = it.offer.storeId;
+      const list = byStore.get(sid) ?? [];
+      list.push(it);
+      byStore.set(sid, list);
+    }
+
+    const categoryIds = Array.from(
+      new Set(cart.items.map((it) => it.offer.variant.product.categoryId)),
+    );
+    const categories = await this.prisma.category.findMany({
+      where: { id: { in: categoryIds } },
+      select: {
+        id: true,
+        type: true,
+        deliveryBaseFee: true,
+        deliveryPerKmFee: true,
+        deliveryRadiusKm: true,
+      },
+    });
+    const categoryById = new Map(categories.map((c) => [c.id, c]));
+
+    const addrLat = decimalToNumber(address.latitude)!;
+    const addrLng = decimalToNumber(address.longitude)!;
+
+    let subtotalAll = 0;
+    let deliveryAll = 0;
+    let allDeliverable = true;
+
+    const stores = Array.from(byStore.entries()).map(([storeId, items]) => {
+      const store = items[0].offer.store;
+      const primaryCategory = categoryById.get(
+        items[0].offer.variant.product.categoryId,
+      );
+      const subtotal = items.reduce(
+        (sum, it) => sum + decimalToNumber(it.offer.price)! * it.qty,
+        0,
+      );
+      subtotalAll += subtotal;
+
+      const storeLat = decimalToNumber(store.latitude);
+      const storeLng = decimalToNumber(store.longitude);
+
+      let deliverable = true;
+      let reason: string | null = null;
+      let distanceKm: number | null = null;
+      let radiusKm: number | null = null;
+      let deliveryFee = 0;
+
+      if (store.status !== 'ACTIVE') {
+        deliverable = false;
+        reason = `"${store.name}" hozir buyurtma qabul qilmaydi`;
+      } else if (!store.isOpen) {
+        deliverable = false;
+        reason = `"${store.name}" hozir yopiq`;
+      } else if (storeLat === null || storeLng === null) {
+        deliverable = false;
+        reason = "Do'kon joylashuvi kiritilmagan";
+      } else {
+        distanceKm = haversineKm(
+          { lat: addrLat, lng: addrLng },
+          { lat: storeLat, lng: storeLng },
+        );
+        if (primaryCategory?.type === 'FOOD') {
+          radiusKm = effectiveFoodRadiusKm(
+            decimalToNumber(store.deliveryRadiusKm),
+            primaryCategory.deliveryRadiusKm,
+          );
+          if (distanceKm > radiusKm) {
+            deliverable = false;
+            reason = `Bu manzilga yetkazib bera olmaymiz — ${radiusKm} km radiusda ishlaydi (siz ${distanceKm.toFixed(1)} km uzoqdasiz)`;
+          }
+        }
+        const fee = computeDeliveryFee(
+          distanceKm,
+          {
+            baseFee: decimalToNumber(store.deliveryBaseFee),
+            perKmFee: decimalToNumber(store.deliveryPerKmFee),
+          },
+          primaryCategory
+            ? {
+                baseFee: decimalToNumber(primaryCategory.deliveryBaseFee),
+                perKmFee: decimalToNumber(primaryCategory.deliveryPerKmFee),
+              }
+            : null,
+        );
+        deliveryFee = fee ?? 0;
+      }
+
+      if (!deliverable) allDeliverable = false;
+      else deliveryAll += deliveryFee;
+
+      return {
+        storeId,
+        storeName: store.name,
+        deliverable,
+        reason,
+        distanceKm: distanceKm !== null ? Math.round(distanceKm * 10) / 10 : null,
+        radiusKm,
+        deliveryFee,
+        subtotal,
+      };
+    });
+
+    return {
+      deliverable: allDeliverable,
+      subtotal: subtotalAll,
+      deliveryTotal: deliveryAll,
+      total: subtotalAll + deliveryAll,
+      stores,
+    };
+  }
+
   async listMine(query: ListOrdersQueryDto, userId: string) {
     const { page, limit, skip, take } = parsePagination(query);
     const where: Prisma.OrderWhereInput = {
@@ -407,6 +559,25 @@ export class OrdersService {
     }
 
     await this.transitionStatus(order.id, dto.status, sellerId, dto.note ?? null);
+    return this.getForStore(orderId, storeId);
+  }
+
+  /**
+   * Seller manually assigns a READY order to one of their contracted couriers.
+   * Ownership is checked here; the assignment mechanics (validation + atomic
+   * claim + notify) live in DispatchService.assignToCourier.
+   */
+  async assignCourierForStore(
+    orderId: string,
+    storeId: string,
+    sellerId: string,
+    courierId: string,
+  ) {
+    const order = await this.prisma.order.findUnique({ where: { id: orderId } });
+    if (!order || order.storeId !== storeId) {
+      throw new NotFoundException('Buyurtma topilmadi');
+    }
+    await this.dispatch.assignToCourier(orderId, courierId, sellerId);
     return this.getForStore(orderId, storeId);
   }
 

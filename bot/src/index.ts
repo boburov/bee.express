@@ -2,7 +2,8 @@ import { createBot } from "./bot";
 import { config } from "./config";
 import { prisma } from "./db";
 import { runOtpWorker } from "./otp-worker";
-import { blockingRedis, redis } from "./redis";
+import { runTelegramWorker } from "./telegram-worker";
+import { blockingRedis, redis, tgBlockingRedis } from "./redis";
 
 async function main(): Promise<void> {
   const bot = createBot();
@@ -19,6 +20,7 @@ async function main(): Promise<void> {
   });
 
   const workerDone = runOtpWorker(bot, abort.signal);
+  const tgWorkerDone = runTelegramWorker(bot, abort.signal);
 
   const shutdown = async (sig: string) => {
     console.log(`\n[main] ${sig} received — shutting down`);
@@ -29,10 +31,12 @@ async function main(): Promise<void> {
       /* already stopped */
     }
     await workerDone.catch(() => undefined);
+    await tgWorkerDone.catch(() => undefined);
     await Promise.allSettled([
       prisma.$disconnect(),
       redis.quit(),
       blockingRedis.quit(),
+      tgBlockingRedis.quit(),
     ]);
     process.exit(0);
   };

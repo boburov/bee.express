@@ -63,6 +63,8 @@ export interface Order {
   };
   items: OrderItem[];
   history: OrderHistoryEntry[];
+  courierId: string | null;
+  courierAssignedAt: string | null;
   acceptedAt: string | null;
   deliveredAt: string | null;
   cancelledAt: string | null;

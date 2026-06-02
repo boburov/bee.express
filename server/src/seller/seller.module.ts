@@ -4,6 +4,7 @@ import { SellerFinanceModule } from './finance/seller-finance.module';
 import { SellerOffersModule } from './offers/offers.module';
 import { SellerOrdersModule } from './orders/seller-orders.module';
 import { SellerProductsModule } from './products/products.module';
+import { SellerStatsModule } from './stats/seller-stats.module';
 import { StoresModule } from './stores/stores.module';
 
 /** Aggregates every seller-scoped module under `/api/seller/...`. */
@@ -15,6 +16,7 @@ import { StoresModule } from './stores/stores.module';
     SellerOrdersModule,
     SellerContractsModule,
     SellerFinanceModule,
+    SellerStatsModule,
   ],
 })
 export class SellerModule {}

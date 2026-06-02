@@ -1,5 +1,5 @@
 import { api } from "@/shared/auth/api";
-import type { Order, OrderStatus, Paginated } from "./types";
+import type { Order, OrderQuote, OrderStatus, Paginated } from "./types";
 
 export interface CheckoutDto {
   addressId: string;
@@ -7,6 +7,10 @@ export interface CheckoutDto {
 }
 
 export const ordersApi = {
+  quote: async (addressId: string): Promise<OrderQuote> => {
+    const { data } = await api.post<OrderQuote>("/orders/quote", { addressId });
+    return data;
+  },
   checkout: async (dto: CheckoutDto): Promise<{ orders: Order[] }> => {
     const { data } = await api.post<{ orders: Order[] }>("/orders/checkout", dto);
     return data;

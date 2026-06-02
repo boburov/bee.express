@@ -6,7 +6,9 @@ import { useState } from "react";
 import {
   AlertTriangle,
   ArrowLeft,
+  Bike,
   Check,
+  Circle,
   MapPin,
   Package,
   Phone,
@@ -20,6 +22,8 @@ import { Card } from "@/shared/ui/Card";
 import { Spinner } from "@/shared/ui/Spinner";
 import { sellerOrdersApi } from "@/features/orders/api";
 import { useSellerOrder } from "@/features/orders/hooks";
+import { useSellerContracts } from "@/features/contracts/hooks";
+import { TransportBadge } from "@/features/contracts/TransportBadge";
 import { ORDER_STATUS_META, SELLER_TRANSITIONS } from "@/features/orders/status";
 import type { OrderStatus } from "@/features/orders/types";
 import { formatDateTime, formatPhone, formatSum } from "@/shared/lib/format";
@@ -43,8 +47,27 @@ export default function SellerOrderDetailPage() {
   const params = useParams<{ id: string }>();
   const orderId = params?.id ?? null;
   const { data: order, loading, error, reload } = useSellerOrder(orderId);
+  const { data: activeContracts, loading: contractsLoading } = useSellerContracts("ACTIVE");
   const [pending, setPending] = useState<OrderStatus | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
+  const [assigning, setAssigning] = useState<string | null>(null);
+  const [assignError, setAssignError] = useState<string | null>(null);
+
+  async function onAssign(courierId: string) {
+    if (!order) return;
+    setAssigning(courierId);
+    setAssignError(null);
+    try {
+      await sellerOrdersApi.assignCourier(order.id, courierId);
+      await reload();
+    } catch (err) {
+      const e = err as { response?: { data?: { message?: string | string[] } } };
+      const msg = e.response?.data?.message;
+      setAssignError(Array.isArray(msg) ? msg[0] : msg || "Biriktirib bo'lmadi");
+    } finally {
+      setAssigning(null);
+    }
+  }
 
   async function onTransition(target: OrderStatus) {
     if (!order) return;
@@ -146,6 +169,107 @@ export default function SellerOrderDetailPage() {
           ) : null}
         </Card>
       ) : null}
+
+      {/* Kuryerga biriktirish — READY va hali biriktirilmagan buyurtma uchun */}
+      {order.status === "READY" && !order.courierId ? (
+        <Card>
+          <div className="p-4 border-b border-line-soft">
+            <h3 className="text-sm font-semibold text-ink">Kuryerga biriktirish</h3>
+            <p className="text-xs text-ink-muted mt-0.5">
+              Faol kontraktli kuryerni tanlang — biriktirilganda unga xabar boradi.
+            </p>
+          </div>
+          {contractsLoading && !activeContracts ? (
+            <div className="p-4 flex justify-center"><Spinner /></div>
+          ) : !activeContracts || activeContracts.length === 0 ? (
+            <div className="p-4 text-sm text-ink-muted">
+              Faol kontraktli kuryer yo&apos;q.{" "}
+              <Link href="/dashboard/contracts" className="text-brand-700 hover:underline">
+                Kuryerlar
+              </Link>{" "}
+              bo&apos;limidan tasdiqlang.
+            </div>
+          ) : (
+            <ul className="divide-y divide-line-soft">
+              {[...activeContracts]
+                .sort((a, b) => Number(b.courier.isOnline) - Number(a.courier.isOnline))
+                .map((c) => (
+                  <li key={c.id} className="p-3 flex items-center gap-3">
+                    <span className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-brand-50 text-brand-600">
+                      <Bike className="h-4 w-4" />
+                    </span>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2">
+                        <p className="text-sm font-medium text-ink truncate">
+                          {c.courier.name ?? "Kuryer"}
+                        </p>
+                        <span
+                          className={`inline-flex items-center gap-1 text-[11px] ${
+                            c.courier.isOnline ? "text-success" : "text-ink-faint"
+                          }`}
+                        >
+                          <Circle className="h-2 w-2" fill="currentColor" strokeWidth={0} />
+                          {c.courier.isOnline ? "Onlayn" : "Oflayn"}
+                        </span>
+                      </div>
+                      <div className="mt-1">
+                        <TransportBadge type={c.courier.transportType} />
+                      </div>
+                    </div>
+                    <Button
+                      size="sm"
+                      onClick={() => onAssign(c.courier.id)}
+                      loading={assigning === c.courier.id}
+                      disabled={assigning !== null}
+                    >
+                      Biriktirish
+                    </Button>
+                  </li>
+                ))}
+            </ul>
+          )}
+          {assignError ? (
+            <div className="px-4 pb-4 flex items-start gap-2 text-sm text-danger">
+              <AlertTriangle className="h-4 w-4 mt-0.5 shrink-0" />
+              <span>{assignError}</span>
+            </div>
+          ) : null}
+        </Card>
+      ) : null}
+
+      {/* Biriktirilgan kuryer — assigned/on-way buyurtmalar uchun */}
+      {order.courierId
+        ? (() => {
+            const assigned = activeContracts?.find((c) => c.courier.id === order.courierId);
+            return (
+              <Card>
+                <div className="p-4 flex items-center gap-3">
+                  <span className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-brand-50 text-brand-600">
+                    <Bike className="h-4 w-4" />
+                  </span>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs text-ink-muted">Biriktirilgan kuryer</p>
+                    <div className="flex items-center gap-2 mt-0.5">
+                      <p className="text-sm font-semibold text-ink truncate">
+                        {assigned?.courier.name ?? "Kuryer"}
+                      </p>
+                      {assigned ? <TransportBadge type={assigned.courier.transportType} /> : null}
+                    </div>
+                  </div>
+                  {assigned?.courier.phone ? (
+                    <a
+                      href={`tel:+${assigned.courier.phone}`}
+                      className="inline-flex h-9 w-9 items-center justify-center rounded-md text-brand-700 hover:bg-brand-50"
+                      aria-label="Qo'ng'iroq"
+                    >
+                      <Phone className="h-4 w-4" />
+                    </a>
+                  ) : null}
+                </div>
+              </Card>
+            );
+          })()
+        : null}
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
         {/* ─── Customer + address ──────────────────────────────────── */}

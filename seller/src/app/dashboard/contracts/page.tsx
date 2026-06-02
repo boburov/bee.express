@@ -15,15 +15,8 @@ import {
   CONTRACT_STATUS_META,
 } from "@/features/contracts/status";
 import type { ContractStatus, SellerContract } from "@/features/contracts/types";
+import { TransportBadge } from "@/features/contracts/TransportBadge";
 import { formatDateTime, formatPhone } from "@/shared/lib/format";
-
-const TRANSPORT_LABELS: Record<string, string> = {
-  WALK: "Piyoda",
-  BICYCLE: "Velosiped",
-  MOTORBIKE: "Mototsikl",
-  CAR: "Mashina",
-  TRUCK: "Yuk mashinasi",
-};
 
 export default function SellerContractsPage() {
   const [statusFilter, setStatusFilter] = useState<ContractStatus | undefined>(undefined);
@@ -152,15 +145,13 @@ export default function SellerContractsPage() {
                           </span>
                         ) : null}
                       </div>
-                      <p className="text-xs text-ink-muted mt-1 inline-flex items-center gap-1">
+                      {/* Transport — prominent so the seller sees the vehicle at a glance */}
+                      <div className="mt-1.5">
+                        <TransportBadge type={c.courier.transportType} />
+                      </div>
+                      <p className="text-xs text-ink-muted mt-1.5 inline-flex items-center gap-1">
                         <Phone className="h-3 w-3" />
                         <span className="font-mono">{formatPhone(c.courier.phone)}</span>
-                        {c.courier.transportType ? (
-                          <>
-                            {" · "}
-                            {TRANSPORT_LABELS[c.courier.transportType] ?? c.courier.transportType}
-                          </>
-                        ) : null}
                       </p>
                       {c.message ? (
                         <p className="text-xs text-ink-soft mt-2 line-clamp-2">“{c.message}”</p>
