@@ -18,14 +18,18 @@ export function extractMsg(err: unknown): string {
   return typeof msg === "string" ? msg : "Xatolik yuz berdi";
 }
 
+/** No websockets in this app — re-poll order data on this cadence instead. */
+const POLL_MS = 15_000;
+
 /** Available pool — re-fetches whenever the courier's coords change. */
 export function useAvailableOrders(coords: Coords | null, radiusKm?: number) {
   const [data, setData] = useState<AvailableResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const reload = useCallback(async () => {
-    setLoading(true);
+  // `silent` skips the loading flag so background polls don't flash a spinner.
+  const reload = useCallback(async (silent?: boolean) => {
+    if (silent !== true) setLoading(true);
     setError(null);
     try {
       const r = await courierApi.available({
@@ -37,12 +41,20 @@ export function useAvailableOrders(coords: Coords | null, radiusKm?: number) {
     } catch (e) {
       setError(extractMsg(e));
     } finally {
-      setLoading(false);
+      if (silent !== true) setLoading(false);
     }
   }, [coords?.lat, coords?.lng, radiusKm]);
 
   useEffect(() => {
     reload();
+  }, [reload]);
+
+  // Surface newly-READY orders entering the pool while the tab is visible.
+  useEffect(() => {
+    const t = setInterval(() => {
+      if (typeof document === "undefined" || !document.hidden) reload(true);
+    }, POLL_MS);
+    return () => clearInterval(t);
   }, [reload]);
 
   return { data, loading, error, reload };
@@ -53,8 +65,8 @@ export function useMyOrders(opts: { scope?: "active" | "history"; page?: number;
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const reload = useCallback(async () => {
-    setLoading(true);
+  const reload = useCallback(async (silent?: boolean) => {
+    if (silent !== true) setLoading(true);
     setError(null);
     try {
       const r = await courierApi.listMine(opts);
@@ -62,13 +74,21 @@ export function useMyOrders(opts: { scope?: "active" | "history"; page?: number;
     } catch (e) {
       setError(extractMsg(e));
     } finally {
-      setLoading(false);
+      if (silent !== true) setLoading(false);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [opts.scope, opts.page, opts.limit]);
 
   useEffect(() => {
     reload();
+  }, [reload]);
+
+  // Keep the courier's active orders current (auto-assign, releases) live-ish.
+  useEffect(() => {
+    const t = setInterval(() => {
+      if (typeof document === "undefined" || !document.hidden) reload(true);
+    }, POLL_MS);
+    return () => clearInterval(t);
   }, [reload]);
 
   return { data, loading, error, reload };

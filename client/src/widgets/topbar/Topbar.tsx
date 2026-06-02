@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { MapPin, ShoppingCart } from "lucide-react";
 import { Logo } from "@/shared/ui/Logo";
+import { useActiveLocation } from "@/features/location/hooks";
 
 interface TopbarProps {
   /** Cart item count — when present, renders a brand-dot badge on the cart icon. */
@@ -10,6 +11,7 @@ interface TopbarProps {
 }
 
 export function Topbar({ cartCount = 0 }: TopbarProps) {
+  const location = useActiveLocation();
   return (
     <header className="sticky top-0 z-20 border-b border-line bg-surface/90 backdrop-blur supports-[backdrop-filter]:bg-surface/70">
       <div className="relative max-w-md lg:max-w-none mx-auto h-14 lg:h-16 px-4 lg:px-8 flex items-center justify-between">
@@ -24,12 +26,12 @@ export function Topbar({ cartCount = 0 }: TopbarProps) {
           <Logo size={28} className="lg:hidden" />
           {/* Address selector — surfaced on desktop where there's room on the left. */}
           <Link
-            href="/profile"
+            href="/addresses"
             aria-label="Manzil"
             className="hidden lg:inline-flex h-9 items-center gap-1.5 rounded-md px-2 text-sm font-medium text-ink-muted hover:bg-surface-3 hover:text-ink"
           >
             <MapPin className="h-4 w-4" />
-            <span>Manzil yo&apos;q</span>
+            <span className="max-w-40 truncate">{location?.label ?? "Manzil yo'q"}</span>
           </Link>
         </div>
 

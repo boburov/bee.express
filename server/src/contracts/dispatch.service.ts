@@ -49,7 +49,18 @@ export class DispatchService {
     if (!order || order.status !== OrderStatus.READY || order.courierId) return;
 
     const courierIds = await this.activeContractCourierIds(order.storeId);
-    if (courierIds.length === 0) return; // no contracts — plain open pool
+    if (courierIds.length === 0) {
+      // No contracted couriers — surface the order to the open pool so any
+      // online courier can claim it (TZ §9 / §11.1).
+      await this.notifyRole(
+        'courier',
+        'Yangi buyurtma 📦',
+        `"${order.store.name}" — yangi buyurtma bo'sh navbatda`,
+        'INFO',
+        { orderId: order.id, link: '/dashboard/deliveries' },
+      );
+      return;
+    }
 
     const chosen = await this.pickAvailableCourier(courierIds);
     if (!chosen) {
@@ -166,6 +177,19 @@ export class DispatchService {
     await this.notifications
       .send({ target: 'USER', userIds, title, body, type, data }, { type: 'SYSTEM', id: null })
       .catch((e) => this.logger.warn(`dispatch notify failed: ${String(e)}`));
+  }
+
+  /** Push to every courier (open pool). Swallows the "no recipients" case. */
+  private async notifyRole(
+    roleSlug: string,
+    title: string,
+    body: string,
+    type: 'INFO' | 'SUCCESS' | 'WARNING' | 'DANGER' | 'ANNOUNCE',
+    data?: Record<string, unknown>,
+  ) {
+    await this.notifications
+      .send({ target: 'ROLE', roleSlug, title, body, type, data }, { type: 'SYSTEM', id: null })
+      .catch((e) => this.logger.warn(`dispatch role notify failed: ${String(e)}`));
   }
 }
 

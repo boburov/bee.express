@@ -70,6 +70,17 @@ export function StatusBanner({ store, onUpdated }: StatusBannerProps) {
           bg: "bg-amber-50 border-amber-100",
           icoColor: "text-amber-600 bg-amber-100",
         };
+      default:
+        // Defensive: an unmapped status from the backend should never
+        // white-screen the dashboard — fall back to a neutral banner.
+        return {
+          icon: <AlertTriangle className="h-5 w-5" />,
+          title: "Do'kon holati",
+          body: "Do'kon holati aniqlanmadi.",
+          tone: "neutral" as const,
+          bg: "bg-surface-2 border-line",
+          icoColor: "text-ink-muted bg-surface-3",
+        };
     }
   })();
 

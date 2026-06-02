@@ -20,6 +20,7 @@ import { Button } from "@/shared/ui/Button";
 import { Card } from "@/shared/ui/Card";
 import { Spinner } from "@/shared/ui/Spinner";
 import { useProduct } from "@/features/catalog/hooks";
+import { useActiveLocation } from "@/features/location/hooks";
 import { useCartStore } from "@/features/cart/store";
 import type { VariantOffer } from "@/features/catalog/types";
 import { formatSum } from "@/shared/lib/format";
@@ -29,9 +30,11 @@ export default function ProductDetailPage() {
   const router = useRouter();
   const slug = params?.slug ?? null;
 
-  // TODO: feed real geo from the buyer's selected address when address-select
-  // store lands. For v1 the buyer sees full offer list without delivery fees.
-  const { data: product, loading, error } = useProduct(slug);
+  // Feed the buyer's active location (seeded from their default address) so
+  // the backend can radius-filter offers and compute per-store delivery fees.
+  const location = useActiveLocation();
+  const geo = location ? { lat: location.lat, lng: location.lng } : undefined;
+  const { data: product, loading, error } = useProduct(slug, geo);
 
   const addToCart = useCartStore((s) => s.addItem);
   const cartLoading = useCartStore((s) => s.loading);

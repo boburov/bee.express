@@ -6,6 +6,7 @@ import type {
   CategoryDetail,
   CategoryNode,
   ListProductsQuery,
+  NearbyStore,
   ProductDetail,
   ProductsListResponse,
 } from "./types";
@@ -74,5 +75,16 @@ export function useProduct(
     ({ slug: s, geo: g }) => catalogApi.productBySlug(s, g),
     { slug: slug ?? "", geo },
     Boolean(slug),
+  );
+}
+
+export function useStoresNearby(
+  geo: { lat: number; lng: number } | null,
+  limit = 6,
+) {
+  return useAsync<NearbyStore[], { lat: number; lng: number; limit: number }>(
+    (q) => catalogApi.storesNearby(q),
+    { lat: geo?.lat ?? 0, lng: geo?.lng ?? 0, limit },
+    Boolean(geo),
   );
 }

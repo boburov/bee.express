@@ -5,6 +5,7 @@ import { AuthBoundary } from "@/shared/auth/AuthBoundary";
 import { RoleGuard } from "@/shared/auth/RoleGuard";
 import { useAuthStore } from "@/shared/auth/store";
 import { useCartStore } from "@/features/cart/store";
+import { useEnsureLocation } from "@/features/location/hooks";
 import { Topbar } from "@/widgets/topbar/Topbar";
 import { BottomNav } from "@/widgets/bottom-nav/BottomNav";
 import { Sidebar } from "@/widgets/sidebar/Sidebar";
@@ -32,6 +33,10 @@ export function AppShell({ children }: AppShellProps) {
   useEffect(() => {
     if (accessToken) fetchCart();
   }, [accessToken, fetchCart]);
+
+  // Seed the active "near me" location from the default address so FOOD
+  // browsing and delivery-fee math work across every discovery page.
+  useEnsureLocation();
 
   return (
     <AuthBoundary>

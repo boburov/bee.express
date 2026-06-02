@@ -4,6 +4,7 @@ import { JwtModule } from '@nestjs/jwt';
 import { NotificationsController } from './notifications.controller';
 import { NotificationsGateway } from './notifications.gateway';
 import { NotificationsService } from './notifications.service';
+import { OrderNotifierService } from './order-notifier.service';
 
 /**
  * Self-contained JWT module for the WS gateway. The AuthModule already
@@ -21,7 +22,7 @@ import { NotificationsService } from './notifications.service';
     }),
   ],
   controllers: [NotificationsController],
-  providers: [NotificationsService, NotificationsGateway],
-  exports: [NotificationsService],
+  providers: [NotificationsService, NotificationsGateway, OrderNotifierService],
+  exports: [NotificationsService, OrderNotifierService],
 })
 export class NotificationsModule {}

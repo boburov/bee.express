@@ -109,6 +109,20 @@ export interface ListProductsQuery {
   pageSize?: number;
 }
 
+// ─── Nearby stores ──────────────────────────────────────────────────
+// Mirrors server/src/public/stores/public-stores.service.ts `nearby()`.
+
+export interface NearbyStore {
+  id: string;
+  slug: string;
+  name: string;
+  logoUrl: string | null;
+  bannerUrl: string | null;
+  deliveryEtaMinutes: number | null;
+  deliveryBaseFee: number | null;
+  distanceKm: number;
+}
+
 // ─── Product detail ─────────────────────────────────────────────────
 
 export interface ProductImage {

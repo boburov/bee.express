@@ -10,6 +10,8 @@ interface IconTileProps {
   href?: string;
   tone?: Tone;
   caption?: string;
+  /** Optional category image; falls back to the Lucide `icon` when absent. */
+  imageUrl?: string | null;
   className?: string;
 }
 
@@ -64,6 +66,7 @@ export function IconTile({
   href,
   tone = "brand",
   caption,
+  imageUrl,
   className,
 }: IconTileProps) {
   const t = tones[tone];
@@ -71,12 +74,17 @@ export function IconTile({
     <>
       <span
         className={cn(
-          "inline-flex h-10 w-10 items-center justify-center rounded-xl",
+          "inline-flex h-10 w-10 items-center justify-center overflow-hidden rounded-xl",
           t.iconBg,
           t.iconText,
         )}
       >
-        <Icon className="h-5 w-5" strokeWidth={1.75} />
+        {imageUrl ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={imageUrl} alt="" className="h-full w-full object-cover" />
+        ) : (
+          <Icon className="h-5 w-5" strokeWidth={1.75} />
+        )}
       </span>
       <div className="min-w-0 mt-2">
         <div className="text-xs font-semibold text-ink truncate">{label}</div>

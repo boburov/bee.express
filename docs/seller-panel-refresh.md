@@ -137,7 +137,7 @@ Active item: `bg-brand-50 text-brand-700`. Bottom'da user pill + Chiqish.
 
 Hozir sotuvchi roli avtomatik berilmaydi. Jarayoni:
 
-1. Foydalanuvchi `@bee_express_bot` ga `/start` bosadi, telefonni share qiladi.
+1. Foydalanuvchi `@BeeExpressBot` ga `/start` bosadi, telefonni share qiladi.
 2. Admin `/admin/dashboard/customers` ga kiradi, foydalanuvchini topadi.
 3. "Rol" tugmasini bosadi, "Sotuvchi" rolini biriktiradi.
 4. Foydalanuvchi `/seller/login` ga kirib, telefonni kiritadi, kodni kiritadi.

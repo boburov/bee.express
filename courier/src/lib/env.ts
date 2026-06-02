@@ -8,6 +8,6 @@ export const env = {
   apiBaseUrl:
     process.env.NEXT_PUBLIC_API_URL ?? "https://api.beexpress.uz/api",
   botUsername:
-    process.env.NEXT_PUBLIC_TELEGRAM_BOT_USERNAME ?? "bee_express_bot",
+    process.env.NEXT_PUBLIC_TELEGRAM_BOT_USERNAME ?? "BeeExpressBot",
   appName: "BeeExpress Courier",
 } as const;

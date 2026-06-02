@@ -64,9 +64,20 @@ export default function CheckoutPage() {
       await fetchCart();
       router.replace("/orders");
     } catch (err) {
-      const e = err as { response?: { data?: { message?: string | string[] } } };
+      const e = err as {
+        response?: { data?: { message?: string | string[] } };
+        request?: unknown;
+      };
       const msg = e.response?.data?.message;
-      setError(Array.isArray(msg) ? msg[0] : msg || "Buyurtma yaratilmadi");
+      if (msg) {
+        setError(Array.isArray(msg) ? msg[0] : msg);
+      } else if (e.request) {
+        // Request left the app but no response came back — network down or a
+        // CORS rejection. Surface it instead of a vague "order failed".
+        setError("Serverga ulanib bo'lmadi — internet aloqasini tekshiring va qayta urinib ko'ring.");
+      } else {
+        setError("Buyurtma yaratilmadi");
+      }
     } finally {
       setSubmitting(false);
     }

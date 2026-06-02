@@ -3,8 +3,6 @@
 import Link from "next/link";
 import {
   ArrowRight,
-  Apple,
-  HardHat,
   MapPin,
   Search,
   ShoppingBasket,
@@ -15,14 +13,12 @@ import {
 } from "lucide-react";
 import { Badge } from "@/shared/ui/Badge";
 import { IconTile } from "@/shared/ui/IconTile";
+import { Spinner } from "@/shared/ui/Spinner";
 import { useAuthStore } from "@/shared/auth/store";
-
-const categories = [
-  { slug: "food", label: "Ovqat", caption: "Restoranlar", icon: UtensilsCrossed, tone: "rose" as const },
-  { slug: "grocery", label: "Mahsulot", caption: "Do'konlar", icon: ShoppingBasket, tone: "emerald" as const },
-  { slug: "fruits", label: "Mevalar", caption: "Bozor", icon: Apple, tone: "amber" as const },
-  { slug: "construction", label: "Qurilish", caption: "Materiallar", icon: HardHat, tone: "sky" as const },
-];
+import { useCategoriesTree, useStoresNearby } from "@/features/catalog/hooks";
+import { useActiveLocation } from "@/features/location/hooks";
+import type { CategoryType } from "@/features/catalog/types";
+import { formatSum } from "@/shared/lib/format";
 
 const quickFacts = [
   { icon: Store, label: "Yaqin sotuvchilar" },
@@ -30,9 +26,22 @@ const quickFacts = [
   { icon: Sparkles, label: "Naqd yoki online" },
 ];
 
+// Rotate the decorative tones so the tile grid stays colorful without
+// hardcoding a tone per (dynamic) category.
+const TILE_TONES = ["rose", "emerald", "amber", "sky", "violet", "brand"] as const;
+const tileIcon = (type: CategoryType) =>
+  type === "FOOD" ? UtensilsCrossed : ShoppingBasket;
+
 export default function HomePage() {
   const me = useAuthStore((s) => s.me);
   const name = me?.firstName ?? (me?.phone ? `+${me.phone}` : "Mehmon");
+
+  const { data: tree, loading: catLoading } = useCategoriesTree();
+  const location = useActiveLocation();
+  const topCategories = (tree ?? []).slice(0, 8);
+
+  const geo = location ? { lat: location.lat, lng: location.lng } : null;
+  const { data: nearby, loading: nearbyLoading } = useStoresNearby(geo);
 
   return (
     <div className="flex flex-col gap-6">
@@ -61,10 +70,12 @@ export default function HomePage() {
           </Link>
           <div className="mt-1 inline-flex items-center gap-1.5 text-xs text-ink-muted">
             <MapPin className="h-3.5 w-3.5" />
-            <span>Manzil tanlanmagan</span>
+            <span className="truncate max-w-45">
+              {location?.label ?? "Manzil tanlanmagan"}
+            </span>
             <span className="mx-1 text-ink-faint">·</span>
-            <Link href="/profile" className="font-medium text-brand-700 hover:underline">
-              qo&apos;shish
+            <Link href="/addresses" className="font-medium text-brand-700 hover:underline">
+              {location ? "o'zgartirish" : "qo'shish"}
             </Link>
           </div>
         </div>
@@ -81,19 +92,26 @@ export default function HomePage() {
             Hammasi <ArrowRight className="h-3 w-3" />
           </Link>
         </div>
-        <ul className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-          {categories.map((c) => (
-            <li key={c.slug}>
-              <IconTile
-                icon={c.icon}
-                label={c.label}
-                caption={c.caption}
-                tone={c.tone}
-                href={`/catalog/${c.slug}`}
-              />
-            </li>
-          ))}
-        </ul>
+        {catLoading && !tree ? (
+          <div className="flex justify-center py-6"><Spinner /></div>
+        ) : topCategories.length === 0 ? (
+          <p className="text-xs text-ink-muted">Hali kategoriya yo&apos;q.</p>
+        ) : (
+          <ul className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+            {topCategories.map((c, i) => (
+              <li key={c.id}>
+                <IconTile
+                  icon={tileIcon(c.type)}
+                  imageUrl={c.iconUrl}
+                  label={c.name}
+                  caption={c.children.length > 0 ? `${c.children.length} ta bo'lim` : undefined}
+                  tone={TILE_TONES[i % TILE_TONES.length]}
+                  href={`/c/${c.slug}`}
+                />
+              </li>
+            ))}
+          </ul>
+        )}
       </section>
 
       {/* Quick facts strip */}
@@ -115,23 +133,66 @@ export default function HomePage() {
         </ul>
       </section>
 
-      {/* Nearby stores placeholder — replaced once /api/v1/stores is live */}
+      {/* Nearby stores — ACTIVE+open sellers within the buyer's delivery radius */}
       <section className="flex flex-col gap-3">
-        <div className="flex items-center justify-between">
-          <h2 className="text-sm font-semibold text-ink">Yaqin sotuvchilar</h2>
-          <span className="text-[11px] uppercase tracking-wider text-ink-faint">
-            Tez orada
-          </span>
-        </div>
-        <div className="rounded-xl border border-dashed border-line bg-surface p-5 flex flex-col items-center text-center gap-2">
-          <span className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-brand-50 text-brand-600">
-            <Store className="h-5 w-5" strokeWidth={1.75} />
-          </span>
-          <p className="text-sm text-ink">Manzilingizni qo&apos;shing</p>
-          <p className="text-xs text-ink-muted max-w-xs">
-            Manzil tanlanganda — yaqin atrofdagi sotuvchilar va yetkazib berish vaqti ko&apos;rinadi.
+        <h2 className="text-sm font-semibold text-ink">Yaqin sotuvchilar</h2>
+        {!geo ? (
+          <div className="rounded-xl border border-dashed border-line bg-surface p-5 flex flex-col items-center text-center gap-2">
+            <span className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-brand-50 text-brand-600">
+              <Store className="h-5 w-5" strokeWidth={1.75} />
+            </span>
+            <p className="text-sm text-ink">Manzilingizni qo&apos;shing</p>
+            <p className="text-xs text-ink-muted max-w-xs">
+              Manzil tanlanganda — yaqin atrofdagi sotuvchilar va yetkazib berish vaqti ko&apos;rinadi.
+            </p>
+            <Link href="/addresses" className="text-xs font-medium text-brand-700 hover:underline">
+              Manzil qo&apos;shish
+            </Link>
+          </div>
+        ) : nearbyLoading && !nearby ? (
+          <div className="flex justify-center py-6"><Spinner /></div>
+        ) : !nearby || nearby.length === 0 ? (
+          <p className="text-xs text-ink-muted">
+            Yaqin atrofda hozir ochiq sotuvchi topilmadi.
           </p>
-        </div>
+        ) : (
+          <ul className="flex flex-col gap-2">
+            {nearby.map((s) => (
+              <li key={s.id}>
+                <div className="flex items-center gap-3 rounded-xl border border-line bg-surface p-3 shadow-card">
+                  <span className="inline-flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-brand-50 text-brand-600">
+                    {s.logoUrl ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={s.logoUrl} alt="" className="h-full w-full object-cover" />
+                    ) : (
+                      <Store className="h-5 w-5" strokeWidth={1.75} />
+                    )}
+                  </span>
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-sm font-semibold text-ink">{s.name}</p>
+                    <div className="mt-0.5 flex items-center gap-2 text-[11px] text-ink-muted">
+                      <span className="tabular-nums">{s.distanceKm} km</span>
+                      {s.deliveryEtaMinutes ? (
+                        <>
+                          <span>·</span>
+                          <span className="inline-flex items-center gap-1">
+                            <Truck className="h-3 w-3" /> ~{s.deliveryEtaMinutes} daq
+                          </span>
+                        </>
+                      ) : null}
+                      {s.deliveryBaseFee && s.deliveryBaseFee > 0 ? (
+                        <>
+                          <span>·</span>
+                          <span>{formatSum(s.deliveryBaseFee)} dan</span>
+                        </>
+                      ) : null}
+                    </div>
+                  </div>
+                </div>
+              </li>
+            ))}
+          </ul>
+        )}
       </section>
     </div>
   );

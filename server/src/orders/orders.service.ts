@@ -13,6 +13,7 @@ import {
 } from '@prisma/client';
 import { AddressesService } from '../addresses/addresses.service';
 import { DispatchService } from '../contracts/dispatch.service';
+import { OrderNotifierService } from '../notifications/order-notifier.service';
 import { paginated, parsePagination } from '../common/pagination';
 import { computeDeliveryFee, decimalToNumber, haversineKm } from '../geo/geo';
 import { PrismaService } from '../prisma/prisma.service';
@@ -60,6 +61,7 @@ export class OrdersService {
     private readonly prisma: PrismaService,
     private readonly addresses: AddressesService,
     private readonly dispatch: DispatchService,
+    private readonly orderNotifier: OrderNotifierService,
   ) {}
 
   // ════════════════════════════════════════════════════════════════════
@@ -289,6 +291,16 @@ export class OrdersService {
       return out;
     });
 
+    // Ping each seller about their new order (TZ §9). Best-effort — a push
+    // failure must not fail the checkout the buyer already completed.
+    await Promise.all(
+      created.map((id) =>
+        this.orderNotifier.newOrder(id).catch((e) => {
+          this.logger.warn(`newOrder notify(${id}) failed: ${String(e)}`);
+        }),
+      ),
+    );
+
     // Hydrate + return all freshly-created orders.
     const orders = await this.prisma.order.findMany({
       where: { id: { in: created } },
@@ -445,6 +457,11 @@ export class OrdersService {
         this.logger.warn(`dispatch onOrderReady(${orderId}) failed: ${String(e)}`);
       });
     }
+
+    // Notify the customer (and the seller on terminal/courier states) — TZ §9.
+    await this.orderNotifier.statusChanged(orderId, next).catch((e) => {
+      this.logger.warn(`statusChanged notify(${orderId}) failed: ${String(e)}`);
+    });
   }
 
   private addressSnapshot(a: Address): Prisma.InputJsonValue {

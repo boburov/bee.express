@@ -10,6 +10,7 @@ import { EmptyState } from "@/shared/ui/EmptyState";
 import { Spinner } from "@/shared/ui/Spinner";
 import { ProductCard } from "@/features/catalog/ProductCard";
 import { useCategory, useProducts } from "@/features/catalog/hooks";
+import { useActiveLocation } from "@/features/location/hooks";
 
 const PAGE_SIZE = 24;
 
@@ -27,16 +28,21 @@ export default function CategoryPage() {
   const slug = params?.slug ?? null;
 
   const { data: cat, loading: catLoading } = useCategory(slug);
+  const location = useActiveLocation();
+  const geo = location ? { lat: location.lat, lng: location.lng } : null;
   const [sort, setSort] = useState<SortValue>("rating_desc");
   const [page, setPage] = useState(1);
 
-  // FOOD categories MUST send geo; without it, backend 400's. We don't have
-  // a location picker yet in this slice, so MARKETPLACE lists work and FOOD
-  // falls back to an empty state until the buyer sets an address.
-  const enabled = cat ? cat.type !== "FOOD" : false;
+  // FOOD categories MUST send geo; without it the backend 400's. Once the
+  // buyer has an active location (seeded from their default address) we can
+  // browse FOOD too. MARKETPLACE works regardless; geo is passed when known
+  // so distance/delivery-fee surface there as well.
+  const enabled = cat ? cat.type !== "FOOD" || Boolean(geo) : false;
 
   const { data: products, loading: prodLoading, error } = useProducts(
-    enabled && slug ? { categorySlug: slug, sort, page, pageSize: PAGE_SIZE } : { sort, page, pageSize: PAGE_SIZE },
+    enabled && slug
+      ? { categorySlug: slug, sort, page, pageSize: PAGE_SIZE, ...(geo ?? {}) }
+      : { sort, page, pageSize: PAGE_SIZE },
   );
 
   if (catLoading || !cat) {
@@ -102,8 +108,8 @@ export default function CategoryPage() {
         ))}
       </div>
 
-      {/* FOOD without geo — show address prompt */}
-      {cat.type === "FOOD" && !enabled ? (
+      {/* FOOD without an active location — show address prompt */}
+      {cat.type === "FOOD" && !geo ? (
         <EmptyState
           icon={<ShoppingBag className="h-6 w-6" />}
           title="Manzil tanlanmagan"

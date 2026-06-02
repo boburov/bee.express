@@ -1,3 +1,6 @@
+"use client";
+
+import { useEffect, useState } from "react";
 import {
   Bike,
   ShoppingBag,
@@ -9,20 +12,8 @@ import {
 import { PageHeader } from "@/shared/ui/PageHeader";
 import { StatCard } from "@/shared/ui/StatCard";
 import { Card, CardBody, CardHeader, CardTitle } from "@/shared/ui/Card";
-
-const stats: Array<{
-  label: string;
-  value: string;
-  icon: React.ReactNode;
-  delta?: { value: string; tone: "up" | "down" | "flat" };
-}> = [
-  { label: "Bugungi buyurtmalar", value: "—", icon: <ShoppingBag className="h-4 w-4" /> },
-  { label: "Bugungi tushum", value: "—", icon: <Wallet className="h-4 w-4" /> },
-  { label: "Aktiv kuryerlar", value: "—", icon: <Bike className="h-4 w-4" /> },
-  { label: "Aktiv sotuvchilar", value: "—", icon: <Store className="h-4 w-4" /> },
-  { label: "Yangi ro'yxat", value: "—", icon: <UserPlus className="h-4 w-4" /> },
-  { label: "Konversiya", value: "—", icon: <TrendingUp className="h-4 w-4" /> },
-];
+import { extractApiError } from "@/shared/auth/api";
+import { som, statsApi, type DashboardSummary } from "@/entities/stats/api";
 
 const nextSteps: string[] = [
   "Kategoriyalar daraxtini sozlash va dinamik atributlarni biriktirish.",
@@ -32,22 +23,49 @@ const nextSteps: string[] = [
 ];
 
 export default function DashboardPage() {
+  const [summary, setSummary] = useState<DashboardSummary | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    statsApi
+      .dashboard()
+      .then((s) => {
+        if (!cancelled) setSummary(s);
+      })
+      .catch((e) => {
+        if (!cancelled) setError(extractApiError(e));
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const cards: Array<{ label: string; value: string; icon: React.ReactNode }> = [
+    { label: "Bugungi buyurtmalar", value: summary ? String(summary.ordersToday) : "—", icon: <ShoppingBag className="h-4 w-4" /> },
+    { label: "Bugungi tushum", value: summary ? som(summary.revenueToday) : "—", icon: <Wallet className="h-4 w-4" /> },
+    { label: "Aktiv kuryerlar", value: summary ? String(summary.activeCouriers) : "—", icon: <Bike className="h-4 w-4" /> },
+    { label: "Aktiv sotuvchilar", value: summary ? String(summary.activeStores) : "—", icon: <Store className="h-4 w-4" /> },
+    { label: "Yangi ro'yxat", value: summary ? String(summary.newSignupsToday) : "—", icon: <UserPlus className="h-4 w-4" /> },
+    { label: "Konversiya", value: summary ? `${summary.conversionPct}%` : "—", icon: <TrendingUp className="h-4 w-4" /> },
+  ];
+
   return (
     <div className="flex flex-col gap-8">
       <PageHeader
         title="Boshqaruv"
-        description="Tizim umumiy ko'rsatkichlari. Real ma'lumotlar keyingi bosqichda ulanadi."
+        description="Tizim umumiy ko'rsatkichlari — bugungi buyurtma va tushum, aktiv ishtirokchilar."
       />
 
+      {error ? (
+        <div className="rounded-lg border border-red-100 bg-red-50 px-3 py-2 text-sm text-red-700">
+          {error}
+        </div>
+      ) : null}
+
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        {stats.map((s) => (
-          <StatCard
-            key={s.label}
-            label={s.label}
-            value={s.value}
-            icon={s.icon}
-            delta={s.delta}
-          />
+        {cards.map((s) => (
+          <StatCard key={s.label} label={s.label} value={s.value} icon={s.icon} />
         ))}
       </div>
 

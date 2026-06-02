@@ -7,6 +7,7 @@ import {
 import { OrderStatus, type Prisma } from '@prisma/client';
 import { paginated, parsePagination } from '../common/pagination';
 import { ContractsService } from '../contracts/contracts.service';
+import { OrderNotifierService } from '../notifications/order-notifier.service';
 import { boundingBox, decimalToNumber, haversineKm } from '../geo/geo';
 import { PrismaService } from '../prisma/prisma.service';
 import { AvailableOrdersQueryDto } from './dto/available-orders-query.dto';
@@ -49,6 +50,7 @@ export class CourierService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly contracts: ContractsService,
+    private readonly orderNotifier: OrderNotifierService,
   ) {}
 
   // ════════════════════════════════════════════════════════════════════
@@ -149,6 +151,11 @@ export class CourierService {
       .ensureTemporaryContract(courierId, detail.storeId)
       .catch(() => undefined);
 
+    // Tell the customer + seller a courier is on it (TZ §9). Best-effort.
+    await this.orderNotifier
+      .statusChanged(orderId, OrderStatus.COURIER_ASSIGNED)
+      .catch(() => undefined);
+
     return serializeCourierOrder(detail, { full: true });
   }
 
@@ -220,6 +227,11 @@ export class CourierService {
         },
       });
     });
+
+    // Notify the customer (and seller on DELIVERED) — TZ §9. Best-effort.
+    await this.orderNotifier
+      .statusChanged(orderId, dto.status)
+      .catch(() => undefined);
 
     return this.getMine(orderId, courierId);
   }

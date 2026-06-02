@@ -1,15 +1,14 @@
-import { ComingSoon } from "@/shared/ui/ComingSoon";
+import { PageHeader } from "@/shared/ui/PageHeader";
+import { OrdersList } from "@/features/orders/orders-list/OrdersList";
 
 export default function OrdersPage() {
   return (
-    <ComingSoon
-      title="Buyurtmalar"
-      description="Barcha buyurtmalar, filtrlar (sana, status, sotuvchi, kuryer, hudud)."
-      next={[
-        "Buyurtma list view + filtrlar",
-        "Buyurtma tafsiloti — timeline, ishtirokchilar",
-        "Muammoli buyurtmalarga aralashish (kuryer topilmagan, bekor qilingan)",
-      ]}
-    />
+    <div className="flex flex-col gap-6">
+      <PageHeader
+        title="Buyurtmalar"
+        description="Barcha sotuvchilar bo'yicha buyurtmalar — holat va raqam bo'yicha filtr, har birining to'liq tarixi."
+      />
+      <OrdersList />
+    </div>
   );
 }

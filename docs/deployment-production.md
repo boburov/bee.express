@@ -48,7 +48,7 @@ SUPERADMIN_PASSWORD="<kuchli-parol>"
 SUPERADMIN_FULL_NAME="BeeExpress Owner"
 
 TELEGRAM_BOT_TOKEN="..."
-TELEGRAM_BOT_USERNAME="bee_express_bot"
+TELEGRAM_BOT_USERNAME="BeeExpressBot"
 
 # MAJBURIY: bo'sh qolsa productionda HAMMA cross-origin bloklanadi
 CORS_ORIGINS="https://admin.example.uz,https://app.example.uz,https://seller.example.uz,https://courier.example.uz"
@@ -69,7 +69,7 @@ API URL — **HTTPS domen** orqali:
 ```ini
 # admin/.env.local, seller/.env.local, client/.env.local, courier/.env.local
 NEXT_PUBLIC_API_URL=https://api.example.uz/api
-NEXT_PUBLIC_TELEGRAM_BOT_USERNAME=bee_express_bot   # admin'da kerak emas
+NEXT_PUBLIC_TELEGRAM_BOT_USERNAME=BeeExpressBot   # admin'da kerak emas
 ```
 > `NEXT_PUBLIC_*` build vaqtida bundle'ga "muhrlanadi" — o'zgartirgach **qayta
 > build** shart.

@@ -3,6 +3,7 @@ import type {
   CategoryDetail,
   CategoryNode,
   ListProductsQuery,
+  NearbyStore,
   ProductDetail,
   ProductsListResponse,
 } from "./types";
@@ -31,6 +32,15 @@ export const catalogApi = {
     const { data } = await api.get<ProductDetail>(`/v1/products/${slug}`, {
       params: geo,
     });
+    return data;
+  },
+  storesNearby: async (query: {
+    lat: number;
+    lng: number;
+    radiusKm?: number;
+    limit?: number;
+  }): Promise<NearbyStore[]> => {
+    const { data } = await api.get<NearbyStore[]>("/v1/stores/nearby", { params: query });
     return data;
   },
 };
