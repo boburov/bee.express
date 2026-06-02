@@ -23,7 +23,7 @@ export default function OrdersPage() {
   const { data, loading, error } = useOrders({ page, limit: PAGE_SIZE, status: statusFilter });
 
   return (
-    <div className="flex flex-col gap-5">
+    <div className="flex flex-col gap-5 w-full lg:max-w-3xl lg:mx-auto">
       <PageHeader
         title="Buyurtmalarim"
         description="Buyurtma holatlari va tarix."

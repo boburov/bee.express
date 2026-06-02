@@ -14,9 +14,11 @@ import { ListSellerProductsQueryDto } from './dto/list-products-query.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 
 /**
- * Seller-scoped product CRUD. Sellers create **master products** that go to
- * admin moderation (status: PENDING). After approval, the seller's
- * `SellerOffer` (price/stock) makes the product purchasable.
+ * Seller-scoped product CRUD. Sellers create **master products** that are
+ * auto-published (status: ACTIVE) so they appear in the client catalog
+ * immediately — no admin moderation gate. The seller's `SellerOffer`
+ * (price/stock) makes the product purchasable. Admin can still suspend or
+ * archive a product later via the moderation endpoints.
  *
  * v1 simplification: one default ProductVariant per product. Variant
  * combinations (color/size/RAM) are added by editing the product later.
@@ -124,7 +126,9 @@ export class SellerProductsService {
           categoryId: dto.categoryId,
           brandId: dto.brandId ?? null,
           createdById: sellerId,
-          status: 'PENDING',
+          // Auto-published: visible in the client catalog right away.
+          status: 'ACTIVE',
+          publishedAt: new Date(),
           images: {
             create: images.map((img, sortOrder) => ({
               url: img.url,
@@ -208,8 +212,10 @@ export class SellerProductsService {
           ...(dto.description !== undefined && { description: dto.description || null }),
           ...(dto.categoryId !== undefined && { categoryId: dto.categoryId }),
           ...(dto.brandId !== undefined && { brandId: dto.brandId || null }),
-          // Edits go back to PENDING so the admin re-moderates.
-          status: 'PENDING',
+          // Auto-published: edits stay live (no re-moderation gate). Keep the
+          // original publish timestamp; backfill it for legacy PENDING rows.
+          status: 'ACTIVE',
+          publishedAt: existing.publishedAt ?? new Date(),
         },
       });
 

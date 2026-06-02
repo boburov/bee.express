@@ -26,6 +26,9 @@ Asosiy qoidalar:
 - [`client-design-refresh.md`](./client-design-refresh.md) — Client (Mini App)
   dizayn yangilash: emoji o'rniga Lucide ikonlar, `IconTile`, `Avatar`, polished
   topbar/bottom-nav.
+- [`client-desktop-responsive.md`](./client-desktop-responsive.md) — Client panelni
+  desktop uchun responsive qilish: `lg+` da Sidebar + kengroq kontent, BottomNav
+  yashirin, mahsulot tafsiloti 2-ustun. Mobil ko'rinish o'zgarmagan.
 - [`seller-panel-refresh.md`](./seller-panel-refresh.md) — Sotuvchi paneli dizayn +
   auth refresh: premium orange, Josefin Sans, FSD struktura, rol-gating
   token saqlashdan oldin.
@@ -66,6 +69,10 @@ Asosiy qoidalar:
 - [`admin-moderation-v1.md`](./admin-moderation-v1.md) — Admin paneli
   moderatsiya: /dashboard/moderation tabs (products + stores) + approve/reject
   + StoreStatus REJECTED enum qo'shildi.
+- [`seller-product-auto-publish.md`](./seller-product-auto-publish.md) — Sotuvchi
+  mahsuloti avto-publikatsiya: `create()`/`update()` endi `ACTIVE` + `publishedAt`
+  beradi (moderatsiyasiz), shu zahoti client katalogida ko'rinadi; new wizard matni
+  yangilandi.
 - [`courier-panel-v1.md`](./courier-panel-v1.md) — Kuryer Mini App to'liq oqimi:
   COURIER_ASSIGNED holati + courier* maydonlar, bo'sh pool (geo + PII gating),
   atomik accept, Oldim/Yetkazdim, daromad/tarix/profil. `/courier` modul + 6 sahifa.

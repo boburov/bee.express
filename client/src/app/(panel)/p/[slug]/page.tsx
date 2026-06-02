@@ -127,6 +127,10 @@ export default function ProductDetailPage() {
         </Link>
       </div>
 
+      {/* Desktop: gallery (left, sticky) + details (right). Mobile: single column. */}
+      <div className="flex flex-col gap-4 lg:grid lg:grid-cols-2 lg:gap-8 lg:items-start">
+      {/* Left column — gallery */}
+      <div className="flex flex-col gap-4 lg:sticky lg:top-20">
       {/* Image gallery */}
       <div className="aspect-square w-full rounded-xl bg-surface-3 overflow-hidden border border-line-soft">
         {product.images.length > 0 ? (
@@ -143,7 +147,7 @@ export default function ProductDetailPage() {
         )}
       </div>
       {product.images.length > 1 ? (
-        <div className="-mx-4 px-4 overflow-x-auto">
+        <div className="-mx-4 px-4 overflow-x-auto lg:mx-0 lg:px-0">
           <ul className="flex gap-2 w-max">
             {product.images.map((img, i) => (
               <li key={img.id}>
@@ -162,7 +166,10 @@ export default function ProductDetailPage() {
           </ul>
         </div>
       ) : null}
+      </div>
 
+      {/* Right column — details */}
+      <div className="flex flex-col gap-4">
       {/* Title + rating */}
       <div>
         <h1 className="text-xl font-semibold tracking-tight text-ink">{product.title}</h1>
@@ -319,8 +326,8 @@ export default function ProductDetailPage() {
         </Card>
       ) : null}
 
-      {/* Sticky bottom action bar */}
-      <div className="sticky bottom-16 -mx-4 px-4 pt-2 bg-gradient-to-t from-surface-2 via-surface-2 to-transparent">
+      {/* Action bar — sticky above the bottom-nav on mobile, inline on desktop. */}
+      <div className="sticky bottom-16 -mx-4 px-4 pt-2 bg-linear-to-t from-surface-2 via-surface-2 to-transparent lg:static lg:mx-0 lg:px-0 lg:pt-0 lg:bg-none">
         {addError ? (
           <div className="mb-2 p-3 rounded-md bg-red-50 text-sm text-danger flex items-start gap-2">
             <AlertTriangle className="h-4 w-4 mt-0.5 shrink-0" />
@@ -371,6 +378,8 @@ export default function ProductDetailPage() {
             </Button>
           </div>
         </Card>
+      </div>
+      </div>
       </div>
     </div>
   );

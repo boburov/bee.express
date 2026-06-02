@@ -12,7 +12,7 @@ interface TopbarProps {
 export function Topbar({ cartCount = 0 }: TopbarProps) {
   return (
     <header className="sticky top-0 z-20 border-b border-line bg-surface/90 backdrop-blur supports-[backdrop-filter]:bg-surface/70">
-      <div className="relative max-w-md mx-auto h-14 px-4 flex items-center justify-between">
+      <div className="relative max-w-md lg:max-w-none mx-auto h-14 lg:h-16 px-4 lg:px-8 flex items-center justify-between">
         {/* subtle warm gradient overlay — matches admin sidebar header */}
         <div
           className="absolute inset-0 bg-gradient-soft opacity-50 pointer-events-none"
@@ -20,18 +20,20 @@ export function Topbar({ cartCount = 0 }: TopbarProps) {
         />
 
         <div className="relative flex items-center gap-2">
-          <Logo size={28} />
-        </div>
-
-        <div className="relative flex items-center gap-1">
+          {/* Logo on mobile only — the Sidebar owns it on desktop. */}
+          <Logo size={28} className="lg:hidden" />
+          {/* Address selector — surfaced on desktop where there's room on the left. */}
           <Link
             href="/profile"
             aria-label="Manzil"
-            className="hidden xs:inline-flex h-9 items-center gap-1.5 rounded-md px-2 text-xs font-medium text-ink-muted hover:bg-surface-3 hover:text-ink"
+            className="hidden lg:inline-flex h-9 items-center gap-1.5 rounded-md px-2 text-sm font-medium text-ink-muted hover:bg-surface-3 hover:text-ink"
           >
-            <MapPin className="h-3.5 w-3.5" />
+            <MapPin className="h-4 w-4" />
             <span>Manzil yo&apos;q</span>
           </Link>
+        </div>
+
+        <div className="relative flex items-center gap-1">
           <Link
             href="/cart"
             aria-label={`Savat${cartCount ? ` (${cartCount})` : ""}`}

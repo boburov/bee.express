@@ -77,7 +77,7 @@ export default function CheckoutPage() {
   }
 
   return (
-    <div className="flex flex-col gap-5">
+    <div className="flex flex-col gap-5 w-full lg:max-w-2xl lg:mx-auto">
       <div className="flex items-center gap-3">
         <Link
           href="/cart"

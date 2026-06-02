@@ -10,7 +10,7 @@ export function BottomNav() {
   return (
     <nav
       aria-label="Asosiy navigatsiya"
-      className="sticky bottom-0 z-30 border-t border-line bg-surface/95 backdrop-blur supports-[backdrop-filter]:bg-surface/80"
+      className="lg:hidden sticky bottom-0 z-30 border-t border-line bg-surface/95 backdrop-blur supports-[backdrop-filter]:bg-surface/80"
       style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
     >
       <ul className="grid grid-cols-4 max-w-md mx-auto">

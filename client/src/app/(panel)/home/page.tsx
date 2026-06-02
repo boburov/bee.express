@@ -81,7 +81,7 @@ export default function HomePage() {
             Hammasi <ArrowRight className="h-3 w-3" />
           </Link>
         </div>
-        <ul className="grid grid-cols-2 gap-3">
+        <ul className="grid grid-cols-2 lg:grid-cols-4 gap-3">
           {categories.map((c) => (
             <li key={c.slug}>
               <IconTile

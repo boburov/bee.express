@@ -22,7 +22,7 @@ export default function CatalogPage() {
       {/* Search affordance — wired to /catalog/search when search lands. */}
       <Link
         href="/catalog"
-        className="flex items-center gap-2 h-11 rounded-xl border border-line bg-surface px-3 text-sm text-ink-muted shadow-card hover:border-brand-300"
+        className="flex items-center gap-2 h-11 w-full lg:max-w-xl rounded-xl border border-line bg-surface px-3 text-sm text-ink-muted shadow-card hover:border-brand-300"
       >
         <Search className="h-4 w-4 text-ink-muted" />
         <span className="flex-1 text-left">Mahsulot yoki kategoriya qidiring</span>
@@ -65,7 +65,7 @@ function Section({ title, items }: { title: string; items: CategoryNode[] }) {
   return (
     <section className="flex flex-col gap-3">
       <h2 className="text-sm font-semibold text-ink">{title}</h2>
-      <ul className="grid grid-cols-2 gap-3">
+      <ul className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         {items.map((c) => (
           <li key={c.id}>
             <Link

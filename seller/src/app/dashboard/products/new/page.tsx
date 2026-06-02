@@ -170,8 +170,8 @@ export default function NewProductPage() {
           <div className="p-4 border-b border-line-soft">
             <h3 className="text-sm font-semibold text-ink">Boshlang'ich offer (ixtiyoriy)</h3>
             <p className="text-xs text-ink-muted mt-1">
-              Narx + qoldiq darhol qo'shilsa, mahsulot tasdiqlangach sotuvga chiqadi.
-              Bo'sh qoldirsangiz keyin offer qo'shasiz.
+              Mahsulot xaridorlar katalogida ko'rinishi uchun narx + qoldiq (0 dan
+              katta) kerak. Bo'sh qoldirsangiz keyin offer qo'shasiz — shunda sotuvga chiqadi.
             </p>
           </div>
           <div className="p-4 grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -206,12 +206,12 @@ export default function NewProductPage() {
             <Button type="button" variant="ghost">Bekor</Button>
           </Link>
           <Button type="submit" loading={submitting} size="lg">
-            Yaratish va moderatsiyaga jo'natish
+            Yaratish va e'lon qilish
           </Button>
         </div>
         <p className="text-xs text-ink-muted text-center">
-          Yaratilgan mahsulot avtomatik <span className="font-semibold">Moderatsiyada</span> holatiga
-          tushadi. Admin tasdiqlagach sotuvga chiqadi.
+          Yaratilgan mahsulot darhol <span className="font-semibold">Faol</span> bo'lib
+          xaridorlar katalogida ko'rinadi (narx + qoldiq kiritilgan bo'lsa sotuvga chiqadi).
         </p>
       </form>
     </div>

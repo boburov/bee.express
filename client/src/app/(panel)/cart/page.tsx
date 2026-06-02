@@ -58,7 +58,7 @@ export default function CartPage() {
   const isEmpty = !cart || cart.itemCount === 0;
 
   return (
-    <div className="flex flex-col gap-5">
+    <div className="flex flex-col gap-5 w-full lg:max-w-2xl lg:mx-auto">
       <PageHeader
         title="Savat"
         description={isEmpty ? "Tanlangan mahsulotlar va yetkazib berish manzili." : `${cart!.itemCount} ta mahsulot · ${cart!.stores.length} do'kondan`}
