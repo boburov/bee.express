@@ -23,6 +23,7 @@ import { Card } from "@/components/ui/Card";
 import { Spinner } from "@/components/ui/Spinner";
 import { courierApi } from "@/features/deliveries/api";
 import { useCourierOrder } from "@/features/deliveries/hooks";
+import { useGeolocation } from "@/lib/geolocation";
 import {
   COURIER_ACTION,
   COURIER_STATUS_META,
@@ -45,6 +46,9 @@ export default function DeliveryDetailPage() {
   const router = useRouter();
   const orderId = params?.id ?? null;
   const { data: order, loading, error, reload } = useCourierOrder(orderId);
+  // Courier's live location → fed to Google Maps as `origin` so the route is
+  // plotted automatically (not just a destination pin).
+  const { coords: myCoords, error: geoError, request: requestGeo } = useGeolocation();
 
   const [pending, setPending] = useState(false);
   const [actionError, setActionError] = useState<string | null>(null);
@@ -105,7 +109,11 @@ export default function DeliveryDetailPage() {
   const canRelease = order.status === "COURIER_ASSIGNED";
   const pickupNav = yandexPin(order.pickup.latitude, order.pickup.longitude);
   const dropoffNav = yandexPin(order.dropoff.latitude, order.dropoff.longitude);
-  const dropoffGoogle = googleMapsDir(order.dropoff.latitude, order.dropoff.longitude);
+  const dropoffGoogle = googleMapsDir(
+    order.dropoff.latitude,
+    order.dropoff.longitude,
+    myCoords,
+  );
   const isDelivered = order.status === "DELIVERED";
   const pickupPt =
     order.pickup.latitude != null && order.pickup.longitude != null
@@ -185,14 +193,30 @@ export default function DeliveryDetailPage() {
               </span>
             </div>
             {dropoffGoogle ? (
-              <a
-                href={dropoffGoogle}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="mt-3 flex w-full items-center justify-center gap-2 rounded-lg bg-brand-500 px-4 py-2.5 text-sm font-semibold text-white hover:bg-brand-600"
-              >
-                <Navigation className="h-4 w-4" /> Google Maps orqali yo&apos;nalish
-              </a>
+              <>
+                <a
+                  href={dropoffGoogle}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={() => {
+                    if (!myCoords) requestGeo();
+                  }}
+                  className="mt-3 flex w-full items-center justify-center gap-2 rounded-lg bg-brand-500 px-4 py-2.5 text-sm font-semibold text-white hover:bg-brand-600"
+                >
+                  <Navigation className="h-4 w-4" /> Google Maps orqali yo&apos;nalish
+                </a>
+                {!myCoords ? (
+                  <button
+                    type="button"
+                    onClick={() => requestGeo()}
+                    className="mt-1.5 w-full text-center text-[11px] text-ink-muted hover:text-ink"
+                  >
+                    {geoError
+                      ? `${geoError} — aniq yo'nalish uchun joylashuvga ruxsat bering`
+                      : "Aniq yo'nalish uchun joylashuvga ruxsat bering"}
+                  </button>
+                ) : null}
+              </>
             ) : null}
           </div>
         </Card>

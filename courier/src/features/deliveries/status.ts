@@ -47,10 +47,18 @@ export function yandexPin(lat: number | null, lng: number | null): string | null
 }
 
 /**
- * Google Maps turn-by-turn directions deeplink — opens navigation from the
- * courier's current location to the destination, route already plotted.
+ * Google Maps turn-by-turn directions deeplink (Maps URLs API — no key needed).
+ * When `origin` (the courier's live GPS) is supplied, Google plots the route
+ * origin→destination immediately. Without it, Google falls back to the device's
+ * current location, which can fail to auto-route on desktop / when GPS is off —
+ * so always pass the courier's coords when available.
  */
-export function googleMapsDir(lat: number | null, lng: number | null): string | null {
-  if (lat == null || lng == null) return null;
-  return `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}&travelmode=driving`;
+export function googleMapsDir(
+  destLat: number | null,
+  destLng: number | null,
+  origin?: { lat: number; lng: number } | null,
+): string | null {
+  if (destLat == null || destLng == null) return null;
+  const o = origin ? `&origin=${origin.lat},${origin.lng}` : "";
+  return `https://www.google.com/maps/dir/?api=1${o}&destination=${destLat},${destLng}&travelmode=driving`;
 }
