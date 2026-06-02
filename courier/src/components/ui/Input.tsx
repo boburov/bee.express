@@ -19,8 +19,8 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
       <span
         className={cn(
           "flex items-center h-11 rounded-lg border border-line bg-surface px-3 transition-colors",
-          "focus-within:border-bee-500 focus-within:ring-2 focus-within:ring-bee-200",
-          error && "border-red-500 focus-within:border-red-500 focus-within:ring-red-100",
+          "focus-within:border-brand-500 focus-within:ring-2 focus-within:ring-brand-200",
+          error && "border-danger focus-within:border-danger focus-within:ring-danger/15",
         )}
       >
         {leftSlot ? <span className="mr-2 text-ink-muted">{leftSlot}</span> : null}
@@ -35,7 +35,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
         />
       </span>
       {error ? (
-        <span className="text-xs text-red-600">{error}</span>
+        <span className="text-xs text-danger">{error}</span>
       ) : hint ? (
         <span className="text-xs text-ink-muted">{hint}</span>
       ) : null}

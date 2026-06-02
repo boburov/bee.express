@@ -134,7 +134,7 @@ export default function LoginPage() {
                           href={`https://t.me/${BOT_USERNAME}`}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="inline-flex items-center justify-center h-9 px-3 rounded-md bg-ink text-bee-500 text-xs font-semibold hover:bg-ink-soft"
+                          className="inline-flex items-center justify-center h-9 px-3 rounded-md bg-brand-500 text-white text-xs font-semibold hover:bg-brand-600"
                         >
                           @{BOT_USERNAME} botga o&apos;tish
                         </a>

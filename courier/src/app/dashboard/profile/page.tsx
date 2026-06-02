@@ -85,7 +85,7 @@ export default function ProfilePage() {
       <Card>
         <CardBody>
           <div className="flex items-center gap-4">
-            <span className="inline-flex h-14 w-14 items-center justify-center rounded-full bg-ink text-xl font-semibold text-bee-500">
+            <span className="inline-flex h-14 w-14 items-center justify-center rounded-full bg-brand-100 text-xl font-semibold text-brand-700">
               {(profile.firstName ?? "K").slice(0, 1).toUpperCase()}
             </span>
             <div className="min-w-0">
@@ -136,7 +136,7 @@ export default function ProfilePage() {
               <select
                 value={transportType}
                 onChange={(e) => setTransportType(e.target.value as TransportType | "")}
-                className="h-11 rounded-lg border border-line bg-surface px-3 text-sm text-ink outline-none focus:border-bee-500 focus:ring-2 focus:ring-bee-200"
+                className="h-11 rounded-lg border border-line bg-surface px-3 text-sm text-ink outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-200"
               >
                 <option value="">Tanlang…</option>
                 {TRANSPORT_OPTIONS.map((t) => (

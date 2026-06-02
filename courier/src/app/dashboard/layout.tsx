@@ -71,7 +71,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         <Logo size={28} />
         <div className="flex items-center gap-3 text-sm">
           <span className="text-ink-muted hidden sm:inline">{displayName}</span>
-          <span className="inline-flex items-center justify-center h-8 w-8 rounded-full bg-ink text-bee-500 text-xs font-semibold">
+          <span className="inline-flex items-center justify-center h-8 w-8 rounded-full bg-brand-100 text-brand-700 text-xs font-semibold">
             {displayName.slice(0, 1).toUpperCase()}
           </span>
           <button
@@ -92,9 +92,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 <Link
                   href={item.href}
                   className={cn(
-                    "inline-flex items-center rounded-lg px-3 py-1.5 text-sm font-medium transition-colors",
+                    "inline-flex items-center rounded-lg px-3 py-2.5 text-sm font-medium transition-colors",
                     active
-                      ? "bg-bee-500 text-ink"
+                      ? "bg-brand-500 text-white"
                       : "text-ink-soft hover:bg-surface-2 hover:text-ink",
                   )}
                 >

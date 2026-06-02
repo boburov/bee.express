@@ -130,8 +130,8 @@ export default function DeliveryDetailPage() {
 
       {/* Cash to collect (COD) */}
       {!isDelivered ? (
-        <Card className="flex items-center gap-3 bg-bee-50 p-4">
-          <span className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-bee-500/15 text-brand-700">
+        <Card className="flex items-center gap-3 bg-brand-50 p-4">
+          <span className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-brand-500/15 text-brand-700">
             <Banknote className="h-5 w-5" />
           </span>
           <div className="flex-1">

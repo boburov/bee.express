@@ -2,8 +2,7 @@
 
 /* BeeExpress — premium orange + yellow-orange accent + soft neutrals.
  * Single source of truth: /DESIGN_SYSTEM.md
- * `bee-*` is kept as an alias for backward compatibility with older pages —
- * its hex values now match the new `brand-*` palette. New code uses `brand-*`.
+ * Use `brand-*` everywhere (the legacy `bee-*` alias was removed).
  */
 
 @theme {
@@ -18,18 +17,6 @@
   --color-brand-700: #C2410C;
   --color-brand-800: #9A3412;
   --color-brand-900: #7C2D12;
-
-  /* ── Aliases (legacy `bee-*` now == brand) ── */
-  --color-bee-50:  #FFF7ED;
-  --color-bee-100: #FFEDD5;
-  --color-bee-200: #FED7AA;
-  --color-bee-300: #FDBA74;
-  --color-bee-400: #FB923C;
-  --color-bee-500: #F97316;
-  --color-bee-600: #EA580C;
-  --color-bee-700: #C2410C;
-  --color-bee-800: #9A3412;
-  --color-bee-900: #7C2D12;
 
   /* ── Accent: yellow-orange (slight highlight) ── */
   --color-accent-300: #FCD34D;

@@ -136,7 +136,7 @@ export default function DashboardPage() {
               action={
                 <Link
                   href="/dashboard/deliveries"
-                  className="inline-flex h-10 items-center gap-2 rounded-lg bg-bee-500 px-4 text-sm font-medium text-ink hover:bg-bee-600"
+                  className="inline-flex h-10 items-center gap-2 rounded-md bg-brand-500 px-4 text-sm font-medium text-white shadow-card hover:bg-brand-600"
                 >
                   Buyurtmalarni ko'rish
                   <ArrowRight className="h-4 w-4" />

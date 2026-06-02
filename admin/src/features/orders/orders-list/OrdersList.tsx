@@ -7,6 +7,7 @@ import { extractApiError } from "@/shared/auth/api";
 import { Badge } from "@/shared/ui/Badge";
 import { Card, CardBody } from "@/shared/ui/Card";
 import { EmptyState } from "@/shared/ui/EmptyState";
+import { ErrorState } from "@/shared/ui/ErrorState";
 import { Input } from "@/shared/ui/Input";
 import { Pagination } from "@/shared/ui/Pagination";
 import { Select } from "@/shared/ui/Select";
@@ -85,8 +86,14 @@ export function OrdersList() {
       </div>
 
       <CardBody className="px-0 pb-0">
-        {error ? (
-          <div className="m-4 rounded-lg border border-red-100 bg-red-50 px-3 py-2 text-sm text-red-700">
+        {error && !data ? (
+          <ErrorState
+            className="m-4"
+            description={error}
+            onRetry={refresh}
+          />
+        ) : error ? (
+          <div className="m-4 rounded-lg border border-danger/20 bg-danger/5 px-3 py-2 text-sm text-danger">
             {error}
           </div>
         ) : null}

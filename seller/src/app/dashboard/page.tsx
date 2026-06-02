@@ -38,7 +38,7 @@ export default function DashboardPage() {
   const { data: store, loading, hasLoaded, setData } = useMyStore();
 
   return (
-    <div className="flex flex-col gap-8">
+    <div className="flex flex-col gap-6">
       <PageHeader
         title={`Xush kelibsiz, ${name}`}
         description="Do'koningiz holati va boshqaruv markazi."

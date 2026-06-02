@@ -7,6 +7,7 @@ import { Badge } from "@/shared/ui/Badge";
 import { Button } from "@/shared/ui/Button";
 import { Card } from "@/shared/ui/Card";
 import { EmptyState } from "@/shared/ui/EmptyState";
+import { ErrorState } from "@/shared/ui/ErrorState";
 import { PageHeader } from "@/shared/ui/PageHeader";
 import { Spinner } from "@/shared/ui/Spinner";
 import { useSellerOrders } from "@/features/orders/hooks";
@@ -20,14 +21,14 @@ export default function SellerOrdersPage() {
   const [statusFilter, setStatusFilter] = useState<OrderStatus | undefined>(undefined);
   const [page, setPage] = useState(1);
 
-  const { data, loading, error } = useSellerOrders({
+  const { data, loading, error, reload } = useSellerOrders({
     page,
     limit: PAGE_SIZE,
     status: statusFilter,
   });
 
   return (
-    <div className="flex flex-col gap-5">
+    <div className="flex flex-col gap-6">
       <PageHeader
         title="Buyurtmalar"
         description="Do'koningizga kelgan buyurtmalar va ularning holatlari."
@@ -71,7 +72,7 @@ export default function SellerOrdersPage() {
       {loading && !data ? (
         <div className="flex justify-center py-10"><Spinner /></div>
       ) : error ? (
-        <p className="text-sm text-danger">{error}</p>
+        <ErrorState description={error} onRetry={() => reload()} />
       ) : !data || data.data.length === 0 ? (
         <EmptyState
           icon={<ShoppingBag className="h-6 w-6" />}

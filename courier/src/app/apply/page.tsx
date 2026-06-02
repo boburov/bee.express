@@ -141,7 +141,7 @@ export default function ApplyPage() {
                       <select
                         value={transportType}
                         onChange={(e) => setTransportType(e.target.value as TransportType)}
-                        className="h-11 rounded-lg border border-line bg-surface px-3 text-sm text-ink outline-none focus:border-bee-500 focus:ring-2 focus:ring-bee-200"
+                        className="h-11 rounded-lg border border-line bg-surface px-3 text-sm text-ink outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-200"
                       >
                         {TRANSPORT_OPTIONS.map((o) => (
                           <option key={o.value} value={o.value}>
@@ -166,7 +166,7 @@ export default function ApplyPage() {
                         rows={3}
                         maxLength={1000}
                         placeholder="O'zingiz haqingizda qisqacha…"
-                        className="rounded-lg border border-line bg-surface px-3 py-2 text-sm text-ink outline-none focus:border-bee-500 focus:ring-2 focus:ring-bee-200"
+                        className="rounded-lg border border-line bg-surface px-3 py-2 text-sm text-ink outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-200"
                       />
                     </label>
                     {error ? (
