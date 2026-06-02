@@ -10,7 +10,10 @@ import { decimalToNumber } from '../geo/geo';
 import { PrismaService } from '../prisma/prisma.service';
 import { NotificationsService } from '../notifications/notifications.service';
 import { OrderNotifierService } from '../notifications/order-notifier.service';
-import { estimateCourierEarning } from '../courier/courier.serializer';
+import {
+  computeContractEarning,
+  estimateCourierEarning,
+} from '../courier/courier.serializer';
 
 /**
  * One contracted courier handles one order at a time in v1. A courier with an
@@ -78,7 +81,11 @@ export class DispatchService {
       );
     }
 
-    const earning = estimateCourierEarning(decimalToNumber(order.deliveryFee) ?? 0);
+    const earning = await this.resolveEarning(
+      courierId,
+      order.storeId,
+      decimalToNumber(order.deliveryFee) ?? 0,
+    );
 
     const res = await this.prisma.order.updateMany({
       where: { id: orderId, status: OrderStatus.READY, courierId: null },
@@ -158,7 +165,11 @@ export class DispatchService {
       return;
     }
 
-    const earning = estimateCourierEarning(decimalToNumber(order.deliveryFee) ?? 0);
+    const earning = await this.resolveEarning(
+      chosen,
+      order.storeId,
+      decimalToNumber(order.deliveryFee) ?? 0,
+    );
 
     // Atomic claim — identical guard to CourierService.accept so a pool courier
     // racing us loses cleanly.
@@ -192,6 +203,29 @@ export class DispatchService {
   }
 
   // ─── helpers ──────────────────────────────────────────────────────────
+
+  /**
+   * Per-order earning from the store↔courier contract's payment config
+   * (seller-set). Falls back to the default share when no contract exists
+   * (e.g. an open-pool claim before the temporary contract is created).
+   */
+  private async resolveEarning(
+    courierId: string,
+    storeId: string,
+    deliveryFee: number,
+  ): Promise<number> {
+    const contract = await this.prisma.courierContract.findUnique({
+      where: { courierId_storeId: { courierId, storeId } },
+      select: { paymentType: true, paymentValue: true },
+    });
+    return contract
+      ? computeContractEarning(
+          contract.paymentType,
+          decimalToNumber(contract.paymentValue) ?? 0,
+          deliveryFee,
+        )
+      : estimateCourierEarning(deliveryFee);
+  }
 
   /** Courier ids with an ACTIVE, non-expired contract for the store. */
   private async activeContractCourierIds(storeId: string): Promise<string[]> {

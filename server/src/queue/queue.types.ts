@@ -16,6 +16,8 @@ export interface TgNotifyJob {
   telegramId: string;
   text: string;
   link?: string;
+  /** Absolute HTTPS URL to open the order in the right mini app (button). */
+  deepLink?: string;
   notificationId?: string;
   requestId: string;
   enqueuedAt: number;

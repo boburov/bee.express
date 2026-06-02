@@ -9,6 +9,7 @@ import { LogoutButton } from "@/shared/auth/LogoutButton";
 import { sellerNav } from "@/shared/config/nav";
 import { useAuthStore } from "@/shared/auth/store";
 import { cn } from "@/shared/lib/cn";
+import { formatPhone } from "@/shared/lib/format";
 
 interface SidebarProps {
   mobileOpen: boolean;
@@ -22,7 +23,7 @@ export function Sidebar({ mobileOpen, onClose }: SidebarProps) {
   const displayName = me?.firstName || me?.lastName
     ? [me?.firstName, me?.lastName].filter(Boolean).join(" ")
     : me?.phone
-      ? `+${me.phone}`
+      ? formatPhone(me.phone)
       : "Sotuvchi";
 
   useEffect(() => {

@@ -3,7 +3,7 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { CourierContractStatus, Prisma } from '@prisma/client';
+import { CourierContractStatus, CourierPaymentType, Prisma } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { NotificationsService } from '../notifications/notifications.service';
 import {
@@ -202,6 +202,21 @@ export class ContractsService {
       throw new NotFoundException('Kontrakt topilmadi');
     }
     return serializeContractForSeller(c);
+  }
+
+  /** Seller sets how this courier is paid per delivery (Stabil/PER_ORDER/PERCENT). */
+  async setPayment(
+    id: string,
+    storeId: string,
+    paymentType: CourierPaymentType,
+    paymentValue: number,
+  ) {
+    await this.requireStoreContract(id, storeId);
+    await this.prisma.courierContract.update({
+      where: { id },
+      data: { paymentType, paymentValue },
+    });
+    return this.getForStore(id, storeId);
   }
 
   // ════════════════════════════════════════════════════════════════════

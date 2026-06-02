@@ -1,5 +1,8 @@
 export type ContractStatus = "PENDING" | "ACTIVE" | "REJECTED" | "REVOKED";
 
+/** How the courier is paid per delivery (seller-set). */
+export type CourierPaymentType = "SALARY" | "PER_ORDER" | "PERCENT";
+
 /** Mirrors server serializeContractForSeller. */
 export interface SellerContract {
   id: string;
@@ -9,6 +12,8 @@ export interface SellerContract {
   message: string | null;
   rejectionReason: string | null;
   approvedAt: string | null;
+  paymentType: CourierPaymentType;
+  paymentValue: number | null;
   createdAt: string;
   updatedAt: string;
   courier: {

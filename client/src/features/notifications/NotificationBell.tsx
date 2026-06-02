@@ -1,12 +1,15 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 import { Bell } from "lucide-react";
 import { cn } from "@/shared/lib/cn";
 import { useNotifications } from "./NotificationsProvider";
+import { notificationLink } from "./types";
 
 /** Bell with unread badge + dropdown list. Polling lives in the provider. */
 export function NotificationBell() {
+  const router = useRouter();
   const { unread, items, loadingList, refreshList, markRead, markAllRead } = useNotifications();
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
@@ -64,6 +67,9 @@ export function NotificationBell() {
                       type="button"
                       onClick={() => {
                         if (!n.readAt) void markRead(n.id);
+                        const link = notificationLink(n.data);
+                        setOpen(false);
+                        if (link) router.push(link);
                       }}
                       className={cn(
                         "w-full text-left px-4 py-3 hover:bg-surface-2 transition-colors",

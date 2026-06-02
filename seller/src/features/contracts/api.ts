@@ -1,5 +1,5 @@
 import { api } from "@/shared/auth/api";
-import type { ContractStatus, SellerContract } from "./types";
+import type { CourierPaymentType, ContractStatus, SellerContract } from "./types";
 
 /**
  * Seller-scoped courier contracts API. Backend enforces @Roles("seller") and
@@ -26,6 +26,17 @@ export const sellerContractsApi = {
   revoke: async (id: string, reason?: string): Promise<SellerContract> => {
     const { data } = await api.patch<SellerContract>(`/seller/contracts/${id}/revoke`, {
       reason,
+    });
+    return data;
+  },
+  setPayment: async (
+    id: string,
+    paymentType: CourierPaymentType,
+    paymentValue: number,
+  ): Promise<SellerContract> => {
+    const { data } = await api.patch<SellerContract>(`/seller/contracts/${id}/payment`, {
+      paymentType,
+      paymentValue,
     });
     return data;
   },

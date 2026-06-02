@@ -9,6 +9,7 @@ import { LogoutButton } from "@/shared/auth/LogoutButton";
 import { customerNav } from "@/shared/config/nav";
 import { useAuthStore } from "@/shared/auth/store";
 import { cn } from "@/shared/lib/cn";
+import { formatPhone } from "@/shared/lib/format";
 
 interface SidebarProps {
   /** Cart item count — drives the brand-dot badge on the "Savat" link. */
@@ -28,7 +29,7 @@ export function Sidebar({ cartCount = 0 }: SidebarProps) {
   const displayName = me?.firstName
     ? `${me.firstName}${me.lastName ? " " + me.lastName : ""}`
     : me?.phone
-      ? `+${me.phone}`
+      ? formatPhone(me.phone)
       : "Mehmon";
 
   return (

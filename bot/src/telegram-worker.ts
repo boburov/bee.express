@@ -1,4 +1,4 @@
-import type { Bot } from "grammy";
+import { InlineKeyboard, type Bot } from "grammy";
 import { TG_NOTIFY_QUEUE, type TgNotifyJob } from "./queue";
 import { tgBlockingRedis } from "./redis";
 
@@ -33,7 +33,14 @@ export async function runTelegramWorker(bot: Bot, signal: AbortSignal): Promise<
     }
 
     try {
-      await bot.api.sendMessage(Number(job.telegramId), job.text);
+      const replyMarkup = job.deepLink
+        ? new InlineKeyboard().url("Buyurtmani ko'rish", job.deepLink)
+        : undefined;
+      await bot.api.sendMessage(
+        Number(job.telegramId),
+        job.text,
+        replyMarkup ? { reply_markup: replyMarkup } : undefined,
+      );
       console.log(`[tg-worker] delivered requestId=${job.requestId} chat=${job.telegramId}`);
     } catch (err) {
       const desc = (err as { description?: string }).description ?? (err as Error).message;

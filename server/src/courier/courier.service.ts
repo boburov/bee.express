@@ -16,6 +16,7 @@ import { UpdateCourierProfileDto } from './dto/update-courier-profile.dto';
 import { UpdateCourierStatusDto } from './dto/update-courier-status.dto';
 import {
   COURIER_ORDER_INCLUDE,
+  computeContractEarning,
   estimateCourierEarning,
   serializeCourierOrder,
 } from './courier.serializer';
@@ -106,14 +107,38 @@ export class CourierService {
     const detail = await this.prisma.$transaction(async (tx) => {
       const order = await tx.order.findUnique({
         where: { id: orderId },
-        select: { id: true, status: true, courierId: true, deliveryFee: true },
+        select: { id: true, status: true, courierId: true, storeId: true, deliveryFee: true },
       });
       if (!order) throw new NotFoundException('Buyurtma topilmadi');
       if (order.status !== OrderStatus.READY || order.courierId) {
         throw new ConflictException('Bu buyurtma allaqachon olingan yoki hali tayyor emas');
       }
 
-      const earning = estimateCourierEarning(decimalToNumber(order.deliveryFee) ?? 0);
+      // One order at a time — a courier with an active delivery can't grab another.
+      const activeCount = await tx.order.count({
+        where: {
+          courierId,
+          status: { in: [OrderStatus.COURIER_ASSIGNED, OrderStatus.ON_WAY] },
+        },
+      });
+      if (activeCount > 0) {
+        throw new ConflictException(
+          'Sizda faol buyurtma bor — avval uni yakunlang',
+        );
+      }
+
+      const deliveryFee = decimalToNumber(order.deliveryFee) ?? 0;
+      const contract = await tx.courierContract.findUnique({
+        where: { courierId_storeId: { courierId, storeId: order.storeId } },
+        select: { paymentType: true, paymentValue: true },
+      });
+      const earning = contract
+        ? computeContractEarning(
+            contract.paymentType,
+            decimalToNumber(contract.paymentValue) ?? 0,
+            deliveryFee,
+          )
+        : estimateCourierEarning(deliveryFee);
 
       // The where-guard makes the claim atomic: a second courier's updateMany
       // matches zero rows once courierId is set.

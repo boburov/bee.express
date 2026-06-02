@@ -36,6 +36,7 @@ export function StatusBanner({ store, onUpdated }: StatusBannerProps) {
         return {
           icon: <Clock className="h-5 w-5" />,
           title: "Tasdiqlash kutilmoqda",
+          statusLabel: "Kutilmoqda",
           body: "Admin do'koningizni ko'rib chiqmoqda. Tasdiqlangach buyurtma qabul qila boshlaysiz.",
           tone: "info" as const,
           bg: "bg-sky-50 border-sky-100",
@@ -45,6 +46,7 @@ export function StatusBanner({ store, onUpdated }: StatusBannerProps) {
         return {
           icon: <CheckCircle2 className="h-5 w-5" />,
           title: "Do'kon faol",
+          statusLabel: "Faol",
           body: "Buyurtma qabul qilyapsiz. Vaqtinchalik to'xtatish uchun Yopish tugmasini bosing.",
           tone: "success" as const,
           bg: "bg-green-50 border-green-100",
@@ -54,6 +56,7 @@ export function StatusBanner({ store, onUpdated }: StatusBannerProps) {
         return {
           icon: <XCircle className="h-5 w-5" />,
           title: "Do'kon rad etildi",
+          statusLabel: "Rad etilgan",
           body: store.rejectionReason
             ? `Sabab: ${store.rejectionReason}`
             : "Admin do'koningizni rad etdi. Ma'lumotlarni tahrirlab qayta jo'nating.",
@@ -65,6 +68,7 @@ export function StatusBanner({ store, onUpdated }: StatusBannerProps) {
         return {
           icon: <AlertTriangle className="h-5 w-5" />,
           title: "Do'kon to'xtatildi",
+          statusLabel: "To'xtatilgan",
           body: "Admin tomonidan vaqtincha to'xtatildi. Iltimos admin bilan bog'laning.",
           tone: "warning" as const,
           bg: "bg-amber-50 border-amber-100",
@@ -76,6 +80,7 @@ export function StatusBanner({ store, onUpdated }: StatusBannerProps) {
         return {
           icon: <AlertTriangle className="h-5 w-5" />,
           title: "Do'kon holati",
+          statusLabel: "Noma'lum",
           body: "Do'kon holati aniqlanmadi.",
           tone: "neutral" as const,
           bg: "bg-surface-2 border-line",
@@ -93,7 +98,7 @@ export function StatusBanner({ store, onUpdated }: StatusBannerProps) {
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-0.5">
             <h3 className="text-sm font-semibold text-ink">{cfg.title}</h3>
-            <Badge tone={cfg.tone}>{store.status}</Badge>
+            <Badge tone={cfg.tone}>{cfg.statusLabel}</Badge>
             {store.status === "ACTIVE" ? (
               <Badge tone={store.isOpen ? "success" : "warning"}>
                 {store.isOpen ? "Ochiq" : "Yopiq"}

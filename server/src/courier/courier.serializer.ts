@@ -1,17 +1,37 @@
-import type { Prisma } from '@prisma/client';
+import { type CourierPaymentType, type Prisma } from '@prisma/client';
 import { decimalToNumber, haversineKm } from '../geo/geo';
 
 /**
- * Courier's cut of the delivery fee. TZ §11.4: a freelance courier keeps
- * ~70–80% of the delivery fee, the platform keeps the rest. We snapshot the
- * computed amount onto the order at assignment time so later fee-formula
- * changes never rewrite a past payout.
+ * Default courier cut when a contract has no explicit payment config (TZ §11.4).
+ * Snapshotted onto the order at assignment so later changes never rewrite a payout.
  */
 export const COURIER_DELIVERY_SHARE = 0.8;
 
 /** Round to the nearest 100 so'm — mirrors computeDeliveryFee()'s rounding. */
 export function estimateCourierEarning(deliveryFee: number): number {
   return Math.round((deliveryFee * COURIER_DELIVERY_SHARE) / 100) * 100;
+}
+
+/**
+ * Per-order courier earning from the seller-set contract payment config:
+ *   SALARY    → 0 (fixed monthly salary, settled offline — no per-order payout)
+ *   PER_ORDER → flat so'm per delivered order (the store's radius-zone rate)
+ *   PERCENT   → `paymentValue`% of the delivery fee, rounded to 100 so'm
+ */
+export function computeContractEarning(
+  paymentType: CourierPaymentType,
+  paymentValue: number,
+  deliveryFee: number,
+): number {
+  switch (paymentType) {
+    case 'SALARY':
+      return 0;
+    case 'PER_ORDER':
+      return Math.max(0, Math.round(paymentValue));
+    case 'PERCENT':
+    default:
+      return Math.round((deliveryFee * paymentValue) / 100 / 100) * 100;
+  }
 }
 
 /**

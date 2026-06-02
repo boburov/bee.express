@@ -20,12 +20,14 @@ export class TelegramQueueService {
     telegramId: bigint;
     text: string;
     link?: string;
+    deepLink?: string;
     notificationId?: string;
   }): Promise<string> {
     const job: TgNotifyJob = {
       telegramId: params.telegramId.toString(),
       text: params.text,
       link: params.link,
+      deepLink: params.deepLink,
       notificationId: params.notificationId,
       requestId: randomUUID(),
       enqueuedAt: Date.now(),

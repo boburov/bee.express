@@ -15,6 +15,7 @@ import { ContractsService } from '../../contracts/contracts.service';
 import { SellerContext } from '../seller-context';
 import { RejectContractDto } from './dto/reject-contract.dto';
 import { SellerContractsQueryDto } from './dto/seller-contracts-query.dto';
+import { SetContractPaymentDto } from './dto/set-contract-payment.dto';
 
 /**
  * Seller manages courier contract requests for their own store. Store ownership
@@ -64,5 +65,16 @@ export class SellerContractsController {
   ) {
     const store = await this.ctx.requireOwnStore(actor.id);
     return this.contracts.revokeBySeller(id, store.id, body?.reason);
+  }
+
+  @Patch(':id/payment')
+  @HttpCode(HttpStatus.OK)
+  async setPayment(
+    @Param('id') id: string,
+    @Body() dto: SetContractPaymentDto,
+    @CurrentUser() actor: Authenticated,
+  ) {
+    const store = await this.ctx.requireOwnStore(actor.id);
+    return this.contracts.setPayment(id, store.id, dto.paymentType, dto.paymentValue);
   }
 }

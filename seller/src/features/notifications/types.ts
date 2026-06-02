@@ -30,4 +30,14 @@ export interface ToastItem {
   title: string;
   body: string | null;
   type: NotificationType;
+  link: string | null;
+}
+
+/** Pull the in-app deep link (e.g. "/orders/123") out of a notification's data. */
+export function notificationLink(data: unknown): string | null {
+  if (data && typeof data === "object" && "link" in data) {
+    const l = (data as { link?: unknown }).link;
+    return typeof l === "string" ? l : null;
+  }
+  return null;
 }

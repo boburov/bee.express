@@ -131,11 +131,12 @@ export class NotificationsService {
     if (users.length === 0) return;
 
     const text = dto.body ? `${dto.title}\n${dto.body}` : dto.title;
+    const deepLink = buildWebAppDeepLink(link);
     await Promise.all(
       users.map((u) =>
         u.telegramId
           ? this.telegramQueue
-              .publish({ telegramId: u.telegramId, text, link })
+              .publish({ telegramId: u.telegramId, text, link, deepLink })
               .catch(() => undefined)
           : undefined,
       ),
@@ -302,4 +303,22 @@ export class NotificationsService {
       createdAt: row.createdAt.toISOString(),
     };
   }
+}
+
+/**
+ * Build an absolute mini-app URL for the Telegram "Buyurtmani ko'rish" button,
+ * routing each link to the right app by its path prefix. Returns undefined when
+ * the relevant *_WEBAPP_URL env is unset — the bot then sends plain text.
+ *   /dashboard/deliveries/* → COURIER_WEBAPP_URL
+ *   /dashboard/*            → SELLER_WEBAPP_URL
+ *   /*                      → CLIENT_WEBAPP_URL
+ */
+function buildWebAppDeepLink(link: string): string | undefined {
+  const base = link.startsWith('/dashboard/deliveries')
+    ? process.env.COURIER_WEBAPP_URL
+    : link.startsWith('/dashboard')
+      ? process.env.SELLER_WEBAPP_URL
+      : process.env.CLIENT_WEBAPP_URL;
+  if (!base) return undefined;
+  return `${base.replace(/\/+$/, '')}${link}`;
 }

@@ -1,5 +1,6 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { AlertTriangle, CheckCircle2, Info, Megaphone, ShieldAlert, X } from "lucide-react";
 import { cn } from "@/shared/lib/cn";
 import { useNotifications } from "./NotificationsProvider";
@@ -19,6 +20,7 @@ const toneByType: Record<
 /** Fixed toast stack for incoming notifications (5s poll → see provider). */
 export function ToastStack() {
   const { toasts, dismissToast } = useNotifications();
+  const router = useRouter();
   if (toasts.length === 0) return null;
   return (
     <div className="pointer-events-none fixed bottom-20 right-4 lg:bottom-6 lg:right-6 z-50 flex flex-col gap-2 max-w-sm w-[calc(100vw-2rem)] sm:w-full">
@@ -42,12 +44,24 @@ export function ToastStack() {
             >
               <Icon className="h-4 w-4" />
             </span>
-            <div className="flex-1 min-w-0">
+            <button
+              type="button"
+              onClick={() => {
+                if (t.link) {
+                  router.push(t.link);
+                  dismissToast(t.id);
+                }
+              }}
+              className="flex-1 min-w-0 text-left"
+            >
               <h4 className="text-sm font-semibold text-ink truncate">{t.title}</h4>
               {t.body ? (
                 <p className="text-xs text-ink-muted mt-0.5 line-clamp-3">{t.body}</p>
               ) : null}
-            </div>
+              {t.link ? (
+                <span className="text-[11px] font-medium text-brand-700">Buyurtmani ko&apos;rish →</span>
+              ) : null}
+            </button>
             <button
               type="button"
               onClick={() => dismissToast(t.id)}

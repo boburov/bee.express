@@ -100,7 +100,7 @@ export default function OrderDetailPage() {
           </div>
           {order.store.phone ? (
             <a
-              href={`tel:+${order.store.phone}`}
+              href={`tel:+998${String(order.store.phone).slice(-9)}`}
               className="inline-flex h-9 w-9 items-center justify-center rounded-md text-brand-700 hover:bg-brand-50"
               aria-label="Qo'ng'iroq"
             >

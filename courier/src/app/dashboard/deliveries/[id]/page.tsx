@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import dynamic from "next/dynamic";
 import { useParams, useRouter } from "next/navigation";
 import { useState } from "react";
 import {
@@ -24,6 +25,15 @@ import { courierApi } from "@/features/deliveries/api";
 import { useCourierOrder } from "@/features/deliveries/hooks";
 import { COURIER_ACTION, COURIER_STATUS_META, yandexPin } from "@/features/deliveries/status";
 import { formatDateTime, formatDistance, formatPhoneNumber, formatSum } from "@/lib/format";
+
+// Leaflet is browser-only — load the route map client-side.
+const DeliveryMap = dynamic(
+  () => import("@/features/deliveries/DeliveryMap").then((m) => m.DeliveryMap),
+  {
+    ssr: false,
+    loading: () => <div className="h-60 w-full rounded-xl bg-surface-3 animate-pulse" />,
+  },
+);
 
 export default function DeliveryDetailPage() {
   const params = useParams<{ id: string }>();
@@ -91,6 +101,18 @@ export default function DeliveryDetailPage() {
   const pickupNav = yandexPin(order.pickup.latitude, order.pickup.longitude);
   const dropoffNav = yandexPin(order.dropoff.latitude, order.dropoff.longitude);
   const isDelivered = order.status === "DELIVERED";
+  const pickupPt =
+    order.pickup.latitude != null && order.pickup.longitude != null
+      ? { lat: order.pickup.latitude, lng: order.pickup.longitude, label: order.pickup.storeName }
+      : null;
+  const dropoffPt =
+    order.dropoff.latitude != null && order.dropoff.longitude != null
+      ? {
+          lat: order.dropoff.latitude,
+          lng: order.dropoff.longitude,
+          label: order.dropoff.customerName ?? "Xaridor",
+        }
+      : null;
 
   return (
     <div className="mx-auto flex max-w-3xl flex-col gap-5">
@@ -125,6 +147,38 @@ export default function DeliveryDetailPage() {
             ) : null}
           </div>
           {actionError ? <p className="mt-2 text-sm text-danger">{actionError}</p> : null}
+        </Card>
+      ) : null}
+
+      {/* Route map — pickup → dropoff with external navigation */}
+      {pickupPt && dropoffPt ? (
+        <Card>
+          <div className="flex items-center justify-between gap-2 border-b border-line-soft p-4">
+            <h3 className="inline-flex items-center gap-2 text-sm font-semibold text-ink">
+              <Navigation className="h-4 w-4 text-ink-muted" /> Yo&apos;nalish
+            </h3>
+            {dropoffNav ? (
+              <a
+                href={dropoffNav}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1 text-xs font-medium text-brand-700 hover:underline"
+              >
+                <Navigation className="h-3.5 w-3.5" /> Navigatsiya
+              </a>
+            ) : null}
+          </div>
+          <div className="p-3">
+            <DeliveryMap pickup={pickupPt} dropoff={dropoffPt} />
+            <div className="mt-2 flex items-center gap-4 text-[11px] text-ink-muted">
+              <span className="inline-flex items-center gap-1">
+                <span className="h-2.5 w-2.5 rounded-full bg-sky-500" /> Olish (sotuvchi)
+              </span>
+              <span className="inline-flex items-center gap-1">
+                <span className="h-2.5 w-2.5 rounded-full bg-brand-500" /> Yetkazish (xaridor)
+              </span>
+            </div>
+          </div>
         </Card>
       ) : null}
 
@@ -223,7 +277,7 @@ export default function DeliveryDetailPage() {
           <div className="flex flex-col items-end gap-2 shrink-0">
             {order.dropoff.customerPhone ? (
               <a
-                href={`tel:+${order.dropoff.customerPhone}`}
+                href={`tel:+998${String(order.dropoff.customerPhone).slice(-9)}`}
                 className="inline-flex h-9 w-9 items-center justify-center rounded-md text-brand-700 hover:bg-brand-50"
                 aria-label="Xaridorga qo'ng'iroq"
               >

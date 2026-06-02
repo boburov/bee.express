@@ -1,4 +1,5 @@
 import type { Prisma } from '@prisma/client';
+import { decimalToNumber } from '../geo/geo';
 
 /**
  * A contract row joined with its store — the courier's view (they see which
@@ -50,6 +51,8 @@ interface ContractBase {
   message: string | null;
   rejectionReason: string | null;
   approvedAt: Date | null;
+  paymentType: ContractWithStore['paymentType'];
+  paymentValue: ContractWithStore['paymentValue'];
   createdAt: Date;
   updatedAt: Date;
 }
@@ -63,6 +66,8 @@ function base(c: ContractBase) {
     message: c.message,
     rejectionReason: c.rejectionReason,
     approvedAt: c.approvedAt,
+    paymentType: c.paymentType,
+    paymentValue: decimalToNumber(c.paymentValue),
     createdAt: c.createdAt,
     updatedAt: c.updatedAt,
   };

@@ -16,6 +16,7 @@ export interface TgNotifyJob {
   telegramId: string;
   text: string;
   link?: string;
+  deepLink?: string;
   notificationId?: string;
   requestId: string;
   enqueuedAt: number;

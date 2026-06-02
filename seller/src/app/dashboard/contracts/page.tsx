@@ -16,6 +16,7 @@ import {
 } from "@/features/contracts/status";
 import type { ContractStatus, SellerContract } from "@/features/contracts/types";
 import { TransportBadge } from "@/features/contracts/TransportBadge";
+import { ContractPaymentEditor } from "@/features/contracts/ContractPaymentEditor";
 import { formatDateTime, formatPhone } from "@/shared/lib/format";
 
 export default function SellerContractsPage() {
@@ -153,6 +154,9 @@ export default function SellerContractsPage() {
                         <Phone className="h-3 w-3" />
                         <span className="font-mono">{formatPhone(c.courier.phone)}</span>
                       </p>
+                      {c.status === "ACTIVE" || c.status === "PENDING" ? (
+                        <ContractPaymentEditor contract={c} onSaved={reload} />
+                      ) : null}
                       {c.message ? (
                         <p className="text-xs text-ink-soft mt-2 line-clamp-2">“{c.message}”</p>
                       ) : null}

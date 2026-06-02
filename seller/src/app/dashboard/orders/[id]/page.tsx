@@ -258,7 +258,7 @@ export default function SellerOrderDetailPage() {
                   </div>
                   {assigned?.courier.phone ? (
                     <a
-                      href={`tel:+${assigned.courier.phone}`}
+                      href={`tel:+998${String(assigned.courier.phone).slice(-9)}`}
                       className="inline-flex h-9 w-9 items-center justify-center rounded-md text-brand-700 hover:bg-brand-50"
                       aria-label="Qo'ng'iroq"
                     >
@@ -292,7 +292,7 @@ export default function SellerOrderDetailPage() {
               </div>
               {order.customerPhone ? (
                 <a
-                  href={`tel:+${order.customerPhone}`}
+                  href={`tel:+998${String(order.customerPhone).slice(-9)}`}
                   className="inline-flex h-9 w-9 items-center justify-center rounded-md text-brand-700 hover:bg-brand-50"
                   aria-label="Qo'ng'iroq"
                 >

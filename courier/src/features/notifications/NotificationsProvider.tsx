@@ -10,6 +10,7 @@ import {
 } from "react";
 import { useAuthStore } from "@/lib/auth-store";
 import { notificationsApi } from "./api";
+import { notificationLink } from "./types";
 import type { AppNotification, ToastItem } from "./types";
 
 /**
@@ -64,7 +65,16 @@ export function NotificationsProvider({ children }: { children: React.ReactNode 
   const pushToast = useCallback(
     (n: AppNotification) => {
       setToasts((t) =>
-        [...t, { id: n.id, title: n.title || "Sizga xabarnoma bor", body: n.body, type: n.type }].slice(-4),
+        [
+          ...t,
+          {
+            id: n.id,
+            title: n.title || "Sizga xabarnoma bor",
+            body: n.body,
+            type: n.type,
+            link: notificationLink(n.data),
+          },
+        ].slice(-4),
       );
       timers.current[n.id] = setTimeout(() => dismissToast(n.id), TOAST_TTL);
     },

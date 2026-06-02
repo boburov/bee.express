@@ -18,7 +18,7 @@ import { useAuthStore } from "@/shared/auth/store";
 import { useCategoriesTree, useStoresNearby } from "@/features/catalog/hooks";
 import { useActiveLocation } from "@/features/location/hooks";
 import type { CategoryType } from "@/features/catalog/types";
-import { formatSum } from "@/shared/lib/format";
+import { formatPhone, formatSum } from "@/shared/lib/format";
 
 const quickFacts = [
   { icon: Store, label: "Yaqin sotuvchilar" },
@@ -34,7 +34,7 @@ const tileIcon = (type: CategoryType) =>
 
 export default function HomePage() {
   const me = useAuthStore((s) => s.me);
-  const name = me?.firstName ?? (me?.phone ? `+${me.phone}` : "Mehmon");
+  const name = me?.firstName || (me?.phone ? formatPhone(me.phone) : "Mehmon");
 
   const { data: tree, loading: catLoading } = useCategoriesTree();
   const location = useActiveLocation();

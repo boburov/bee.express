@@ -39,3 +39,11 @@ export function formatDateTime(value: string | Date | null | undefined): string 
   if (Number.isNaN(d.getTime())) return "—";
   return DATETIME_FORMATTER.format(d);
 }
+
+export function formatPhone(phone?: string | number | bigint | null): string {
+  if (phone == null) return "—";
+  const s = String(phone);
+  if (s.length < 9) return s;
+  const last = s.slice(-9);
+  return `+998 ${last.slice(0, 2)} ${last.slice(2, 5)} ${last.slice(5, 7)} ${last.slice(7)}`;
+}

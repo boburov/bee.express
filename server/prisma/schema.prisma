@@ -982,6 +982,18 @@ enum CourierContractStatus {
   REVOKED // ended by seller or courier
 }
 
+/**
+ * How a contracted courier is paid per delivery (set by the seller, TZ §11.4):
+ *   SALARY    — fixed monthly salary; per-order earning is 0 (settled offline).
+ *   PER_ORDER — a fixed so'm amount per delivered order (for the store's radius zone).
+ *   PERCENT   — a percentage of the order's delivery fee.
+ */
+enum CourierPaymentType {
+  SALARY
+  PER_ORDER
+  PERCENT
+}
+
 model CourierContract {
   id        String                @id @default(cuid())
   courierId String
@@ -999,6 +1011,11 @@ model CourierContract {
   message         String?   @db.Text // courier's note when requesting
   rejectionReason String?   @db.Text
   approvedAt      DateTime?
+
+  // Courier payment for this store↔courier pair, set by the seller.
+  // `paymentValue` is so'm for SALARY/PER_ORDER, a percent (0–100) for PERCENT.
+  paymentType  CourierPaymentType @default(PERCENT)
+  paymentValue Decimal            @default(80) @db.Decimal(12, 2)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

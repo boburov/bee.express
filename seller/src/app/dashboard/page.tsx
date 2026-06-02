@@ -12,7 +12,7 @@ import { StatusBanner } from "@/features/store/StatusBanner";
 import { useMyStore } from "@/features/store/hooks";
 import { useAuthStore } from "@/shared/auth/store";
 import { extractApiError } from "@/shared/auth/api";
-import { formatSum } from "@/shared/lib/format";
+import { formatPhone, formatSum } from "@/shared/lib/format";
 import { statsApi, type SellerDashboardSummary } from "@/entities/stats/api";
 
 const nextSteps: string[] = [
@@ -24,7 +24,7 @@ const nextSteps: string[] = [
 
 export default function DashboardPage() {
   const me = useAuthStore((s) => s.me);
-  const name = me?.firstName ?? (me?.phone ? `+${me.phone}` : "sotuvchi");
+  const name = me?.firstName || (me?.phone ? formatPhone(me.phone) : "sotuvchi");
   const { data: store, loading, hasLoaded, setData } = useMyStore();
 
   const isActive = store?.status === "ACTIVE";
