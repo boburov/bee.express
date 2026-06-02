@@ -1,10 +1,21 @@
 "use client";
 
 import { FormEvent, useState } from "react";
+import dynamic from "next/dynamic";
+import { MapPin } from "lucide-react";
 import { Button } from "@/shared/ui/Button";
 import { Input } from "@/shared/ui/Input";
 import { addressesApi } from "./api";
 import type { Address, CreateAddressDto } from "./types";
+
+// Leaflet is browser-only — load the picker client-side (no SSR window error).
+const LocationPicker = dynamic(
+  () => import("./LocationPicker").then((m) => m.LocationPicker),
+  {
+    ssr: false,
+    loading: () => <div className="h-65 w-full rounded-xl bg-surface-3 animate-pulse" />,
+  },
+);
 
 interface AddressFormProps {
   initial?: Address;
@@ -15,9 +26,9 @@ interface AddressFormProps {
 }
 
 /**
- * Manual lat/lng entry for v1 — Yandex/OSM map picker comes in a separate
- * slice. For now buyers paste coords from Telegram's "Share Location" or
- * a one-click "current GPS" button (browser geolocation).
+ * Buyers set their delivery coordinates on a Leaflet map (tap or drag the pin);
+ * the "current GPS" button re-centers it. Coordinates are kept as latitude/
+ * longitude strings so the existing submit validation stays unchanged.
  */
 export function AddressForm({ initial, onSaved, onCancel, defaultAsDefault }: AddressFormProps) {
   const [label, setLabel] = useState(initial?.label ?? "Uy");
@@ -47,6 +58,10 @@ export function AddressForm({ initial, onSaved, onCancel, defaultAsDefault }: Ad
 
   async function onSubmit(e: FormEvent) {
     e.preventDefault();
+    if (latitude === "" || longitude === "") {
+      setError("Xaritada joylashuvingizni belgilang");
+      return;
+    }
     const lat = Number(latitude);
     const lng = Number(longitude);
     if (!Number.isFinite(lat) || !Number.isFinite(lng)) {
@@ -100,31 +115,34 @@ export function AddressForm({ initial, onSaved, onCancel, defaultAsDefault }: Ad
         maxLength={500}
         required
       />
-      <div className="grid grid-cols-2 gap-3">
-        <Input
-          label="Latitude"
-          placeholder="41.3111"
-          value={latitude}
-          onChange={(e) => setLatitude(e.target.value)}
-          inputMode="decimal"
-          required
+      <div className="flex flex-col gap-2">
+        <span className="text-sm font-medium text-ink-soft">Joylashuv</span>
+        <LocationPicker
+          lat={latitude === "" ? null : Number(latitude)}
+          lng={longitude === "" ? null : Number(longitude)}
+          onChange={(la, ln) => {
+            setLatitude(la.toFixed(6));
+            setLongitude(ln.toFixed(6));
+          }}
+          className="border border-line"
         />
-        <Input
-          label="Longitude"
-          placeholder="69.2797"
-          value={longitude}
-          onChange={(e) => setLongitude(e.target.value)}
-          inputMode="decimal"
-          required
-        />
+        <div className="flex items-center justify-between gap-2">
+          <button
+            type="button"
+            onClick={useCurrentLocation}
+            className="inline-flex items-center gap-1 text-xs font-medium text-brand-700 hover:underline"
+          >
+            <MapPin className="h-3.5 w-3.5" /> Hozirgi joylashuvni olish
+          </button>
+          {latitude && longitude ? (
+            <span className="text-[11px] text-ink-faint tabular-nums">
+              {Number(latitude).toFixed(5)}, {Number(longitude).toFixed(5)}
+            </span>
+          ) : (
+            <span className="text-[11px] text-ink-faint">Xaritani bosing yoki pinni suring</span>
+          )}
+        </div>
       </div>
-      <button
-        type="button"
-        onClick={useCurrentLocation}
-        className="text-xs text-brand-700 hover:underline text-left"
-      >
-        Hozirgi joylashuvni olish
-      </button>
       <Input
         label="Eslatma (ixtiyoriy)"
         placeholder="Domofon kodi, podyezd raqami..."

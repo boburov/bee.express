@@ -4,6 +4,7 @@ import Link from "next/link";
 import { MapPin, ShoppingCart } from "lucide-react";
 import { Logo } from "@/shared/ui/Logo";
 import { useActiveLocation } from "@/features/location/hooks";
+import { NotificationBell } from "@/features/notifications/NotificationBell";
 
 interface TopbarProps {
   /** Cart item count — when present, renders a brand-dot badge on the cart icon. */
@@ -36,6 +37,7 @@ export function Topbar({ cartCount = 0 }: TopbarProps) {
         </div>
 
         <div className="relative flex items-center gap-1">
+          <NotificationBell />
           <Link
             href="/cart"
             aria-label={`Savat${cartCount ? ` (${cartCount})` : ""}`}

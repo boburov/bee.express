@@ -7,6 +7,9 @@ import { Logo } from "@/components/Logo";
 import { api } from "@/lib/api";
 import { cn } from "@/lib/cn";
 import { hasCourierRole, useAuthStore } from "@/lib/auth-store";
+import { NotificationsProvider } from "@/features/notifications/NotificationsProvider";
+import { ToastStack } from "@/features/notifications/ToastStack";
+import { NotificationBell } from "@/features/notifications/NotificationBell";
 
 const nav = [
   { href: "/dashboard", label: "Boshqaruv" },
@@ -66,10 +69,12 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     : me.phone ?? "Kuryer";
 
   return (
+    <NotificationsProvider>
     <div className="min-h-screen flex flex-col bg-surface-2">
       <header className="h-16 border-b border-line bg-surface flex items-center justify-between px-4 sm:px-6">
         <Logo size={28} />
         <div className="flex items-center gap-3 text-sm">
+          <NotificationBell />
           <span className="text-ink-muted hidden sm:inline">{displayName}</span>
           <span className="inline-flex items-center justify-center h-8 w-8 rounded-full bg-brand-100 text-brand-700 text-xs font-semibold">
             {displayName.slice(0, 1).toUpperCase()}
@@ -108,5 +113,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
       <main className="flex-1 p-4 sm:p-6">{children}</main>
     </div>
+      <ToastStack />
+    </NotificationsProvider>
   );
 }

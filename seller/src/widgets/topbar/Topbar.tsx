@@ -3,6 +3,7 @@
 import { usePathname } from "next/navigation";
 import { Menu } from "lucide-react";
 import { sellerNav } from "@/shared/config/nav";
+import { NotificationBell } from "@/features/notifications/NotificationBell";
 
 function findLabel(pathname: string): string {
   for (const section of sellerNav) {
@@ -38,6 +39,9 @@ export function Topbar({ onMenuClick }: TopbarProps) {
         <span className="mx-2 text-ink-faint">/</span>
         <span className="text-ink font-medium">{label}</span>
       </nav>
+      <div className="ml-auto flex items-center">
+        <NotificationBell />
+      </div>
     </header>
   );
 }
