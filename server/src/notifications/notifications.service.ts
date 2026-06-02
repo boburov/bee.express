@@ -99,9 +99,9 @@ export class NotificationsService {
       }),
     );
 
-    // Best-effort Telegram mirror — only for order/event notifications that
-    // carry a deep link (admin broadcasts/announcements have no link, so they
-    // don't spam Telegram). The in-app row above is the source of truth.
+    // Best-effort Telegram mirror for every notification (order events AND
+    // admin broadcasts) to recipients with a linked Telegram account. The
+    // in-app row above is the source of truth, so a dropped copy is harmless.
     await this.pushTelegram(recipientIds, dto).catch((e) =>
       this.logger.warn(`telegram enqueue failed: ${String(e)}`),
     );
@@ -118,8 +118,8 @@ export class NotificationsService {
     recipientIds: string[],
     dto: SendNotificationDto,
   ): Promise<void> {
+    if (recipientIds.length === 0) return;
     const link = (dto.data as { link?: string } | undefined)?.link;
-    if (!link || recipientIds.length === 0) return;
 
     const users = await this.prisma.user.findMany({
       where: { id: { in: recipientIds }, telegramId: { not: null } },
