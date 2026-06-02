@@ -7,13 +7,10 @@ import { addressesApi } from "@/features/addresses/api";
 import { useLocationStore, type ActiveLocation } from "./store";
 
 /**
- * Seeds the active browsing location from the buyer's default address the
- * first time it's missing. Mount once high in the tree (AppShell) so every
- * discovery page can read geo without each one fetching addresses.
- *
- * Re-checks on navigation (pathname dep) while unseeded — so a first-time
- * user who just added an address gets picked up without a full reload. Once
- * a location exists the effect short-circuits and never fetches again.
+ * Keeps the active browsing location in sync with its source address — NOT a
+ * once-and-frozen seed. Mounted in AppShell; re-reconciles on navigation so an
+ * edited/changed address is reflected (fixes "location set once never changes").
+ * Follows the pointed-at address, else the default, else the first.
  */
 export function useEnsureLocation() {
   const accessToken = useAuthStore((s) => s.accessToken);
@@ -23,25 +20,38 @@ export function useEnsureLocation() {
   const pathname = usePathname();
 
   useEffect(() => {
-    if (!accessToken || !hydrated || location) return;
+    if (!accessToken || !hydrated) return;
     let cancelled = false;
     addressesApi
       .list()
       .then((list) => {
         if (cancelled || list.length === 0) return;
-        const def = list.find((a) => a.isDefault) ?? list[0];
-        if (def) {
+        // Follow the address the location points at (so editing its pin applies),
+        // else the default, else the first.
+        const target =
+          (location?.addressId &&
+            list.find((a) => a.id === location.addressId)) ||
+          list.find((a) => a.isDefault) ||
+          list[0];
+        if (!target) return;
+        // Only write when something drifted — avoids a render loop.
+        if (
+          !location ||
+          location.addressId !== target.id ||
+          location.lat !== target.latitude ||
+          location.lng !== target.longitude ||
+          location.label !== target.label
+        ) {
           setLocation({
-            lat: def.latitude,
-            lng: def.longitude,
-            label: def.label,
-            addressId: def.id,
+            lat: target.latitude,
+            lng: target.longitude,
+            label: target.label,
+            addressId: target.id,
           });
         }
       })
       .catch(() => {
-        // Best-effort: a failed fetch just leaves discovery in the
-        // "no location" state, which renders the address prompt.
+        // Best-effort: a failed fetch just leaves the prior location in place.
       });
     return () => {
       cancelled = true;

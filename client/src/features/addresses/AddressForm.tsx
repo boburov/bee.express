@@ -5,6 +5,7 @@ import dynamic from "next/dynamic";
 import { MapPin } from "lucide-react";
 import { Button } from "@/shared/ui/Button";
 import { Input } from "@/shared/ui/Input";
+import { useLocationStore } from "@/features/location/store";
 import { addressesApi } from "./api";
 import type { Address, CreateAddressDto } from "./types";
 
@@ -87,6 +88,14 @@ export function AddressForm({ initial, onSaved, onCancel, defaultAsDefault }: Ad
       const saved = initial
         ? await addressesApi.update(initial.id, dto)
         : await addressesApi.create(dto);
+      // The address just picked on the map becomes the active location now —
+      // no stale once-seeded value lingers (no navigation/reload needed).
+      useLocationStore.getState().setLocation({
+        lat: saved.latitude,
+        lng: saved.longitude,
+        label: saved.label,
+        addressId: saved.id,
+      });
       onSaved(saved);
     } catch (err) {
       const e = err as { response?: { data?: { message?: string | string[] } } };
