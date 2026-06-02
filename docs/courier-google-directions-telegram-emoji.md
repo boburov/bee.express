@@ -6,8 +6,12 @@ bosilganda Google Maps **directions** ochiladi (kuryerning joriy joylashuvidan
 manzilga yo'l avtomatik chiziladi).
 
 - `googleMapsDir(destLat, destLng, origin?)` (`courier/src/features/deliveries/status.ts`):
-  `https://www.google.com/maps/dir/?api=1&origin=<kuryer>&destination=<manzil>&travelmode=driving`.
-  **Pulli Google Directions API kerak emas** — Maps URLs deep-link yetarli.
+  **path format** `https://www.google.com/maps/dir/<kuryer_lat,lng>/<manzil_lat,lng>` —
+  Google mashrutni darhol chizadi. Origin yo'q bo'lsa `/dir//<manzil>` (qurilma joylashuvi).
+  **Pulli Google Directions API kerak emas.** Sessiya tokenlari (`data=`/`g_ep=`/`entry=`)
+  ataylab qo'shilmaydi — ular eskirib, hardcode qilingan link buziladi.
+  Xaridor manzilini checkout'da **xarita orqali** (F3 LocationPicker) belgilaydi → o'sha
+  koordinata destination bo'ladi.
 - **Mashrut avtomatik chizilishi uchun** kuryerning joriy GPS joylashuvi (`useGeolocation`)
   `origin` sifatida qo'shiladi — Google darhol origin→destination yo'lni ko'rsatadi
   (origin'siz desktopda/GPS o'chiq bo'lsa yo'l chizilmasligi mumkin edi). Ruxsat berilmagan

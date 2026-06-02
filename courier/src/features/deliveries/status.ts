@@ -47,11 +47,12 @@ export function yandexPin(lat: number | null, lng: number | null): string | null
 }
 
 /**
- * Google Maps turn-by-turn directions deeplink (Maps URLs API — no key needed).
- * When `origin` (the courier's live GPS) is supplied, Google plots the route
- * origin→destination immediately. Without it, Google falls back to the device's
- * current location, which can fail to auto-route on desktop / when GPS is off —
- * so always pass the courier's coords when available.
+ * Google Maps directions deeplink in the path form `/maps/dir/<origin>/<dest>`
+ * (no API key, no session tokens). Google plots the route immediately:
+ *   origin = courier's live GPS, destination = customer's coords.
+ * When origin is absent the empty segment makes Google use the device location.
+ * We deliberately drop the volatile `data=`/`g_ep=` viewport/session params —
+ * they expire and would rot a hardcoded link.
  */
 export function googleMapsDir(
   destLat: number | null,
@@ -59,6 +60,6 @@ export function googleMapsDir(
   origin?: { lat: number; lng: number } | null,
 ): string | null {
   if (destLat == null || destLng == null) return null;
-  const o = origin ? `&origin=${origin.lat},${origin.lng}` : "";
-  return `https://www.google.com/maps/dir/?api=1${o}&destination=${destLat},${destLng}&travelmode=driving`;
+  const orig = origin ? `${origin.lat},${origin.lng}` : "";
+  return `https://www.google.com/maps/dir/${orig}/${destLat},${destLng}`;
 }
