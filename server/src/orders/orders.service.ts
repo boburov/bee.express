@@ -15,6 +15,7 @@ import { AddressesService } from '../addresses/addresses.service';
 import { DispatchService } from '../contracts/dispatch.service';
 import { OrderNotifierService } from '../notifications/order-notifier.service';
 import { paginated, parsePagination } from '../common/pagination';
+import { isStoreOpenNow } from '../common/store-hours';
 import {
   computeDeliveryFee,
   decimalToNumber,
@@ -142,6 +143,9 @@ export class OrdersService {
       }
       if (!store.isOpen) {
         throw new BadRequestException(`"${store.name}" hozir yopiq`);
+      }
+      if (!isStoreOpenNow(store.openingHours)) {
+        throw new BadRequestException(`"${store.name}" hozir ish vaqtida emas`);
       }
       for (const it of items) {
         if (!it.offer.isActive) {

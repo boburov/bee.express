@@ -6,6 +6,7 @@ import {
   effectiveFoodRadiusKm,
   haversineKm,
 } from '../../geo/geo';
+import { isStoreOpenNow } from '../../common/store-hours';
 
 @Injectable()
 export class PublicStoresService {
@@ -33,6 +34,7 @@ export class PublicStoresService {
         deliveryEtaMinutes: true,
         deliveryBaseFee: true,
         deliveryRadiusKm: true,
+        openingHours: true,
       },
     });
 
@@ -41,6 +43,8 @@ export class PublicStoresService {
         const lat = decimalToNumber(s.latitude);
         const lng = decimalToNumber(s.longitude);
         if (lat === null || lng === null) return null;
+        // Outside its working hours → don't surface (manual isOpen already filtered in SQL).
+        if (!isStoreOpenNow(s.openingHours)) return null;
         const d = haversineKm({ lat: opts.lat, lng: opts.lng }, { lat, lng });
         // Buyer's "near me" cap AND the store's own service radius must hold —
         // a store that won't deliver this far should not surface.

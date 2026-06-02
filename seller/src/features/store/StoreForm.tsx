@@ -7,7 +7,8 @@ import { Button } from "@/shared/ui/Button";
 import { Card } from "@/shared/ui/Card";
 import { Input } from "@/shared/ui/Input";
 import { storeApi } from "./api";
-import type { CreateStoreDto, Store } from "./types";
+import { OpeningHoursEditor } from "./OpeningHoursEditor";
+import type { CreateStoreDto, OpeningHours, Store } from "./types";
 
 // Leaflet is browser-only — load the picker client-side, never during SSR.
 const LocationPicker = dynamic(
@@ -68,6 +69,8 @@ export function StoreForm({ initial, onSaved }: StoreFormProps) {
   const [minOrderAmount, setMinOrderAmount] = useState<string>(
     initial?.minOrderAmount != null ? String(initial.minOrderAmount) : "",
   );
+  // Weekly opening hours (empty = always open).
+  const [hours, setHours] = useState<OpeningHours>(initial?.openingHours ?? {});
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -125,6 +128,7 @@ export function StoreForm({ initial, onSaved }: StoreFormProps) {
       deliveryPerKmFee: numOrUndef(deliveryPerKmFee),
       deliveryEtaMinutes: numOrUndef(deliveryEtaMinutes),
       minOrderAmount: numOrUndef(minOrderAmount),
+      openingHours: hours,
     };
 
     setLoading(true);
@@ -314,6 +318,19 @@ export function StoreForm({ initial, onSaved }: StoreFormProps) {
             inputMode="numeric"
             hint="Shundan kam buyurtma qabul qilinmaydi"
           />
+        </div>
+      </Card>
+
+      {/* ─── Ish vaqti ───────────────────────────────────────────── */}
+      <Card>
+        <div className="p-4 border-b border-line-soft">
+          <h3 className="text-sm font-semibold text-ink">Ish vaqti</h3>
+          <p className="text-xs text-ink-muted mt-0.5">
+            Har kun uchun ochilish va yopilish vaqtini belgilang.
+          </p>
+        </div>
+        <div className="p-4">
+          <OpeningHoursEditor value={hours} onChange={setHours} />
         </div>
       </Card>
 
