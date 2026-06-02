@@ -1,7 +1,7 @@
 "use client";
 
 import { FormEvent, useEffect, useState } from "react";
-import { Bike, Phone, Power, Star } from "lucide-react";
+import { Bike, Check, Phone, Power, Star } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Card, CardBody, CardHeader, CardTitle } from "@/components/ui/Card";
 import { Input } from "@/components/ui/Input";
@@ -201,7 +201,9 @@ export default function ProfilePage() {
             {saveError ? (
               <p className="text-sm text-danger">{saveError}</p>
             ) : saved ? (
-              <p className="text-sm text-success">Saqlandi ✓</p>
+              <p className="text-sm text-success inline-flex items-center gap-1">
+                <Check className="h-4 w-4" /> Saqlandi
+              </p>
             ) : null}
 
             <Button type="submit" loading={saving} size="lg">

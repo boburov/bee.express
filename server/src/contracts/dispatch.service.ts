@@ -104,7 +104,7 @@ export class DispatchService {
 
     await this.notifyMany(
       [courierId],
-      'Yangi buyurtma — pochta bor 📦',
+      'Sizga buyurtma biriktirildi',
       `"${order.store.name}" buyurtmasi sizga biriktirildi (${order.orderNumber})`,
       'SUCCESS',
       { orderId: order.id, link: `/dashboard/deliveries/${order.id}` },
@@ -136,7 +136,7 @@ export class DispatchService {
       // online courier can claim it (TZ §9 / §11.1).
       await this.notifyRole(
         'courier',
-        'Yangi buyurtma 📦',
+        'Yangi buyurtma',
         `"${order.store.name}" — yangi buyurtma bo'sh navbatda`,
         'INFO',
         { orderId: order.id, link: '/dashboard/deliveries' },
@@ -150,7 +150,7 @@ export class DispatchService {
       // pool. Nudge the contracted couriers so they can grab it when free.
       await this.notifyMany(
         courierIds,
-        'Do\'koningizdan buyurtma 📦',
+        "Do'koningizdan buyurtma",
         `"${order.store.name}" buyurtmasi bo'sh navbatda — qabul qilishingiz mumkin`,
         'INFO',
         { orderId: order.id, link: '/dashboard/deliveries' },
@@ -184,7 +184,7 @@ export class DispatchService {
 
     await this.notifyMany(
       [chosen],
-      'Yangi buyurtma — pochta bor 📦',
+      'Sizga buyurtma biriktirildi',
       `"${order.store.name}" buyurtmasi sizga biriktirildi (${order.orderNumber})`,
       'SUCCESS',
       { orderId: order.id, link: `/dashboard/deliveries/${order.id}` },

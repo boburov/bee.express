@@ -99,9 +99,10 @@ export class NotificationsService {
       }),
     );
 
-    // Best-effort Telegram mirror for every notification (order events AND
-    // admin broadcasts) to recipients with a linked Telegram account. The
-    // in-app row above is the source of truth, so a dropped copy is harmless.
+    // Best-effort Telegram mirror — ONLY order-related notifications (they
+    // carry a deep link). User/seller/courier all get their order events on
+    // Telegram; admin broadcasts/announcements stay in-app/WS only. The in-app
+    // row above is the source of truth, so a dropped copy is harmless.
     await this.pushTelegram(recipientIds, dto).catch((e) =>
       this.logger.warn(`telegram enqueue failed: ${String(e)}`),
     );
@@ -119,7 +120,9 @@ export class NotificationsService {
     dto: SendNotificationDto,
   ): Promise<void> {
     if (recipientIds.length === 0) return;
+    // Order events set data.link; admin broadcasts don't — skip the latter.
     const link = (dto.data as { link?: string } | undefined)?.link;
+    if (!link) return;
 
     const users = await this.prisma.user.findMany({
       where: { id: { in: recipientIds }, telegramId: { not: null } },

@@ -24,33 +24,33 @@ interface Msg {
 /** Customer-facing copy for the transitions the buyer should hear about. */
 const CUSTOMER_MESSAGES: Partial<Record<OrderStatus, Msg>> = {
   [OrderStatus.ACCEPTED]: {
-    title: 'Buyurtma qabul qilindi ✅',
+    title: 'Buyurtma qabul qilindi',
     body: 'Sotuvchi buyurtmangizni qabul qildi.',
     type: 'SUCCESS',
   },
   [OrderStatus.PREPARING]: {
-    title: 'Tayyorlanmoqda 👨‍🍳',
+    title: 'Tayyorlanmoqda',
     body: 'Buyurtmangiz tayyorlanmoqda.',
     type: 'INFO',
   },
   [OrderStatus.READY]: {
-    title: 'Buyurtma tayyor 📦',
+    title: 'Buyurtma tayyor',
     body: 'Buyurtmangiz tayyor — kuryer kutilmoqda.',
     type: 'INFO',
   },
   [OrderStatus.COURIER_ASSIGNED]: {
-    title: 'Kuryer tayinlandi 🛵',
+    title: 'Kuryer tayinlandi',
     body: "Kuryer buyurtmangizni olishga yo'l oldi.",
     type: 'INFO',
   },
   [OrderStatus.ON_WAY]: {
-    title: "Buyurtma yo'lda 🛵",
+    title: "Buyurtma yo'lda",
     body: "Kuryer buyurtmangizni olib yo'lga chiqdi.",
     type: 'INFO',
   },
   [OrderStatus.DELIVERED]: {
-    title: 'Yetkazildi 🎉',
-    body: 'Buyurtmangiz yetkazildi. Yoqimli ishtaha!',
+    title: 'Buyurtma yetkazildi',
+    body: 'Buyurtmangiz uchun rahmat!',
     type: 'SUCCESS',
   },
   [OrderStatus.CANCELLED]: {
@@ -68,12 +68,12 @@ const CUSTOMER_MESSAGES: Partial<Record<OrderStatus, Msg>> = {
 /** Seller-facing copy for the transitions a seller should hear about. */
 const SELLER_MESSAGES: Partial<Record<OrderStatus, Msg>> = {
   [OrderStatus.COURIER_ASSIGNED]: {
-    title: 'Kuryer biriktirildi 🛵',
+    title: 'Kuryer biriktirildi',
     body: 'Buyurtmani kuryer oldi.',
     type: 'INFO',
   },
   [OrderStatus.DELIVERED]: {
-    title: 'Buyurtma yetkazildi ✅',
+    title: 'Buyurtma yetkazildi',
     body: 'Kuryer buyurtmani yetkazib berdi.',
     type: 'SUCCESS',
   },
@@ -108,8 +108,8 @@ export class OrderNotifierService {
     const total = decimalToNumber(order.total) ?? 0;
     await this.push(
       [order.store.ownerId],
-      'Yangi buyurtma 🛎️',
-      `${order.orderNumber} — ${total} so'm. Qabul qilishni kutmoqda.`,
+      'Yangi buyurtma',
+      `Sizga yangi buyurtma keldi: ${order.orderNumber} — ${total} so'm. Qabul qilishni kutmoqda.`,
       'INFO',
       { orderId: order.id, link: `/dashboard/orders/${order.id}` },
     );
