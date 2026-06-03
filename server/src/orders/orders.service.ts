@@ -408,6 +408,9 @@ export class OrdersService {
       } else if (!store.isOpen) {
         deliverable = false;
         reason = `"${store.name}" hozir yopiq`;
+      } else if (!isStoreOpenNow(store.openingHours)) {
+        deliverable = false;
+        reason = `"${store.name}" hozir ish vaqtida emas`;
       } else if (storeLat === null || storeLng === null) {
         deliverable = false;
         reason = "Do'kon joylashuvi kiritilmagan";
