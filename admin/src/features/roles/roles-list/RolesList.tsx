@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { Lock, Pencil, Plus, ShieldCheck, Trash2, Users } from "lucide-react";
+import { Bike, Lock, Pencil, Plus, ShieldCheck, Store, Trash2, Users } from "lucide-react";
 import { extractApiError } from "@/shared/auth/api";
 import { Badge } from "@/shared/ui/Badge";
 import { Button } from "@/shared/ui/Button";
@@ -126,22 +126,39 @@ interface RoleCardProps {
   onDelete: () => void;
 }
 
+const ROLE_VISUALS: Record<string, { bg: string; text: string; icon: typeof ShieldCheck }> = {
+  admin: { bg: "bg-brand-50", text: "text-brand-600", icon: ShieldCheck },
+  courier: { bg: "bg-sky-50", text: "text-sky-600", icon: Bike },
+  seller: { bg: "bg-emerald-50", text: "text-emerald-600", icon: Store },
+  customer: { bg: "bg-violet-50", text: "text-violet-600", icon: Users },
+};
+const DEFAULT_ROLE_VISUAL = { bg: "bg-surface-3", text: "text-ink-muted", icon: ShieldCheck };
+
 function RoleCard({ role, onEdit, onDelete }: RoleCardProps) {
   const permCount = role.permissions.length;
+  const visual = ROLE_VISUALS[role.slug] ?? DEFAULT_ROLE_VISUAL;
+  const RoleIcon = visual.icon;
   return (
     <Card>
       <CardBody>
         <div className="flex items-start justify-between gap-3">
-          <div className="min-w-0">
-            <div className="flex items-center gap-2">
-              <h3 className="text-base font-semibold text-ink truncate">{role.name}</h3>
-              {role.isSystem ? (
-                <Badge tone="brand" size="sm">
-                  <Lock className="h-3 w-3" /> Tizim
-                </Badge>
-              ) : null}
+          <div className="flex items-start gap-3 min-w-0">
+            <span
+              className={`inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${visual.bg} ${visual.text}`}
+            >
+              <RoleIcon className="h-5 w-5" strokeWidth={1.75} />
+            </span>
+            <div className="min-w-0">
+              <div className="flex items-center gap-2">
+                <h3 className="text-base font-semibold text-ink truncate">{role.name}</h3>
+                {role.isSystem ? (
+                  <Badge tone="brand" size="sm">
+                    <Lock className="h-3 w-3" /> Tizim
+                  </Badge>
+                ) : null}
+              </div>
+              <div className="text-[11px] font-mono text-ink-muted mt-0.5">{role.slug}</div>
             </div>
-            <div className="text-[11px] font-mono text-ink-muted mt-0.5">{role.slug}</div>
           </div>
           <div className="flex items-center gap-1 shrink-0">
             <button

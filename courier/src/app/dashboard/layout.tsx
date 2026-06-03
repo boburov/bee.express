@@ -10,6 +10,7 @@ import { hasCourierRole, useAuthStore } from "@/lib/auth-store";
 import { NotificationsProvider } from "@/features/notifications/NotificationsProvider";
 import { ToastStack } from "@/features/notifications/ToastStack";
 import { NotificationBell } from "@/features/notifications/NotificationBell";
+import { formatPhoneNumber } from "@/lib/format";
 
 const nav = [
   { href: "/dashboard", label: "Boshqaruv" },
@@ -66,7 +67,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
   const displayName = me.firstName || me.lastName
     ? [me.firstName, me.lastName].filter(Boolean).join(" ")
-    : me.phone ?? "Kuryer";
+    : me.phone ? formatPhoneNumber(me.phone) : "Kuryer";
 
   return (
     <NotificationsProvider>
