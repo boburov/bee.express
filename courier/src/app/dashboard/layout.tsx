@@ -92,7 +92,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       <nav className="border-b border-line bg-surface overflow-x-auto">
         <ul className="flex gap-1 px-4 sm:px-6 py-2 min-w-max">
           {nav.map((item) => {
-            const active = pathname === item.href || pathname.startsWith(item.href + "/");
+            const active =
+              pathname === item.href ||
+              (item.href !== "/dashboard" && pathname.startsWith(item.href + "/"));
             return (
               <li key={item.href}>
                 <Link

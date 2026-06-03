@@ -140,7 +140,7 @@ function RoleCard({ role, onEdit, onDelete }: RoleCardProps) {
   const RoleIcon = visual.icon;
   return (
     <Card>
-      <CardBody>
+      <CardBody className="pt-6">
         <div className="flex items-start justify-between gap-3">
           <div className="flex items-start gap-3 min-w-0">
             <span
