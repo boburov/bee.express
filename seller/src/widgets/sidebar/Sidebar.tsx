@@ -56,7 +56,7 @@ export function Sidebar({ mobileOpen, onClose }: SidebarProps) {
         >
           <X className="h-4 w-4" strokeWidth={1.75} />
         </button>
-      <div className="px-5 py-[14px] border-b border-line bg-gradient-soft">
+      <div className="h-14 flex items-center px-5 border-b border-line bg-gradient-soft">
         <Logo size={32} />
       </div>
 

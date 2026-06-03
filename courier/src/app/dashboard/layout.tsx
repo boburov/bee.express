@@ -97,7 +97,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 <Link
                   href={item.href}
                   className={cn(
-                    "inline-flex items-center rounded-lg px-3 py-2.5 text-sm font-medium transition-colors",
+                    "inline-flex items-center rounded-lg px-3.5 py-2 text-sm font-medium transition-colors",
                     active
                       ? "bg-brand-500 text-white"
                       : "text-ink-soft hover:bg-surface-2 hover:text-ink",

@@ -26,6 +26,28 @@ export default function ProfilePage() {
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
+  const [togglingOnline, setTogglingOnline] = useState(false);
+
+  // The online switch persists on tap (not just on form save) — it reads like
+  // an instant toggle. Only `isOnline` is sent so unsaved edits in the other
+  // fields aren't clobbered; on failure the switch flips back.
+  async function toggleOnline() {
+    if (togglingOnline) return;
+    const next = !online;
+    setOnline(next);
+    setTogglingOnline(true);
+    setSaveError(null);
+    try {
+      await courierApi.updateProfile({ isOnline: next });
+    } catch (err) {
+      setOnline(!next);
+      const e = err as { response?: { data?: { message?: string | string[] } } };
+      const msg = e.response?.data?.message;
+      setSaveError(Array.isArray(msg) ? msg[0] : msg || "Holat saqlanmadi");
+    } finally {
+      setTogglingOnline(false);
+    }
+  }
 
   // Hydrate the form once the profile arrives.
   useEffect(() => {
@@ -168,8 +190,10 @@ export default function ProfilePage() {
 
             <button
               type="button"
-              onClick={() => setOnline((v) => !v)}
-              className={`flex items-center justify-between rounded-lg border px-4 py-3 text-sm transition-colors ${
+              onClick={toggleOnline}
+              disabled={togglingOnline}
+              aria-pressed={online}
+              className={`flex items-center justify-between rounded-lg border px-4 py-3 text-sm transition-colors disabled:opacity-60 ${
                 online
                   ? "border-success/30 bg-success/5"
                   : "border-line bg-surface-2"
