@@ -24,10 +24,12 @@ import { Spinner } from "@/components/ui/Spinner";
 import { courierApi } from "@/features/deliveries/api";
 import { useCourierOrder } from "@/features/deliveries/hooks";
 import { useGeolocation } from "@/lib/geolocation";
+import { env } from "@/lib/env";
 import {
   COURIER_ACTION,
   COURIER_STATUS_META,
   googleMapsDir,
+  googleMapsEmbed,
   yandexPin,
 } from "@/features/deliveries/status";
 import { formatDateTime, formatDistance, formatPhoneNumber, formatSum } from "@/lib/format";
@@ -127,6 +129,17 @@ export default function DeliveryDetailPage() {
           label: order.dropoff.customerName ?? "Xaridor",
         }
       : null;
+  // In-app Google Maps route: origin is the courier's live GPS once granted,
+  // otherwise the pickup (store) so a route is always drawn. Falls back to the
+  // Leaflet map below when no Embed API key is configured.
+  const routeOrigin =
+    myCoords ?? (pickupPt ? { lat: pickupPt.lat, lng: pickupPt.lng } : null);
+  const routeEmbed = googleMapsEmbed(
+    env.mapsEmbedKey,
+    order.dropoff.latitude,
+    order.dropoff.longitude,
+    routeOrigin,
+  );
 
   return (
     <div className="mx-auto flex max-w-3xl flex-col gap-5">
@@ -183,15 +196,29 @@ export default function DeliveryDetailPage() {
             ) : null}
           </div>
           <div className="p-3">
-            <DeliveryMap pickup={pickupPt} dropoff={dropoffPt} />
-            <div className="mt-2 flex items-center gap-4 text-[11px] text-ink-muted">
-              <span className="inline-flex items-center gap-1">
-                <span className="h-2.5 w-2.5 rounded-full bg-sky-500" /> Olish (sotuvchi)
-              </span>
-              <span className="inline-flex items-center gap-1">
-                <span className="h-2.5 w-2.5 rounded-full bg-brand-500" /> Yetkazish (xaridor)
-              </span>
-            </div>
+            {routeEmbed ? (
+              <iframe
+                title="Google Maps yo'nalish"
+                src={routeEmbed}
+                className="w-full rounded-xl border-0"
+                style={{ height: 260 }}
+                loading="lazy"
+                allowFullScreen
+                referrerPolicy="no-referrer-when-downgrade"
+              />
+            ) : (
+              <>
+                <DeliveryMap pickup={pickupPt} dropoff={dropoffPt} />
+                <div className="mt-2 flex items-center gap-4 text-[11px] text-ink-muted">
+                  <span className="inline-flex items-center gap-1">
+                    <span className="h-2.5 w-2.5 rounded-full bg-sky-500" /> Olish (sotuvchi)
+                  </span>
+                  <span className="inline-flex items-center gap-1">
+                    <span className="h-2.5 w-2.5 rounded-full bg-brand-500" /> Yetkazish (xaridor)
+                  </span>
+                </div>
+              </>
+            )}
             {dropoffGoogle ? (
               <>
                 <a

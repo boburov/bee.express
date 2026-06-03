@@ -32,8 +32,6 @@ interface StoreFormProps {
  * leaves blank stay null on the server.
  *
  * v1 omissions:
- *  - openingHours UI — server accepts the JSON, but the weekly schedule
- *    picker is a separate component (next slice). For now we don't surface it.
  *  - logo / banner upload — Cloudflare R2 credentials missing; uploads
  *    return 503. Field is hidden until R2 is wired.
  */

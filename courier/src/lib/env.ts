@@ -9,5 +9,9 @@ export const env = {
     process.env.NEXT_PUBLIC_API_URL ?? "https://api.beexpress.uz/api",
   botUsername:
     process.env.NEXT_PUBLIC_TELEGRAM_BOT_USERNAME ?? "BeeExpressBot",
+  // Google Maps Embed API key — powers the in-app directions <iframe>. Free
+  // (no per-load billing), but must exist for the embedded map to render;
+  // without it the page falls back to the offline Leaflet route map.
+  mapsEmbedKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_EMBED_KEY ?? "",
   appName: "BeeExpress Courier",
 } as const;

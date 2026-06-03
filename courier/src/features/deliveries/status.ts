@@ -63,3 +63,27 @@ export function googleMapsDir(
   const orig = origin ? `${origin.lat},${origin.lng}` : "";
   return `https://www.google.com/maps/dir/${orig}/${destLat},${destLng}`;
 }
+
+/**
+ * Google Maps Embed API directions URL for an in-app `<iframe>` — shows the
+ * live route (origin → destination) WITHOUT leaving the courier app. Unlike
+ * googleMapsDir() this needs a Maps Embed API key (free, no per-load billing);
+ * returns null when the key or coords are missing so the caller can fall back
+ * to the offline Leaflet map.
+ */
+export function googleMapsEmbed(
+  apiKey: string,
+  destLat: number | null,
+  destLng: number | null,
+  origin: { lat: number; lng: number } | null,
+  mode: "driving" | "walking" | "bicycling" | "transit" = "driving",
+): string | null {
+  if (!apiKey || destLat == null || destLng == null || !origin) return null;
+  const params = new URLSearchParams({
+    key: apiKey,
+    origin: `${origin.lat},${origin.lng}`,
+    destination: `${destLat},${destLng}`,
+    mode,
+  });
+  return `https://www.google.com/maps/embed/v1/directions?${params.toString()}`;
+}
