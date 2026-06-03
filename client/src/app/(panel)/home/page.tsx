@@ -11,7 +11,7 @@ import {
   Truck,
   UtensilsCrossed,
 } from "lucide-react";
-import { Badge } from "@/shared/ui/Badge";
+import { Avatar } from "@/shared/ui/Avatar";
 import { IconTile } from "@/shared/ui/IconTile";
 import { Spinner } from "@/shared/ui/Spinner";
 import { useAuthStore } from "@/shared/auth/store";
@@ -49,17 +49,18 @@ export default function HomePage() {
       <section className="relative overflow-hidden rounded-2xl border border-brand-100 bg-gradient-warm p-5 shadow-card">
         <div className="absolute inset-0 bg-gradient-soft opacity-70 pointer-events-none" aria-hidden />
         <div className="relative flex flex-col gap-3">
-          <Badge tone="brand" size="sm" className="self-start">
-            <Sparkles className="h-3 w-3" /> BeeExpress
-          </Badge>
-          <div>
-            <h1 className="text-xl font-semibold tracking-tight text-ink">
-              Salom, {name}
-            </h1>
-            <p className="text-sm text-ink-muted mt-1">
-              Kategoriyani tanlang yoki qidiruv orqali yaqin atrofdagi sotuvchini toping.
-            </p>
+          <div className="flex items-center gap-3">
+            <Avatar name={name} size={44} />
+            <div className="min-w-0 flex-1">
+              <p className="text-xs font-medium text-brand-700">BeeExpress</p>
+              <h1 className="text-xl font-semibold tracking-tight text-ink truncate">
+                Salom, {name}
+              </h1>
+            </div>
           </div>
+          <p className="text-sm text-ink-muted">
+            Kategoriyani tanlang yoki qidiruv orqali yaqin atrofdagi sotuvchini toping.
+          </p>
           <Link
             href="/catalog"
             className="mt-1 flex items-center gap-2 h-11 rounded-xl border border-line bg-surface px-3 text-sm text-ink-muted shadow-card hover:border-brand-300"
@@ -84,7 +85,7 @@ export default function HomePage() {
       {/* Categories */}
       <section className="flex flex-col gap-3">
         <div className="flex items-center justify-between">
-          <h2 className="text-sm font-semibold text-ink">Kategoriyalar</h2>
+          <h2 className="text-base font-semibold text-ink">Kategoriyalar</h2>
           <Link
             href="/catalog"
             className="inline-flex items-center gap-1 text-xs font-medium text-brand-700 hover:underline"
@@ -135,7 +136,7 @@ export default function HomePage() {
 
       {/* Nearby stores — ACTIVE+open sellers within the buyer's delivery radius */}
       <section className="flex flex-col gap-3">
-        <h2 className="text-sm font-semibold text-ink">Yaqin sotuvchilar</h2>
+        <h2 className="text-base font-semibold text-ink">Yaqin sotuvchilar</h2>
         {!geo ? (
           <div className="rounded-xl border border-dashed border-line bg-surface p-5 flex flex-col items-center text-center gap-2">
             <span className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-brand-50 text-brand-600">

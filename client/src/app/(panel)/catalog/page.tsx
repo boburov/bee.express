@@ -1,13 +1,19 @@
 "use client";
 
 import Link from "next/link";
-import { LayoutGrid, Search, UtensilsCrossed } from "lucide-react";
-import { Card } from "@/shared/ui/Card";
+import { LayoutGrid, Search, ShoppingBasket, UtensilsCrossed } from "lucide-react";
 import { EmptyState } from "@/shared/ui/EmptyState";
+import { IconTile } from "@/shared/ui/IconTile";
 import { PageHeader } from "@/shared/ui/PageHeader";
 import { Spinner } from "@/shared/ui/Spinner";
 import { useCategoriesTree } from "@/features/catalog/hooks";
-import type { CategoryNode } from "@/features/catalog/types";
+import type { CategoryNode, CategoryType } from "@/features/catalog/types";
+
+// Same colourful tone rotation as the home grid, so category tiles look
+// identical across the app instead of catalog's old monochrome cards.
+const TILE_TONES = ["rose", "emerald", "amber", "sky", "violet", "brand"] as const;
+const tileIcon = (type: CategoryType) =>
+  type === "FOOD" ? UtensilsCrossed : ShoppingBasket;
 
 export default function CatalogPage() {
   const { data, loading, error } = useCategoriesTree();
@@ -64,37 +70,18 @@ function CategoryGrid({ nodes }: { nodes: CategoryNode[] }) {
 function Section({ title, items }: { title: string; items: CategoryNode[] }) {
   return (
     <section className="flex flex-col gap-3">
-      <h2 className="text-sm font-semibold text-ink">{title}</h2>
+      <h2 className="text-base font-semibold text-ink">{title}</h2>
       <ul className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-        {items.map((c) => (
+        {items.map((c, i) => (
           <li key={c.id}>
-            <Link
+            <IconTile
+              icon={tileIcon(c.type)}
+              imageUrl={c.iconUrl}
+              label={c.name}
+              caption={c.children.length > 0 ? `${c.children.length} ta bo'lim` : undefined}
+              tone={TILE_TONES[i % TILE_TONES.length]}
               href={`/c/${c.slug}`}
-              className="block group"
-            >
-              <Card className="h-full">
-                <div className="p-4 flex flex-col gap-2">
-                  <div className="h-12 w-12 rounded-lg bg-brand-50 text-brand-600 flex items-center justify-center overflow-hidden">
-                    {c.iconUrl ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img src={c.iconUrl} alt={c.name} className="h-full w-full object-cover" />
-                    ) : (
-                      <UtensilsCrossed className="h-5 w-5" strokeWidth={1.75} />
-                    )}
-                  </div>
-                  <div>
-                    <p className="text-sm font-semibold text-ink leading-tight group-hover:text-brand-700 transition-colors">
-                      {c.name}
-                    </p>
-                    {c.children.length > 0 ? (
-                      <p className="text-[11px] text-ink-muted mt-0.5">
-                        {c.children.length} ta bo'lim
-                      </p>
-                    ) : null}
-                  </div>
-                </div>
-              </Card>
-            </Link>
+            />
           </li>
         ))}
       </ul>
