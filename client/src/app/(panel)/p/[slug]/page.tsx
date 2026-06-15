@@ -263,7 +263,13 @@ export default function ProductDetailPage() {
                         <div className="flex items-center gap-2 mb-0.5">
                           <h4 className="text-sm font-semibold text-ink truncate">{o.store.name}</h4>
                           {!o.store.isOpen ? <Badge tone="warning">Yopiq</Badge> : null}
-                          {o.outOfRange ? <Badge tone="danger">Radius tashqarisi</Badge> : null}
+                          {/* outOfRange covers both "too far" and "store closed /
+                              outside working hours" (backend collapses them).
+                              Only show the radius hint when the store is open,
+                              otherwise the "Yopiq" badge above already explains it. */}
+                          {o.outOfRange && o.store.isOpen ? (
+                            <Badge tone="danger">Yetkazib berilmaydi</Badge>
+                          ) : null}
                         </div>
                         <div className="flex items-center gap-2 text-[11px] text-ink-muted">
                           {o.distanceKm !== null ? (

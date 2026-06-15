@@ -10,6 +10,7 @@ import {
   haversineKm,
   MAX_FOOD_RADIUS_KM,
 } from '../../geo/geo';
+import { isStoreOpenNow } from '../../common/store-hours';
 import { PublicListProductsQueryDto } from './dto/list-products-query.dto';
 
 export interface ListedOffer {
@@ -70,9 +71,16 @@ export class PublicProductsService {
     }
 
     // Build the candidate store set for the user's location.
-    // For FOOD a store is shown ONLY when the buyer sits inside that store's
-    // *own* service radius (seller override → category default → fallback).
-    // MARKETPLACE ships everywhere, so geo only feeds distance/fee display.
+    // For FOOD a store is shown ONLY when it can actually take the order *now*
+    // (manual `isOpen` flag + weekly `openingHours` schedule) AND the buyer
+    // sits inside that store's own service radius (seller override → category
+    // default → fallback). MARKETPLACE ships everywhere regardless of the
+    // store's open/closed state, so geo there only feeds distance/fee display
+    // and never removes a product from the list.
+    //
+    // NOTE: we deliberately DON'T filter `isOpen` in SQL — that would also
+    // hide MARKETPLACE offers from a temporarily-closed store, which ships
+    // anyway. The open/hours gate is applied below, FOOD-only.
     let nearbyStoreIds: string[] | null = null;
     const distanceByStore = new Map<string, number>();
 
@@ -88,11 +96,17 @@ export class PublicProductsService {
       const candidates = await this.prisma.store.findMany({
         where: {
           status: 'ACTIVE',
-          isOpen: true,
           latitude: { gte: bbox.latMin, lte: bbox.latMax },
           longitude: { gte: bbox.lngMin, lte: bbox.lngMax },
         },
-        select: { id: true, latitude: true, longitude: true, deliveryRadiusKm: true },
+        select: {
+          id: true,
+          latitude: true,
+          longitude: true,
+          deliveryRadiusKm: true,
+          isOpen: true,
+          openingHours: true,
+        },
       });
 
       const within: string[] = [];
@@ -105,6 +119,10 @@ export class PublicProductsService {
         distanceByStore.set(s.id, d);
 
         if (isFood) {
+          // FOOD must be orderable right now — a closed store (manual flag or
+          // outside its weekly hours) can't fulfil, so don't surface it. This
+          // mirrors the order-time check in OrdersService / stores nearby.
+          if (!s.isOpen || !isStoreOpenNow(s.openingHours)) continue;
           // Seller's radius is the gate — a buyer outside it can't see the store.
           const serviceRadius = effectiveFoodRadiusKm(
             s.deliveryRadiusKm,
@@ -115,7 +133,10 @@ export class PublicProductsService {
           within.push(s.id);
         }
       }
-      nearbyStoreIds = within;
+      // FOOD restricts the offer set to in-radius, open stores. MARKETPLACE
+      // ships everywhere, so geo must NOT shrink which products are listed —
+      // it only populates `distanceByStore` for the cards' distance/fee.
+      nearbyStoreIds = isFood ? within : null;
 
       // FOOD with empty nearby = no result fast-path.
       if (isFood && within.length === 0) {
@@ -293,7 +314,7 @@ export class PublicProductsService {
                 store: {
                   select: {
                     id: true, slug: true, name: true, isOpen: true, address: true,
-                    latitude: true, longitude: true,
+                    latitude: true, longitude: true, openingHours: true,
                     deliveryBaseFee: true, deliveryPerKmFee: true,
                     deliveryEtaMinutes: true, deliveryRadiusKm: true,
                   },
@@ -317,19 +338,28 @@ export class PublicProductsService {
       offers: v.offers.map((o) => {
         const sLat = decimalToNumber(o.store.latitude);
         const sLng = decimalToNumber(o.store.longitude);
+        const isFood = product.category.type === 'FOOD';
+
+        // A FOOD store that can't take the order right now (manual `isOpen`
+        // flag or outside its weekly hours) is treated like out-of-range:
+        // shown for context but not orderable. MARKETPLACE ships regardless.
+        const closedForFood =
+          isFood && (!o.store.isOpen || !isStoreOpenNow(o.store.openingHours));
+
         let distanceKm: number | null = null;
         let deliveryFee: number | null = null;
         if (geo && sLat !== null && sLng !== null) {
           distanceKm = haversineKm(geo, { lat: sLat, lng: sLng });
-          if (
-            product.category.type === 'FOOD' &&
+          const outOfRadius =
+            isFood &&
             distanceKm >
               effectiveFoodRadiusKm(
                 o.store.deliveryRadiusKm,
                 product.category.deliveryRadiusKm,
-              )
-          ) {
-            // FOOD offer outside radius — exclude by signalling no delivery fee.
+              );
+          if (outOfRadius || closedForFood) {
+            // FOOD offer unavailable (outside radius or store closed) —
+            // signal no delivery fee and flag it.
             return {
               ...o,
               price: decimalToNumber(o.price),
@@ -353,8 +383,10 @@ export class PublicProductsService {
           price: decimalToNumber(o.price),
           oldPrice: decimalToNumber(o.oldPrice),
           distanceKm: distanceKm === null ? null : Math.round(distanceKm * 10) / 10,
-          deliveryFee,
-          outOfRange: false,
+          // Without geo we can't fee/range-gate, but a closed FOOD store is
+          // still un-orderable — flag it so the UI disables the buy action.
+          deliveryFee: closedForFood ? null : deliveryFee,
+          outOfRange: closedForFood,
         };
       }),
     }));
