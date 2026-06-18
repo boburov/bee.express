@@ -3,7 +3,6 @@
 import { useEffect, useState } from "react";
 import {
   Bike,
-  Coins,
   Package,
   ShoppingBag,
   Store,
@@ -63,7 +62,6 @@ export default function DashboardPage() {
     { label: "Bugungi buyurtmalar", value: summary ? String(summary.ordersToday) : "—", icon: <ShoppingBag className="h-4 w-4" /> },
     { label: "Bugungi tushum", value: summary ? som(summary.revenueToday) : "—", icon: <Wallet className="h-4 w-4" /> },
     { label: "Bugungi sotuvlar", value: summary ? som(summary.productSalesToday) : "—", icon: <Package className="h-4 w-4" /> },
-    { label: "Bugungi foyda", value: summary ? som(summary.profitToday) : "—", icon: <Coins className="h-4 w-4" /> },
     { label: "Ishdagi kuryerlar", value: summary ? String(summary.workingCouriers) : "—", icon: <Bike className="h-4 w-4" /> },
     { label: "Aktiv sotuvchilar", value: summary ? String(summary.activeStores) : "—", icon: <Store className="h-4 w-4" /> },
     { label: "Yangi ro'yxat", value: summary ? String(summary.newSignupsToday) : "—", icon: <UserPlus className="h-4 w-4" /> },
