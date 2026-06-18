@@ -16,15 +16,21 @@ export class AdminStatsService {
 
   async dashboard() {
     const startToday = startOfToday();
+    const startMonth = startOfMonth();
 
     const deliveredToday: Prisma.OrderWhereInput = {
       status: OrderStatus.DELIVERED,
       deliveredAt: { gte: startToday },
     };
+    const deliveredThisMonth: Prisma.OrderWhereInput = {
+      status: OrderStatus.DELIVERED,
+      deliveredAt: { gte: startMonth },
+    };
 
     const [
       ordersToday,
       todayAgg,
+      monthAgg,
       activeStores,
       activeCouriers,
       courierProfiles,
@@ -34,8 +40,12 @@ export class AdminStatsService {
     ] = await Promise.all([
       this.prisma.order.count({ where: { createdAt: { gte: startToday } } }),
       this.prisma.order.aggregate({
-        _sum: { total: true, subtotal: true, deliveryFee: true, courierEarning: true },
+        _sum: { total: true },
         where: deliveredToday,
+      }),
+      this.prisma.order.aggregate({
+        _sum: { subtotal: true },
+        where: deliveredThisMonth,
       }),
       this.prisma.store.count({ where: { status: 'ACTIVE' } }),
       this.prisma.user.count({ where: { isBlocked: false, role: { slug: 'courier' } } }),
@@ -48,13 +58,9 @@ export class AdminStatsService {
       this.prisma.order.count({ where: { status: OrderStatus.DELIVERED } }),
     ]);
 
-    // Gross revenue (order total) and product sales (subtotal, excl. delivery).
+    // Today's gross revenue (order total) and this month's product sales (subtotal).
     const revenueToday = decimalToNumber(todayAgg._sum.total) ?? 0;
-    const productSalesToday = decimalToNumber(todayAgg._sum.subtotal) ?? 0;
-    // Platform profit in MVP = delivery-fee margin (deliveryFee − courierEarning).
-    const deliveryFeesToday = decimalToNumber(todayAgg._sum.deliveryFee) ?? 0;
-    const courierPayoutsToday = decimalToNumber(todayAgg._sum.courierEarning) ?? 0;
-    const profitToday = Math.max(0, deliveryFeesToday - courierPayoutsToday);
+    const productSalesMonth = decimalToNumber(monthAgg._sum.subtotal) ?? 0;
 
     // Couriers currently on shift (profile.courier.isOnline === true).
     const workingCouriers = courierProfiles.filter((u) => isCourierOnline(u.profile)).length;
@@ -62,8 +68,7 @@ export class AdminStatsService {
     return {
       ordersToday,
       revenueToday,
-      productSalesToday,
-      profitToday,
+      productSalesMonth,
       activeCouriers,
       workingCouriers,
       activeStores,
@@ -156,6 +161,11 @@ export class AdminStatsService {
 function startOfToday(): Date {
   const d = new Date();
   return new Date(d.getFullYear(), d.getMonth(), d.getDate());
+}
+
+function startOfMonth(): Date {
+  const d = new Date();
+  return new Date(d.getFullYear(), d.getMonth(), 1);
 }
 
 /** Local-date key (YYYY-MM-DD) for day-bucketing. */
