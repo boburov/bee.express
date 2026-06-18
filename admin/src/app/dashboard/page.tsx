@@ -14,8 +14,15 @@ import {
 import { PageHeader } from "@/shared/ui/PageHeader";
 import { StatCard } from "@/shared/ui/StatCard";
 import { Card, CardBody, CardHeader, CardTitle } from "@/shared/ui/Card";
+import { Skeleton } from "@/shared/ui/Skeleton";
+import { TrendChart } from "@/shared/ui/TrendChart";
 import { extractApiError } from "@/shared/auth/api";
-import { som, statsApi, type DashboardSummary } from "@/entities/stats/api";
+import {
+  som,
+  statsApi,
+  type DailyPoint,
+  type DashboardSummary,
+} from "@/entities/stats/api";
 
 const nextSteps: string[] = [
   "Kategoriyalar daraxtini sozlash va dinamik atributlarni biriktirish.",
@@ -26,6 +33,7 @@ const nextSteps: string[] = [
 
 export default function DashboardPage() {
   const [summary, setSummary] = useState<DashboardSummary | null>(null);
+  const [trend, setTrend] = useState<DailyPoint[] | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -37,6 +45,14 @@ export default function DashboardPage() {
       })
       .catch((e) => {
         if (!cancelled) setError(extractApiError(e));
+      });
+    statsApi
+      .timeseries(14)
+      .then((t) => {
+        if (!cancelled) setTrend(t);
+      })
+      .catch(() => {
+        /* chart is supplementary — keep the page usable if it fails */
       });
     return () => {
       cancelled = true;
@@ -72,6 +88,29 @@ export default function DashboardPage() {
           <StatCard key={s.label} label={s.label} value={s.value} icon={s.icon} />
         ))}
       </div>
+
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between gap-4">
+          <CardTitle>Daromad va buyurtmalar — so'nggi 14 kun</CardTitle>
+          <div className="flex items-center gap-4 text-xs text-ink-muted">
+            <span className="flex items-center gap-1.5">
+              <span className="inline-block h-2.5 w-2.5 rounded-full bg-brand-500" />
+              Daromad
+            </span>
+            <span className="flex items-center gap-1.5">
+              <span className="inline-block h-0.5 w-4 rounded-full bg-ink-soft" />
+              Buyurtmalar
+            </span>
+          </div>
+        </CardHeader>
+        <CardBody>
+          {trend ? (
+            <TrendChart data={trend} />
+          ) : (
+            <Skeleton className="h-[240px] w-full" rounded="lg" />
+          )}
+        </CardBody>
+      </Card>
 
       <Card>
         <CardHeader>

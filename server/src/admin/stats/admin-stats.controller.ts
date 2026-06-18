@@ -13,6 +13,14 @@ export class AdminStatsController {
     return this.stats.dashboard();
   }
 
+  @Get('stats/timeseries')
+  timeseries(@Query('days') days?: string) {
+    const parsed = days ? Number.parseInt(days, 10) : undefined;
+    return this.stats.timeseries(
+      parsed && Number.isFinite(parsed) ? parsed : undefined,
+    );
+  }
+
   @Get('finance/summary')
   finance(@Query() query: FinanceQueryDto) {
     return this.stats.finance(query);

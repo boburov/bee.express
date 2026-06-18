@@ -73,6 +73,50 @@ export class AdminStatsService {
     };
   }
 
+  /**
+   * Daily orders & revenue for the last `days` days (default 14), oldest first.
+   * Orders are bucketed by createdAt; revenue is the delivered-order total
+   * bucketed by deliveredAt — matching the single-day dashboard figures. Empty
+   * days are zero-filled so the chart has a continuous x-axis.
+   */
+  async timeseries(days = 14) {
+    const span = Math.min(Math.max(days, 1), 90);
+    const start = startOfToday();
+    start.setDate(start.getDate() - (span - 1));
+
+    const [created, delivered] = await Promise.all([
+      this.prisma.order.findMany({
+        where: { createdAt: { gte: start } },
+        select: { createdAt: true },
+      }),
+      this.prisma.order.findMany({
+        where: { status: OrderStatus.DELIVERED, deliveredAt: { gte: start } },
+        select: { deliveredAt: true, total: true },
+      }),
+    ]);
+
+    // Seed every day in the window with zeros.
+    const buckets = new Map<string, { date: string; orders: number; revenue: number }>();
+    for (let i = 0; i < span; i++) {
+      const d = new Date(start);
+      d.setDate(start.getDate() + i);
+      const key = dateKey(d);
+      buckets.set(key, { date: key, orders: 0, revenue: 0 });
+    }
+
+    for (const o of created) {
+      const b = buckets.get(dateKey(o.createdAt));
+      if (b) b.orders += 1;
+    }
+    for (const o of delivered) {
+      if (!o.deliveredAt) continue;
+      const b = buckets.get(dateKey(o.deliveredAt));
+      if (b) b.revenue += decimalToNumber(o.total) ?? 0;
+    }
+
+    return Array.from(buckets.values());
+  }
+
   async finance(query: FinanceQueryDto) {
     const where: Prisma.OrderWhereInput = {
       status: OrderStatus.DELIVERED,
@@ -112,6 +156,14 @@ export class AdminStatsService {
 function startOfToday(): Date {
   const d = new Date();
   return new Date(d.getFullYear(), d.getMonth(), d.getDate());
+}
+
+/** Local-date key (YYYY-MM-DD) for day-bucketing. */
+function dateKey(d: Date): string {
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${y}-${m}-${day}`;
 }
 
 /** Reads `profile.courier.isOnline` from the User.profile JSON blob. */
