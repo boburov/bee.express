@@ -3,7 +3,10 @@ import { api } from "@/shared/auth/api";
 export interface DashboardSummary {
   ordersToday: number;
   revenueToday: number;
+  productSalesToday: number;
+  profitToday: number;
   activeCouriers: number;
+  workingCouriers: number;
   activeStores: number;
   newSignupsToday: number;
   conversionPct: number;

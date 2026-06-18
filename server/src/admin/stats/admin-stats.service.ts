@@ -17,31 +17,55 @@ export class AdminStatsService {
   async dashboard() {
     const startToday = startOfToday();
 
+    const deliveredToday: Prisma.OrderWhereInput = {
+      status: OrderStatus.DELIVERED,
+      deliveredAt: { gte: startToday },
+    };
+
     const [
       ordersToday,
-      revenueAgg,
+      todayAgg,
       activeStores,
       activeCouriers,
+      courierProfiles,
       newSignupsToday,
       totalOrders,
       deliveredTotal,
     ] = await Promise.all([
       this.prisma.order.count({ where: { createdAt: { gte: startToday } } }),
       this.prisma.order.aggregate({
-        _sum: { total: true },
-        where: { status: OrderStatus.DELIVERED, deliveredAt: { gte: startToday } },
+        _sum: { total: true, subtotal: true, deliveryFee: true, courierEarning: true },
+        where: deliveredToday,
       }),
       this.prisma.store.count({ where: { status: 'ACTIVE' } }),
       this.prisma.user.count({ where: { isBlocked: false, role: { slug: 'courier' } } }),
+      this.prisma.user.findMany({
+        where: { isBlocked: false, role: { slug: 'courier' } },
+        select: { profile: true },
+      }),
       this.prisma.user.count({ where: { createdAt: { gte: startToday } } }),
       this.prisma.order.count(),
       this.prisma.order.count({ where: { status: OrderStatus.DELIVERED } }),
     ]);
 
+    // Gross revenue (order total) and product sales (subtotal, excl. delivery).
+    const revenueToday = decimalToNumber(todayAgg._sum.total) ?? 0;
+    const productSalesToday = decimalToNumber(todayAgg._sum.subtotal) ?? 0;
+    // Platform profit in MVP = delivery-fee margin (deliveryFee − courierEarning).
+    const deliveryFeesToday = decimalToNumber(todayAgg._sum.deliveryFee) ?? 0;
+    const courierPayoutsToday = decimalToNumber(todayAgg._sum.courierEarning) ?? 0;
+    const profitToday = Math.max(0, deliveryFeesToday - courierPayoutsToday);
+
+    // Couriers currently on shift (profile.courier.isOnline === true).
+    const workingCouriers = courierProfiles.filter((u) => isCourierOnline(u.profile)).length;
+
     return {
       ordersToday,
-      revenueToday: decimalToNumber(revenueAgg._sum.total) ?? 0,
+      revenueToday,
+      productSalesToday,
+      profitToday,
       activeCouriers,
+      workingCouriers,
       activeStores,
       newSignupsToday,
       conversionPct:
@@ -88,4 +112,15 @@ export class AdminStatsService {
 function startOfToday(): Date {
   const d = new Date();
   return new Date(d.getFullYear(), d.getMonth(), d.getDate());
+}
+
+/** Reads `profile.courier.isOnline` from the User.profile JSON blob. */
+function isCourierOnline(profile: Prisma.JsonValue | null): boolean {
+  if (profile && typeof profile === 'object' && !Array.isArray(profile)) {
+    const c = (profile as Record<string, unknown>).courier;
+    if (c && typeof c === 'object' && !Array.isArray(c)) {
+      return (c as Record<string, unknown>).isOnline === true;
+    }
+  }
+  return false;
 }
