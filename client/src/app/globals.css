@@ -32,15 +32,15 @@
   --color-accent-400: #FBBF24;
   --color-accent-500: #F59E0B;
 
-  --color-ink:        #0B0B0F;
-  --color-ink-soft:   #27272A;
-  --color-ink-muted:  #71717A;
-  --color-ink-faint:  #A1A1AA;
-  --color-line:       #E4E4E7;
-  --color-line-soft:  #F1F1F4;
+  --color-ink:        #0F0F1A;
+  --color-ink-soft:   #30313D;
+  --color-ink-muted:  #6E6E80;
+  --color-ink-faint:  #9E9EAD;
+  --color-line:       #E7E7EF;
+  --color-line-soft:  #F0F0F5;
   --color-surface:    #FFFFFF;
-  --color-surface-2:  #FAFAF9;
-  --color-surface-3:  #F5F5F4;
+  --color-surface-2:  #F2F3F7;
+  --color-surface-3:  #F5F5F8;
 
   --color-success: #16A34A;
   --color-warning: #F59E0B;
@@ -81,15 +81,27 @@
   .bg-gradient-premium {
     background-image: linear-gradient(135deg, #F97316 0%, #FB923C 50%, #FBBF24 100%);
   }
+  /* Uzum-style cards: near-flat by default, soft lift on hover. */
   .shadow-card {
+    box-shadow: 0 1px 2px rgba(15, 15, 26, 0.05);
+  }
+  .shadow-hover {
     box-shadow:
-      0 1px 2px rgba(15, 15, 15, 0.04),
-      0 0 0 1px rgba(15, 15, 15, 0.04);
+      0 8px 28px -10px rgba(15, 15, 26, 0.16),
+      0 2px 8px rgba(15, 15, 26, 0.05);
   }
   .shadow-pop {
     box-shadow:
-      0 12px 32px -12px rgba(249, 115, 22, 0.18),
-      0 4px 12px rgba(15, 15, 15, 0.06);
+      0 12px 32px -12px rgba(249, 115, 22, 0.20),
+      0 4px 12px rgba(15, 15, 26, 0.06);
+  }
+  /* Hide scrollbars on horizontal category/product rails (Uzum look). */
+  .no-scrollbar {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
   }
 }
 

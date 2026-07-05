@@ -89,7 +89,7 @@ export default function CategoryPage() {
         </div>
       ) : null}
 
-      {/* Sort tabs */}
+      {/* Sort pills */}
       <div className="flex items-center gap-2 text-xs">
         <span className="text-ink-muted">Saralash:</span>
         {SORTS.map((s) => (
@@ -97,10 +97,10 @@ export default function CategoryPage() {
             key={s.value}
             type="button"
             onClick={() => { setSort(s.value); setPage(1); }}
-            className={`px-2.5 py-1 rounded-md font-medium ${
+            className={`h-8 px-3.5 rounded-full font-semibold transition-colors ${
               sort === s.value
                 ? "bg-brand-500 text-white"
-                : "text-ink-soft hover:bg-surface-3"
+                : "bg-surface-3 text-ink-soft hover:bg-brand-50 hover:text-brand-700"
             }`}
           >
             {s.label}

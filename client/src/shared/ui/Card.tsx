@@ -8,14 +8,14 @@ interface CardProps extends HTMLAttributes<HTMLDivElement> {
 }
 
 const tones: Record<Tone, string> = {
-  default: "bg-surface border-line shadow-card",
+  default: "bg-surface border-line/70 shadow-card",
   warm: "bg-gradient-warm border-brand-100 shadow-card",
   muted: "bg-surface-3 border-line",
 };
 
 export function Card({ className, tone = "default", ...rest }: CardProps) {
   return (
-    <div className={cn("rounded-xl border", tones[tone], className)} {...rest} />
+    <div className={cn("rounded-2xl border", tones[tone], className)} {...rest} />
   );
 }
 

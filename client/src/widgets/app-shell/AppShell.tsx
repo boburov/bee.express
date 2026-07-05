@@ -10,22 +10,22 @@ import { NotificationsProvider } from "@/features/notifications/NotificationsPro
 import { ToastStack } from "@/features/notifications/ToastStack";
 import { Topbar } from "@/widgets/topbar/Topbar";
 import { BottomNav } from "@/widgets/bottom-nav/BottomNav";
-import { Sidebar } from "@/widgets/sidebar/Sidebar";
 
 interface AppShellProps {
   children: React.ReactNode;
 }
 
 /**
- * Customer panel chrome. Responsive across one breakpoint (`lg`):
+ * Customer panel chrome — Uzum Market-style marketplace layout:
  *
- *   • Mobile (< lg) — Telegram Mini App layout: Topbar + centered max-w-md
- *     content + BottomNav. Unchanged from the original mobile-only shell.
- *   • Desktop (lg+) — dashboard layout: fixed left Sidebar + wider content
- *     canvas. BottomNav hides; the Topbar drops its logo (the Sidebar owns it).
+ *   • A full-width top header (logo · Katalog · search · account actions) on
+ *     every viewport. No left rail — navigation lives in the header on desktop
+ *     and in the BottomNav on mobile.
+ *   • Content is centered inside a max-w-7xl canvas.
+ *   • BottomNav shows below `lg` only.
  *
- * The cart badge is fed to both Topbar and Sidebar from `cart.itemCount`,
- * populated once after login so it survives navigation.
+ * The cart badge is fed to the Topbar from `cart.itemCount`, populated once
+ * after login so it survives navigation.
  */
 export function AppShell({ children }: AppShellProps) {
   const accessToken = useAuthStore((s) => s.accessToken);
@@ -44,15 +44,12 @@ export function AppShell({ children }: AppShellProps) {
     <AuthBoundary>
       <RoleGuard allowed={[]}>
         <NotificationsProvider>
-          <div className="min-h-screen bg-surface-2 lg:flex">
-            <Sidebar cartCount={cartCount} />
-            <div className="flex flex-col min-h-screen flex-1 min-w-0">
-              <Topbar cartCount={cartCount} />
-              <main className="flex-1 w-full mx-auto max-w-md lg:max-w-5xl px-4 py-4 lg:px-8 lg:py-8">
-                {children}
-              </main>
-              <BottomNav />
-            </div>
+          <div className="flex min-h-screen flex-col bg-surface-2">
+            <Topbar cartCount={cartCount} />
+            <main className="mx-auto w-full max-w-7xl flex-1 px-4 py-4 lg:px-6 lg:py-6">
+              {children}
+            </main>
+            <BottomNav />
           </div>
           <ToastStack />
         </NotificationsProvider>

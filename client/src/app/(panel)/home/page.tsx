@@ -4,7 +4,6 @@ import Link from "next/link";
 import {
   ArrowRight,
   MapPin,
-  Search,
   ShoppingBasket,
   Sparkles,
   Store,
@@ -38,47 +37,47 @@ export default function HomePage() {
 
   const { data: tree, loading: catLoading } = useCategoriesTree();
   const location = useActiveLocation();
-  const topCategories = (tree ?? []).slice(0, 8);
+  const topCategories = (tree ?? []).slice(0, 12);
 
   const geo = location ? { lat: location.lat, lng: location.lng } : null;
   const { data: nearby, loading: nearbyLoading } = useStoresNearby(geo);
 
   return (
     <div className="flex flex-col gap-6">
-      {/* Hero — gradient greeting card with location stub + search affordance */}
-      <section className="relative overflow-hidden rounded-2xl border border-brand-100 bg-gradient-warm p-5 shadow-card">
-        <div className="absolute inset-0 bg-gradient-soft opacity-70 pointer-events-none" aria-hidden />
-        <div className="relative flex flex-col gap-3">
-          <div className="flex items-center gap-3">
-            <Avatar name={name} size={44} />
-            <div className="min-w-0 flex-1">
-              <p className="text-xs font-medium text-brand-700">BeeExpress</p>
-              <h1 className="text-xl font-semibold tracking-tight text-ink truncate">
-                Salom, {name}
-              </h1>
-            </div>
+      {/* Promo banner — Uzum-style full-bleed hero with greeting + CTA */}
+      <section className="relative overflow-hidden rounded-2xl bg-gradient-premium p-5 lg:p-8 text-white shadow-card">
+        <div className="absolute -right-10 -top-10 h-40 w-40 rounded-full bg-white/15 blur-2xl" aria-hidden />
+        <div className="absolute -bottom-16 right-16 h-48 w-48 rounded-full bg-white/10 blur-3xl" aria-hidden />
+        <div className="relative flex items-center gap-4">
+          <Avatar name={name} size={48} className="ring-2 ring-white/40" />
+          <div className="min-w-0 flex-1">
+            <p className="text-xs font-medium text-white/80">BeeExpress</p>
+            <h1 className="truncate text-xl lg:text-2xl font-bold tracking-tight">
+              Salom, {name}
+            </h1>
           </div>
-          <p className="text-sm text-ink-muted">
-            Kategoriyani tanlang yoki qidiruv orqali yaqin atrofdagi sotuvchini toping.
-          </p>
+        </div>
+        <p className="relative mt-3 max-w-lg text-sm text-white/90">
+          Yaqin atrofdagi sotuvchilardan tez yetkazib berish. Kategoriyani tanlang
+          yoki mahsulot qidiring.
+        </p>
+        <div className="relative mt-4 flex flex-wrap items-center gap-3">
           <Link
             href="/catalog"
-            className="mt-1 flex items-center gap-2 h-11 rounded-xl border border-line bg-surface px-3 text-sm text-ink-muted shadow-card hover:border-brand-300"
+            className="inline-flex h-10 items-center gap-2 rounded-xl bg-white px-4 text-sm font-semibold text-brand-700 transition-colors hover:bg-white/90"
           >
-            <Search className="h-4 w-4 text-ink-muted" />
-            <span className="flex-1 text-left">Mahsulot yoki sotuvchini qidiring</span>
-            <ArrowRight className="h-4 w-4 text-ink-faint" />
+            Xarid qilish <ArrowRight className="h-4 w-4" />
           </Link>
-          <div className="mt-1 inline-flex items-center gap-1.5 text-xs text-ink-muted">
+          <span className="inline-flex items-center gap-1.5 text-xs text-white/90">
             <MapPin className="h-3.5 w-3.5" />
-            <span className="truncate max-w-45">
+            <span className="max-w-45 truncate">
               {location?.label ?? "Manzil tanlanmagan"}
             </span>
-            <span className="mx-1 text-ink-faint">·</span>
-            <Link href="/addresses" className="font-medium text-brand-700 hover:underline">
+            <span className="mx-0.5 text-white/50">·</span>
+            <Link href="/addresses" className="font-semibold underline underline-offset-2">
               {location ? "o'zgartirish" : "qo'shish"}
             </Link>
-          </div>
+          </span>
         </div>
       </section>
 
@@ -98,7 +97,7 @@ export default function HomePage() {
         ) : topCategories.length === 0 ? (
           <p className="text-xs text-ink-muted">Hali kategoriya yo&apos;q.</p>
         ) : (
-          <ul className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+          <ul className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-6 gap-2.5">
             {topCategories.map((c, i) => (
               <li key={c.id}>
                 <IconTile
@@ -116,7 +115,7 @@ export default function HomePage() {
       </section>
 
       {/* Quick facts strip */}
-      <section className="rounded-xl border border-line bg-surface shadow-card">
+      <section className="rounded-2xl border border-line/70 bg-surface shadow-card">
         <ul className="grid grid-cols-3 divide-x divide-line-soft">
           {quickFacts.map((f) => {
             const Icon = f.icon;
@@ -160,7 +159,7 @@ export default function HomePage() {
           <ul className="flex flex-col gap-2">
             {nearby.map((s) => (
               <li key={s.id}>
-                <div className="flex items-center gap-3 rounded-xl border border-line bg-surface p-3 shadow-card">
+                <div className="flex items-center gap-3 rounded-2xl border border-line/70 bg-surface p-3 transition-all hover:-translate-y-0.5 hover:shadow-hover">
                   <span className="inline-flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-brand-50 text-brand-600">
                     {s.logoUrl ? (
                       // eslint-disable-next-line @next/next/no-img-element

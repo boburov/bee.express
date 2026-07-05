@@ -74,32 +74,30 @@ export function IconTile({
     <>
       <span
         className={cn(
-          "inline-flex h-10 w-10 items-center justify-center overflow-hidden rounded-xl",
+          "inline-flex h-16 w-16 items-center justify-center overflow-hidden rounded-2xl",
           t.iconBg,
           t.iconText,
         )}
       >
         {imageUrl ? (
           // eslint-disable-next-line @next/next/no-img-element
-          <img src={imageUrl} alt="" className="h-full w-full object-cover" />
+          <img src={imageUrl} alt="" className="h-full w-full object-contain p-2" />
         ) : (
-          <Icon className="h-5 w-5" strokeWidth={1.75} />
+          <Icon className="h-7 w-7" strokeWidth={1.75} />
         )}
       </span>
-      <div className="min-w-0 mt-2">
-        <div className="text-xs font-semibold text-ink truncate">{label}</div>
+      <div className="min-w-0 mt-2.5 w-full">
+        <div className="text-[13px] font-semibold text-ink leading-snug line-clamp-2">{label}</div>
         {caption ? (
-          <div className="text-[10px] text-ink-muted truncate mt-0.5">{caption}</div>
+          <div className="text-[11px] text-ink-muted truncate mt-0.5">{caption}</div>
         ) : null}
       </div>
     </>
   );
 
   const baseClass = cn(
-    "flex flex-col items-start rounded-xl border p-3 transition-colors",
-    t.bg,
-    t.border,
-    href && "active:scale-[0.98] hover:brightness-105",
+    "flex flex-col items-center text-center rounded-2xl border border-line/70 bg-surface p-3 transition-all",
+    href && "hover:shadow-hover hover:-translate-y-0.5 active:scale-[0.98]",
     className,
   );
 
