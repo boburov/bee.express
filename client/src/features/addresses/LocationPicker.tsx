@@ -18,7 +18,7 @@ interface LocationPickerProps {
 
 // Tashkent center — default before the buyer has picked a point.
 const DEFAULT_CENTER: [number, number] = [41.3111, 69.2797];
-const BRAND = "#F97316"; // --color-brand-500
+const BRAND = "#FF6B35"; // --color-brand-500
 
 function resolveLeaflet(mod: unknown): LeafletModule {
   const m = mod as { default?: LeafletModule } & LeafletModule;

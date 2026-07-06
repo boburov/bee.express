@@ -1,53 +1,72 @@
 @import "tailwindcss";
 
-/* BeeExpress Customer — premium orange + yellow-orange accent + soft neutrals.
- * Single source of truth: /DESIGN_SYSTEM.md
- * `bee-*` is kept as alias to `brand-*`.
+/* BeeExpress Customer — appetizing food-delivery redesign.
+ * Warm red-orange brand (#FF6B35 → #FF4757), floaty soft cards, bold rounded
+ * CTAs, thumb-zone actions. Same tokens/API as before so components keep
+ * working; only the *values* and a few new utilities changed.
+ * `bee-*` is kept as an alias of `brand-*`.
  */
 
 @theme {
-  --color-brand-50:  #FFF7ED;
-  --color-brand-100: #FFEDD5;
-  --color-brand-200: #FED7AA;
-  --color-brand-300: #FDBA74;
-  --color-brand-400: #FB923C;
-  --color-brand-500: #F97316;
-  --color-brand-600: #EA580C;
-  --color-brand-700: #C2410C;
-  --color-brand-800: #9A3412;
-  --color-brand-900: #7C2D12;
+  /* Primary — appetizing red-orange (energy + appetite). */
+  --color-brand-50:  #FFF4EE;
+  --color-brand-100: #FFE6DA;
+  --color-brand-200: #FFC9B2;
+  --color-brand-300: #FFA588;
+  --color-brand-400: #FF8459;
+  --color-brand-500: #FF6B35;
+  --color-brand-600: #F0501C;
+  --color-brand-700: #C93C13;
+  --color-brand-800: #A23212;
+  --color-brand-900: #7E2913;
 
-  --color-bee-50:  #FFF7ED;
-  --color-bee-100: #FFEDD5;
-  --color-bee-200: #FED7AA;
-  --color-bee-300: #FDBA74;
-  --color-bee-400: #FB923C;
-  --color-bee-500: #F97316;
-  --color-bee-600: #EA580C;
-  --color-bee-700: #C2410C;
-  --color-bee-800: #9A3412;
-  --color-bee-900: #7C2D12;
+  --color-bee-50:  #FFF4EE;
+  --color-bee-100: #FFE6DA;
+  --color-bee-200: #FFC9B2;
+  --color-bee-300: #FFA588;
+  --color-bee-400: #FF8459;
+  --color-bee-500: #FF6B35;
+  --color-bee-600: #F0501C;
+  --color-bee-700: #C93C13;
+  --color-bee-800: #A23212;
+  --color-bee-900: #7E2913;
 
+  /* Deep red pole of the appetite gradient — promos, "hot" flags. */
+  --color-hot-400: #FF6B6B;
+  --color-hot-500: #FF4757;
+  --color-hot-600: #E62E45;
+
+  /* Accent — warm amber for star ratings / highlights. */
   --color-accent-300: #FCD34D;
   --color-accent-400: #FBBF24;
   --color-accent-500: #F59E0B;
 
-  --color-ink:        #0F0F1A;
-  --color-ink-soft:   #30313D;
-  --color-ink-muted:  #6E6E80;
-  --color-ink-faint:  #9E9EAD;
-  --color-line:       #E7E7EF;
-  --color-line-soft:  #F0F0F5;
+  /* Neutrals — soft, slightly warm. */
+  --color-ink:        #0E0F14;
+  --color-ink-soft:   #2B2C36;
+  --color-ink-muted:  #6B6C7A;
+  --color-ink-faint:  #9A9BA8;
+  --color-line:       #E9E9EF;
+  --color-line-soft:  #F2F2F6;
   --color-surface:    #FFFFFF;
-  --color-surface-2:  #F2F3F7;
-  --color-surface-3:  #F5F5F8;
+  --color-surface-2:  #F6F7F9;
+  --color-surface-3:  #F1F2F5;
 
   --color-success: #16A34A;
   --color-warning: #F59E0B;
-  --color-danger:  #DC2626;
+  --color-danger:  #E11D48;
   --color-info:    #0EA5E9;
 
   --font-sans: var(--font-inter), system-ui, sans-serif;
+
+  /* Softer, more generous radii for the food-app feel. */
+  --radius-lg:  0.875rem;  /* 14px — buttons */
+  --radius-xl:  1rem;      /* 16px — inputs, chips */
+  --radius-2xl: 1.25rem;   /* 20px — cards */
+  --radius-3xl: 1.75rem;   /* 28px — hero, sheets */
+
+  /* Motion */
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 @layer base {
@@ -67,47 +86,92 @@
     background: var(--tg-bg, var(--color-surface-2));
     color: var(--tg-text, var(--color-ink));
   }
+  /* Tabular numerals for all prices / counts feel more premium. */
+  .tabular-nums { font-feature-settings: "tnum" 1; }
 }
 
 @layer utilities {
+  /* Appetite gradients — orange → red, the signature of the redesign. */
+  .bg-gradient-premium {
+    background-image: linear-gradient(135deg, #FF7A45 0%, #FF6B35 45%, #FF4757 100%);
+  }
   .bg-gradient-warm {
-    background-image: linear-gradient(135deg, #FFF7ED 0%, #FFFFFF 45%, #FFFBEB 100%);
+    background-image: linear-gradient(160deg, #FFF4EE 0%, #FFFFFF 55%, #FFF1F2 100%);
   }
   .bg-gradient-soft {
     background-image:
-      radial-gradient(at 0% 0%, rgba(254, 215, 170, 0.45) 0%, transparent 55%),
-      radial-gradient(at 100% 0%, rgba(252, 211, 77, 0.35) 0%, transparent 50%);
+      radial-gradient(at 0% 0%, rgba(255, 138, 101, 0.28) 0%, transparent 55%),
+      radial-gradient(at 100% 0%, rgba(255, 71, 87, 0.16) 0%, transparent 50%);
   }
-  .bg-gradient-premium {
-    background-image: linear-gradient(135deg, #F97316 0%, #FB923C 50%, #FBBF24 100%);
+  .text-gradient-premium {
+    background-image: linear-gradient(135deg, #FF6B35 0%, #FF4757 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
   }
-  /* Uzum-style cards: near-flat by default, soft lift on hover. */
+
+  /* Floaty, warm-tinted elevation. Cards sit *above* the page, not flush. */
   .shadow-card {
-    box-shadow: 0 1px 2px rgba(15, 15, 26, 0.05);
+    box-shadow:
+      0 1px 2px rgba(14, 15, 20, 0.04),
+      0 6px 20px -12px rgba(14, 15, 20, 0.12);
   }
   .shadow-hover {
     box-shadow:
-      0 8px 28px -10px rgba(15, 15, 26, 0.16),
-      0 2px 8px rgba(15, 15, 26, 0.05);
+      0 12px 32px -12px rgba(255, 107, 53, 0.28),
+      0 4px 12px rgba(14, 15, 20, 0.06);
   }
   .shadow-pop {
     box-shadow:
-      0 12px 32px -12px rgba(249, 115, 22, 0.20),
-      0 4px 12px rgba(15, 15, 26, 0.06);
+      0 18px 44px -16px rgba(14, 15, 20, 0.28),
+      0 6px 16px rgba(14, 15, 20, 0.08);
   }
-  /* Hide scrollbars on horizontal category/product rails (Uzum look). */
+  /* Glowing primary CTA — the one button the eye should land on. */
+  .shadow-cta {
+    box-shadow:
+      0 10px 24px -8px rgba(255, 71, 87, 0.5),
+      0 2px 6px rgba(240, 80, 28, 0.3);
+  }
+
+  /* Tactile press — pairs with active:scale-* on tappable surfaces. */
+  .press {
+    transition: transform 0.18s var(--ease-spring), box-shadow 0.2s ease;
+  }
+  .press:active { transform: scale(0.97); }
+
+  /* Hide scrollbars on horizontal category/product rails. */
   .no-scrollbar {
     scrollbar-width: none;
     -ms-overflow-style: none;
   }
-  .no-scrollbar::-webkit-scrollbar {
-    display: none;
-  }
+  .no-scrollbar::-webkit-scrollbar { display: none; }
+
+  /* Entrance micro-animations. */
+  .animate-pop      { animation: pop 0.28s var(--ease-spring) both; }
+  .animate-fade-up  { animation: fade-up 0.35s ease-out both; }
+  .animate-float    { animation: float 3.5s ease-in-out infinite; }
+  .animate-rise     { animation: rise 0.3s var(--ease-spring) both; }
 }
 
 @keyframes shimmer {
   0%   { background-position: -400px 0; }
   100% { background-position: 400px 0; }
+}
+@keyframes pop {
+  0%   { transform: scale(0.8); opacity: 0; }
+  100% { transform: scale(1); opacity: 1; }
+}
+@keyframes fade-up {
+  0%   { transform: translateY(10px); opacity: 0; }
+  100% { transform: translateY(0); opacity: 1; }
+}
+@keyframes rise {
+  0%   { transform: translateY(14px); opacity: 0; }
+  100% { transform: translateY(0); opacity: 1; }
+}
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-6px); }
 }
 
 @media (prefers-reduced-motion: reduce) {

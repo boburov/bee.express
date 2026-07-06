@@ -141,7 +141,7 @@ export default function CheckoutPage() {
           {/* ─── 1. Manzil ────────────────────────────────────────────── */}
           <section className="flex flex-col gap-3">
             <h2 className="text-sm font-semibold text-ink flex items-center gap-2">
-              <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-brand-500 text-white text-[11px] font-bold">1</span>
+              <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-gradient-premium text-white text-[11px] font-bold shadow-cta">1</span>
               Yetkazib berish manzili
             </h2>
 
@@ -155,12 +155,12 @@ export default function CheckoutPage() {
                         <button
                           type="button"
                           onClick={() => setSelectedAddressId(a.id)}
-                          className={`w-full rounded-xl border bg-surface text-left p-3 flex gap-3 items-start transition-colors ${
-                            selected ? "border-brand-300 ring-1 ring-brand-200" : "border-line hover:border-brand-200"
+                          className={`press w-full rounded-2xl border bg-surface text-left p-3.5 flex gap-3 items-start transition-colors ${
+                            selected ? "border-brand-400 ring-2 ring-brand-200 shadow-card" : "border-line hover:border-brand-200"
                           }`}
                         >
                           <span className={`mt-0.5 inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full ${
-                            selected ? "bg-brand-500 text-white" : "bg-brand-50 text-brand-600"
+                            selected ? "bg-gradient-premium text-white shadow-cta" : "bg-brand-50 text-brand-600"
                           }`}>
                             {selected ? <Check className="h-4 w-4" /> : <MapPin className="h-4 w-4" strokeWidth={1.75} />}
                           </span>
@@ -209,7 +209,7 @@ export default function CheckoutPage() {
           {/* ─── 2. Cart summary ─────────────────────────────────────── */}
           <section className="flex flex-col gap-3">
             <h2 className="text-sm font-semibold text-ink flex items-center gap-2">
-              <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-brand-500 text-white text-[11px] font-bold">2</span>
+              <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-gradient-premium text-white text-[11px] font-bold shadow-cta">2</span>
               Buyurtma tarkibi
             </h2>
             {cart!.stores.map((group) => (
@@ -273,7 +273,7 @@ export default function CheckoutPage() {
           {/* ─── 3. Notes ────────────────────────────────────────────── */}
           <section className="flex flex-col gap-2">
             <h2 className="text-sm font-semibold text-ink flex items-center gap-2">
-              <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-brand-500 text-white text-[11px] font-bold">3</span>
+              <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-gradient-premium text-white text-[11px] font-bold shadow-cta">3</span>
               Eslatma (ixtiyoriy)
             </h2>
             <textarea
@@ -282,14 +282,14 @@ export default function CheckoutPage() {
               maxLength={500}
               rows={2}
               placeholder="Sotuvchiga eslatma — alergiya, qadoqlash, va h.k."
-              className="w-full rounded-md border border-line bg-surface px-3 py-2 text-sm text-ink placeholder:text-ink-faint focus:outline-none focus:border-brand-300 focus:ring-2 focus:ring-brand-200"
+              className="w-full rounded-xl border border-line bg-surface px-4 py-3 text-sm text-ink placeholder:text-ink-faint focus:outline-none focus:border-brand-400 focus:ring-4 focus:ring-brand-100"
             />
           </section>
 
           {/* ─── 4. To'lov + submit ──────────────────────────────────── */}
           <section className="flex flex-col gap-3">
             <h2 className="text-sm font-semibold text-ink flex items-center gap-2">
-              <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-brand-500 text-white text-[11px] font-bold">4</span>
+              <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-gradient-premium text-white text-[11px] font-bold shadow-cta">4</span>
               To&apos;lov
             </h2>
             <Card>
@@ -323,9 +323,9 @@ export default function CheckoutPage() {
             </Card>
           ) : null}
 
-          <Card>
+          <Card className="sticky bottom-20 lg:bottom-4 z-20">
             <div className="p-4 flex flex-col gap-3">
-              <div className="flex flex-col gap-1 text-sm">
+              <div className="flex flex-col gap-1.5 text-sm">
                 <div className="flex items-center justify-between">
                   <span className="text-ink-muted">Mahsulotlar</span>
                   <span className="text-ink tabular-nums">{formatSum(cart!.subtotal)}</span>
@@ -336,19 +336,20 @@ export default function CheckoutPage() {
                     {quoteLoading && !quote ? "…" : quote ? formatSum(quote.deliveryTotal) : "—"}
                   </span>
                 </div>
-                <div className="flex items-center justify-between pt-1.5 border-t border-line-soft">
+                <div className="flex items-center justify-between pt-2 border-t border-line-soft">
                   <span className="font-semibold text-ink">Jami</span>
-                  <span className="text-lg font-semibold text-ink tabular-nums">
+                  <span className="text-xl font-bold text-ink tabular-nums">
                     {quote ? formatSum(quote.total) : formatSum(cart!.subtotal)}
                   </span>
                 </div>
               </div>
               <Button
                 block
+                size="lg"
                 onClick={onSubmit}
                 disabled={!canSubmit}
                 loading={submitting}
-                rightIcon={!submitting ? <Check className="h-4 w-4" /> : undefined}
+                rightIcon={!submitting ? <Check className="h-5 w-5" /> : undefined}
               >
                 Tasdiqlash
               </Button>

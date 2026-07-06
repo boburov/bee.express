@@ -14,25 +14,27 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 }
 
 const base =
-  "inline-flex items-center justify-center gap-2 font-semibold rounded-xl transition-colors " +
-  "focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-200 focus-visible:ring-offset-1 " +
-  "disabled:opacity-50 disabled:cursor-not-allowed";
+  "inline-flex items-center justify-center gap-2 font-semibold rounded-2xl select-none " +
+  "transition-[transform,background-color,box-shadow] duration-200 ease-out active:scale-[0.97] " +
+  "focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-300 focus-visible:ring-offset-1 " +
+  "disabled:opacity-50 disabled:cursor-not-allowed disabled:active:scale-100";
 
 const variants: Record<Variant, string> = {
+  // Signature appetite-gradient CTA with a soft glow.
   primary:
-    "bg-brand-500 text-white hover:bg-brand-600 active:bg-brand-700",
+    "bg-gradient-premium text-white shadow-cta hover:brightness-105 active:brightness-95",
   secondary:
     "bg-surface-3 text-ink hover:bg-line-soft active:bg-line",
   outline:
     "border border-line bg-surface text-ink hover:border-brand-300 hover:bg-brand-50",
   ghost: "text-ink hover:bg-surface-3",
-  danger: "bg-danger text-white hover:bg-red-700 active:bg-red-800",
+  danger: "bg-danger text-white shadow-cta hover:brightness-105 active:brightness-95",
 };
 
 const sizes: Record<Size, string> = {
-  sm: "h-9 px-3 text-sm",
+  sm: "h-9 px-3.5 text-sm",
   md: "h-11 px-5 text-sm",
-  lg: "h-12 px-6 text-base",
+  lg: "h-13 px-6 text-base",
 };
 
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button(

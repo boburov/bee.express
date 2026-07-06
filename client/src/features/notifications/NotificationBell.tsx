@@ -30,18 +30,18 @@ export function NotificationBell() {
         type="button"
         onClick={() => setOpen((o) => !o)}
         aria-label={`Bildirishnomalar${unread ? ` (${unread})` : ""}`}
-        className="relative inline-flex h-9 w-9 items-center justify-center rounded-md text-ink-soft hover:bg-surface-3 hover:text-ink"
+        className="press relative inline-flex h-10 w-10 items-center justify-center rounded-full text-ink-soft hover:bg-surface-3 hover:text-ink"
       >
         <Bell className="h-5 w-5" strokeWidth={1.75} />
         {unread > 0 ? (
-          <span className="absolute -top-1 -right-1 inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-brand-500 px-1 text-[10px] font-bold text-white">
+          <span className="absolute top-1 right-1 inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-hot-500 px-1 text-[10px] font-bold text-white ring-2 ring-surface">
             {unread > 99 ? "99+" : unread}
           </span>
         ) : null}
       </button>
 
       {open ? (
-        <div className="absolute right-0 mt-2 w-80 max-w-[calc(100vw-2rem)] rounded-xl border border-line bg-surface shadow-card z-50 overflow-hidden">
+        <div className="absolute right-0 mt-2 w-80 max-w-[calc(100vw-2rem)] rounded-2xl border border-line bg-surface shadow-pop z-50 overflow-hidden">
           <div className="flex items-center justify-between px-4 py-2.5 border-b border-line">
             <span className="text-sm font-semibold text-ink">Bildirishnomalar</span>
             {unread > 0 ? (

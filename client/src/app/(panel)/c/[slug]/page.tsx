@@ -55,13 +55,13 @@ export default function CategoryPage() {
       <div className="flex items-center gap-3">
         <Link
           href={cat.parent ? `/c/${cat.parent.slug}` : "/catalog"}
-          className="inline-flex h-9 w-9 items-center justify-center rounded-md text-ink-muted hover:bg-surface-3"
+          className="press inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-surface shadow-card text-ink hover:text-brand-600"
           aria-label="Orqaga"
         >
-          <ArrowLeft className="h-4 w-4" />
+          <ArrowLeft className="h-4.5 w-4.5" />
         </Link>
         <div className="flex-1 min-w-0">
-          <h1 className="text-xl font-semibold tracking-tight text-ink truncate">
+          <h1 className="text-2xl font-bold tracking-tight text-ink truncate">
             {cat.name}
           </h1>
           {cat.parent ? (
@@ -97,9 +97,9 @@ export default function CategoryPage() {
             key={s.value}
             type="button"
             onClick={() => { setSort(s.value); setPage(1); }}
-            className={`h-8 px-3.5 rounded-full font-semibold transition-colors ${
+            className={`press h-8 px-3.5 rounded-full font-semibold transition-colors ${
               sort === s.value
-                ? "bg-brand-500 text-white"
+                ? "bg-gradient-premium text-white shadow-cta"
                 : "bg-surface-3 text-ink-soft hover:bg-brand-50 hover:text-brand-700"
             }`}
           >

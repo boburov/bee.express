@@ -19,8 +19,8 @@ export function Logo({ className, size = 40, withWordmark = true }: LogoProps) {
         className="rounded-lg object-contain"
       />
       {withWordmark ? (
-        <span className="text-lg font-semibold tracking-tight">
-          Bee<span className="text-brand-500">Express</span>
+        <span className="text-lg font-bold tracking-tight">
+          Bee<span className="text-gradient-premium">Express</span>
         </span>
       ) : null}
     </span>

@@ -28,10 +28,10 @@ export default function CatalogPage() {
       {/* Search affordance — wired to /catalog/search when search lands. */}
       <Link
         href="/catalog"
-        className="flex items-center gap-2 h-11 w-full lg:max-w-xl rounded-xl border border-line bg-surface px-3 text-sm text-ink-muted shadow-card hover:border-brand-300"
+        className="press flex items-center gap-2.5 h-12 w-full lg:max-w-xl rounded-2xl border border-line bg-surface px-4 text-sm text-ink-muted shadow-card hover:border-brand-300"
       >
-        <Search className="h-4 w-4 text-ink-muted" />
-        <span className="flex-1 text-left">Mahsulot yoki kategoriya qidiring</span>
+        <Search className="h-5 w-5 text-brand-500" strokeWidth={2} />
+        <span className="flex-1 text-left">Taom yoki kategoriya qidiring</span>
       </Link>
 
       {loading && !data ? (
@@ -70,7 +70,7 @@ function CategoryGrid({ nodes }: { nodes: CategoryNode[] }) {
 function Section({ title, items }: { title: string; items: CategoryNode[] }) {
   return (
     <section className="flex flex-col gap-3">
-      <h2 className="text-base font-semibold text-ink">{title}</h2>
+      <h2 className="text-lg font-bold tracking-tight text-ink">{title}</h2>
       <ul className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-6 gap-2.5">
         {items.map((c, i) => (
           <li key={c.id}>

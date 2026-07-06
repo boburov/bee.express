@@ -5,7 +5,6 @@ import { useState } from "react";
 import { ChevronRight, ShoppingBag } from "lucide-react";
 import { Badge } from "@/shared/ui/Badge";
 import { Button } from "@/shared/ui/Button";
-import { Card } from "@/shared/ui/Card";
 import { EmptyState } from "@/shared/ui/EmptyState";
 import { PageHeader } from "@/shared/ui/PageHeader";
 import { Spinner } from "@/shared/ui/Spinner";
@@ -36,9 +35,9 @@ export default function OrdersPage() {
             <button
               type="button"
               onClick={() => { setStatusFilter(undefined); setPage(1); }}
-              className={`h-8 px-3 rounded-full text-xs font-medium transition-colors whitespace-nowrap ${
+              className={`press h-8 px-3.5 rounded-full text-xs font-semibold transition-colors whitespace-nowrap ${
                 statusFilter === undefined
-                  ? "bg-brand-500 text-white"
+                  ? "bg-gradient-premium text-white shadow-cta"
                   : "bg-surface-3 text-ink-soft hover:bg-line-soft"
               }`}
             >
@@ -52,8 +51,8 @@ export default function OrdersPage() {
                 <button
                   type="button"
                   onClick={() => { setStatusFilter(s); setPage(1); }}
-                  className={`h-8 px-3 rounded-full text-xs font-medium transition-colors whitespace-nowrap ${
-                    active ? "bg-brand-500 text-white" : "bg-surface-3 text-ink-soft hover:bg-line-soft"
+                  className={`press h-8 px-3.5 rounded-full text-xs font-semibold transition-colors whitespace-nowrap ${
+                    active ? "bg-gradient-premium text-white shadow-cta" : "bg-surface-3 text-ink-soft hover:bg-line-soft"
                   }`}
                 >
                   {ORDER_STATUS_META[s].label}
@@ -84,22 +83,25 @@ export default function OrdersPage() {
                 <li key={o.id}>
                   <Link
                     href={`/orders/${o.id}`}
-                    className="block rounded-xl border border-line bg-surface shadow-card hover:border-brand-200 transition-colors"
+                    className="press block rounded-2xl bg-surface shadow-card hover:shadow-hover"
                   >
-                    <div className="p-4 flex items-start gap-3">
+                    <div className="p-4 flex items-center gap-3">
+                      <span className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-brand-50 text-brand-600">
+                        <ShoppingBag className="h-5 w-5" strokeWidth={1.75} />
+                      </span>
                       <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 mb-1">
-                          <h3 className="text-sm font-semibold text-ink truncate">{o.store.name}</h3>
+                        <div className="flex items-center gap-2 mb-0.5">
+                          <h3 className="text-sm font-bold text-ink truncate">{o.store.name}</h3>
                           <Badge tone={meta.tone}>{meta.label}</Badge>
                         </div>
                         <p className="text-xs text-ink-muted">
                           {o.orderNumber} · {formatDateTime(o.createdAt)}
                         </p>
-                        <p className="text-xs text-ink-muted mt-1">
+                        <p className="text-xs font-medium text-ink-soft mt-1 tabular-nums">
                           {o.items.length} ta mahsulot · {formatSum(o.total)}
                         </p>
                       </div>
-                      <ChevronRight className="h-4 w-4 text-ink-faint mt-1 shrink-0" />
+                      <ChevronRight className="h-4 w-4 text-ink-faint shrink-0" />
                     </div>
                   </Link>
                 </li>

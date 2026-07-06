@@ -117,10 +117,10 @@ export default function ProductDetailPage() {
         <button
           type="button"
           onClick={() => router.back()}
-          className="inline-flex h-9 w-9 items-center justify-center rounded-md text-ink-muted hover:bg-surface-3"
+          className="press inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-surface shadow-card text-ink hover:text-brand-600"
           aria-label="Orqaga"
         >
-          <ArrowLeft className="h-4 w-4" />
+          <ArrowLeft className="h-4.5 w-4.5" />
         </button>
         <Link
           href={`/c/${product.category.slug}`}
@@ -135,7 +135,7 @@ export default function ProductDetailPage() {
       {/* Left column — gallery */}
       <div className="flex flex-col gap-4 lg:sticky lg:top-20">
       {/* Image gallery */}
-      <div className="aspect-square w-full rounded-xl bg-surface-3 overflow-hidden border border-line-soft">
+      <div className="aspect-square w-full rounded-3xl bg-surface overflow-hidden shadow-card">
         {product.images.length > 0 ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
@@ -175,7 +175,7 @@ export default function ProductDetailPage() {
       <div className="flex flex-col gap-4">
       {/* Title + rating */}
       <div>
-        <h1 className="text-xl font-semibold tracking-tight text-ink">{product.title}</h1>
+        <h1 className="text-2xl font-bold tracking-tight text-ink">{product.title}</h1>
         <div className="flex items-center gap-2 mt-1.5 text-xs">
           {product.ratingCount > 0 ? (
             <span className="inline-flex items-center gap-1 text-ink-muted">
@@ -216,9 +216,9 @@ export default function ProductDetailPage() {
                       setSelectedOfferId(next?.id ?? null);
                     }}
                     disabled={!inStock}
-                    className={`px-3 h-9 rounded-md text-sm border transition-colors ${
+                    className={`press px-4 h-10 rounded-full text-sm font-medium border transition-colors ${
                       v.id === selectedVariantId
-                        ? "border-brand-500 bg-brand-50 text-brand-700"
+                        ? "border-brand-400 bg-brand-50 text-brand-700 ring-2 ring-brand-100"
                         : "border-line bg-surface text-ink hover:border-brand-300"
                     } disabled:opacity-50 disabled:cursor-not-allowed`}
                   >
@@ -248,14 +248,14 @@ export default function ProductDetailPage() {
                       type="button"
                       onClick={() => !disabled && setSelectedOfferId(o.id)}
                       disabled={disabled}
-                      className={`w-full text-left rounded-xl border bg-surface p-3 flex gap-3 items-start transition-colors ${
+                      className={`press w-full text-left rounded-2xl border bg-surface p-3.5 flex gap-3 items-start transition-colors ${
                         selected
-                          ? "border-brand-500 ring-1 ring-brand-200"
+                          ? "border-brand-400 ring-2 ring-brand-200 shadow-card"
                           : "border-line hover:border-brand-300"
                       } ${disabled ? "opacity-50 cursor-not-allowed" : ""}`}
                     >
                       <span className={`mt-0.5 inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full ${
-                        selected ? "bg-brand-500 text-white" : "bg-brand-50 text-brand-600"
+                        selected ? "bg-gradient-premium text-white shadow-cta" : "bg-brand-50 text-brand-600"
                       }`}>
                         {selected ? <Check className="h-4 w-4" /> : <Store className="h-4 w-4" strokeWidth={1.75} />}
                       </span>
@@ -292,7 +292,7 @@ export default function ProductDetailPage() {
                         </div>
                       </div>
                       <div className="text-right shrink-0">
-                        <p className="text-sm font-semibold text-ink tabular-nums">{formatSum(o.price)}</p>
+                        <p className="text-base font-bold text-ink tabular-nums">{formatSum(o.price)}</p>
                         {o.oldPrice && o.oldPrice > o.price ? (
                           <p className="text-[11px] text-ink-faint line-through tabular-nums">{formatSum(o.oldPrice)}</p>
                         ) : null}
@@ -338,50 +338,51 @@ export default function ProductDetailPage() {
       {/* Action bar — sticky above the bottom-nav on mobile, inline on desktop. */}
       <div className="sticky bottom-16 -mx-4 px-4 pt-2 bg-linear-to-t from-surface-2 via-surface-2 to-transparent lg:static lg:mx-0 lg:px-0 lg:pt-0 lg:bg-none">
         {addError ? (
-          <div className="mb-2 p-3 rounded-md bg-red-50 text-sm text-danger flex items-start gap-2">
+          <div className="mb-2 p-3.5 rounded-xl bg-red-50 text-sm text-danger flex items-start gap-2">
             <AlertTriangle className="h-4 w-4 mt-0.5 shrink-0" />
             <span>{addError}</span>
           </div>
         ) : null}
         {addOk ? (
-          <div className="mb-2 p-3 rounded-md bg-green-50 text-sm text-success flex items-center justify-between">
-            <span className="inline-flex items-center gap-2">
-              <Check className="h-4 w-4" /> Savatga qo'shildi
+          <div className="mb-2 p-3.5 rounded-xl bg-green-50 text-sm text-success flex items-center justify-between animate-pop">
+            <span className="inline-flex items-center gap-2 font-medium">
+              <Check className="h-4 w-4" /> Savatga qo&apos;shildi
             </span>
-            <Link href="/cart" className="text-sm font-medium text-brand-700 hover:underline">
+            <Link href="/cart" className="text-sm font-semibold text-brand-700 hover:underline">
               Savatni ochish →
             </Link>
           </div>
         ) : null}
-        <Card>
+        <Card className="shadow-pop">
           <div className="p-3 flex items-center gap-3">
-            <div className="flex items-center gap-1.5">
+            <div className="inline-flex shrink-0 items-center rounded-full bg-surface-3 p-1">
               <button
                 type="button"
                 onClick={() => setQty((q) => Math.max(1, q - 1))}
                 disabled={qty <= 1}
                 aria-label="Kamaytirish"
-                className="inline-flex h-9 w-9 items-center justify-center rounded-md border border-line text-ink-muted hover:bg-surface-3 disabled:opacity-40"
+                className="press inline-flex h-9 w-9 items-center justify-center rounded-full bg-surface text-ink shadow-card hover:text-brand-600 disabled:opacity-40"
               >
                 <Minus className="h-4 w-4" />
               </button>
-              <span className="w-7 text-center text-sm font-medium text-ink tabular-nums">{qty}</span>
+              <span className="w-8 text-center text-sm font-bold text-ink tabular-nums">{qty}</span>
               <button
                 type="button"
                 onClick={() => setQty((q) => Math.min(maxQty, q + 1))}
                 disabled={qty >= maxQty}
                 aria-label="Ko'paytirish"
-                className="inline-flex h-9 w-9 items-center justify-center rounded-md border border-line text-ink-muted hover:bg-surface-3 disabled:opacity-40"
+                className="press inline-flex h-9 w-9 items-center justify-center rounded-full bg-gradient-premium text-white shadow-cta disabled:opacity-40"
               >
                 <Plus className="h-4 w-4" />
               </button>
             </div>
             <Button
               block
+              size="lg"
               onClick={onAddToCart}
               loading={cartLoading}
               disabled={!selectedOfferId || maxQty === 0}
-              leftIcon={!cartLoading ? <ShoppingCart className="h-4 w-4" /> : undefined}
+              leftIcon={!cartLoading ? <ShoppingCart className="h-5 w-5" /> : undefined}
             >
               {selectedOffer ? formatSum(selectedOffer.price * qty) : "Savatga qo'shish"}
             </Button>

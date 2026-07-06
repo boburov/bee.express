@@ -98,7 +98,7 @@ export default function AddressesPage() {
                       type="button"
                       onClick={() => setEditing(a)}
                       aria-label="Tahrirlash"
-                      className="inline-flex h-8 w-8 items-center justify-center rounded-md text-ink-muted hover:bg-surface-3"
+                      className="press inline-flex h-9 w-9 items-center justify-center rounded-full bg-surface-3 text-ink-muted hover:text-brand-600"
                     >
                       <Pencil className="h-4 w-4" strokeWidth={1.75} />
                     </button>
@@ -107,7 +107,7 @@ export default function AddressesPage() {
                       onClick={() => onDelete(a)}
                       disabled={deletingId === a.id}
                       aria-label="O'chirish"
-                      className="inline-flex h-8 w-8 items-center justify-center rounded-md text-ink-muted hover:bg-red-50 hover:text-danger disabled:opacity-50"
+                      className="press inline-flex h-9 w-9 items-center justify-center rounded-full bg-surface-3 text-ink-muted hover:bg-red-50 hover:text-danger disabled:opacity-50"
                     >
                       <Trash2 className="h-4 w-4" strokeWidth={1.75} />
                     </button>

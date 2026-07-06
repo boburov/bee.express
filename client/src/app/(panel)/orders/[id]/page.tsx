@@ -69,13 +69,13 @@ export default function OrderDetailPage() {
       <div className="flex items-center gap-3">
         <Link
           href="/orders"
-          className="inline-flex h-8 w-8 items-center justify-center rounded-md text-ink-muted hover:bg-surface-3"
+          className="press inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-surface shadow-card text-ink hover:text-brand-600"
           aria-label="Orqaga"
         >
-          <ArrowLeft className="h-4 w-4" />
+          <ArrowLeft className="h-4.5 w-4.5" />
         </Link>
         <div className="flex-1 min-w-0">
-          <h1 className="text-lg font-semibold tracking-tight text-ink truncate">{order.orderNumber}</h1>
+          <h1 className="text-lg font-bold tracking-tight text-ink truncate">{order.orderNumber}</h1>
           <p className="text-xs text-ink-muted">{formatDateTime(order.createdAt)}</p>
         </div>
         <Badge tone={meta.tone}>{meta.label}</Badge>
@@ -101,10 +101,10 @@ export default function OrderDetailPage() {
           {order.store.phone ? (
             <a
               href={`tel:+998${String(order.store.phone).slice(-9)}`}
-              className="inline-flex h-9 w-9 items-center justify-center rounded-md text-brand-700 hover:bg-brand-50"
+              className="press inline-flex h-10 w-10 items-center justify-center rounded-full bg-brand-50 text-brand-600 hover:bg-brand-100"
               aria-label="Qo'ng'iroq"
             >
-              <Phone className="h-4 w-4" />
+              <Phone className="h-4.5 w-4.5" />
             </a>
           ) : null}
         </div>

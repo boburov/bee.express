@@ -4,17 +4,23 @@ interface SkeletonProps {
   className?: string;
   width?: string;
   height?: string;
-  rounded?: "md" | "lg" | "full";
+  rounded?: "md" | "lg" | "xl" | "2xl" | "full";
 }
 
-const rounds = { md: "rounded-md", lg: "rounded-lg", full: "rounded-full" } as const;
+const rounds = {
+  md: "rounded-md",
+  lg: "rounded-lg",
+  xl: "rounded-xl",
+  "2xl": "rounded-2xl",
+  full: "rounded-full",
+} as const;
 
-export function Skeleton({ className, width, height, rounded = "md" }: SkeletonProps) {
+export function Skeleton({ className, width, height, rounded = "lg" }: SkeletonProps) {
   return (
     <span
       aria-hidden
       className={cn(
-        "block bg-[linear-gradient(90deg,#F5F5F4_0%,#EFEFEC_50%,#F5F5F4_100%)] bg-[length:400px_100%]",
+        "block bg-[linear-gradient(90deg,#EEEFF3_0%,#F6F7F9_50%,#EEEFF3_100%)] bg-[length:400px_100%]",
         "animate-[shimmer_1.4s_linear_infinite]",
         rounds[rounded],
         width,

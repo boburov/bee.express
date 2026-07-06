@@ -10,6 +10,7 @@ import { NotificationsProvider } from "@/features/notifications/NotificationsPro
 import { ToastStack } from "@/features/notifications/ToastStack";
 import { Topbar } from "@/widgets/topbar/Topbar";
 import { BottomNav } from "@/widgets/bottom-nav/BottomNav";
+import { FloatingCart } from "@/widgets/floating-cart/FloatingCart";
 
 interface AppShellProps {
   children: React.ReactNode;
@@ -49,6 +50,7 @@ export function AppShell({ children }: AppShellProps) {
             <main className="mx-auto w-full max-w-7xl flex-1 px-4 py-4 lg:px-6 lg:py-6">
               {children}
             </main>
+            <FloatingCart />
             <BottomNav />
           </div>
           <ToastStack />

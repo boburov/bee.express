@@ -8,7 +8,7 @@ interface CardProps extends HTMLAttributes<HTMLDivElement> {
 }
 
 const tones: Record<Tone, string> = {
-  default: "bg-surface border-line/70 shadow-card",
+  default: "bg-surface border-line/60 shadow-card",
   warm: "bg-gradient-warm border-brand-100 shadow-card",
   muted: "bg-surface-3 border-line",
 };
@@ -31,7 +31,7 @@ export function CardFooter({ className, ...rest }: HTMLAttributes<HTMLDivElement
   return (
     <div
       className={cn(
-        "px-5 py-4 border-t border-line flex items-center justify-end gap-2 bg-surface-2 rounded-b-xl",
+        "px-5 py-4 border-t border-line-soft flex items-center justify-end gap-2 bg-surface-2 rounded-b-2xl",
         className,
       )}
       {...rest}
@@ -40,7 +40,7 @@ export function CardFooter({ className, ...rest }: HTMLAttributes<HTMLDivElement
 }
 
 export function CardTitle({ className, ...rest }: HTMLAttributes<HTMLHeadingElement>) {
-  return <h2 className={cn("text-base font-semibold tracking-tight text-ink", className)} {...rest} />;
+  return <h2 className={cn("text-lg font-bold tracking-tight text-ink", className)} {...rest} />;
 }
 
 export function CardDescription({ className, ...rest }: HTMLAttributes<HTMLParagraphElement>) {

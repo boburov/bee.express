@@ -31,7 +31,7 @@ export function ToastStack() {
           <div
             key={t.id}
             className={cn(
-              "pointer-events-auto flex gap-3 rounded-xl border bg-surface shadow-card p-3.5",
+              "pointer-events-auto animate-rise flex gap-3 rounded-2xl border bg-surface shadow-pop p-3.5",
               tone.border,
             )}
           >

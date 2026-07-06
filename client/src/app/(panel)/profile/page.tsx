@@ -52,15 +52,15 @@ export default function ProfilePage() {
 
       {/* Identity card */}
       <Card tone="warm">
-        <CardBody className="flex items-center gap-4">
-          <Avatar name={displayName} size={56} />
+        <CardBody className="flex items-center gap-4 pt-5">
+          <Avatar name={displayName} size={64} className="ring-2 ring-white shadow-card" />
           <div className="min-w-0 flex-1">
-            <div className="text-base font-semibold text-ink truncate">{displayName}</div>
+            <div className="text-lg font-bold tracking-tight text-ink truncate">{displayName}</div>
             <div className="text-xs text-ink-muted mt-0.5 font-mono">
               {me?.phone ? formatPhone(me.phone) : "—"}
             </div>
             <div className="mt-2 flex flex-wrap gap-1.5">
-              <Badge tone="brand" size="sm">
+              <Badge tone="brand" size="sm" solid>
                 {me?.role?.name ?? "Xaridor"}
               </Badge>
               {me?.telegramId ? (
@@ -87,8 +87,8 @@ export default function ProfilePage() {
             const Icon = item.icon;
             const inner = (
               <>
-                <span className="inline-flex h-8 w-8 items-center justify-center rounded-md bg-surface-3 text-ink-muted">
-                  <Icon className="h-4 w-4" strokeWidth={1.75} />
+                <span className="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-brand-50 text-brand-600">
+                  <Icon className="h-4.5 w-4.5" strokeWidth={1.75} />
                 </span>
                 <span className="flex-1 truncate">{item.label}</span>
                 {item.hint ? (
@@ -130,8 +130,8 @@ export default function ProfilePage() {
 
 function StatCell({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-xl border border-line bg-surface px-3 py-3 text-center shadow-card">
-      <div className="text-lg font-semibold text-ink leading-tight">{value}</div>
+    <div className="rounded-2xl bg-surface px-3 py-3.5 text-center shadow-card">
+      <div className="text-xl font-bold text-ink leading-tight tabular-nums">{value}</div>
       <div className="text-[10px] uppercase tracking-wider text-ink-muted mt-1">
         {label}
       </div>

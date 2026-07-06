@@ -176,7 +176,7 @@ export function PhoneOtpForm() {
               disabled={loading}
             />
             {error ? (
-              <div className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-danger">
+              <div className="rounded-xl border border-red-200 bg-red-50 px-3.5 py-2.5 text-sm text-danger">
                 {error}
               </div>
             ) : null}
@@ -229,14 +229,14 @@ export function PhoneOtpForm() {
             disabled={loading}
           />
           {error ? (
-            <div className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-danger space-y-2">
+            <div className="rounded-xl border border-red-200 bg-red-50 px-3.5 py-2.5 text-sm text-danger space-y-2">
               <div>{error}</div>
               {needsBot ? (
                 <a
                   href={`https://t.me/${env.botUsername}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center justify-center h-9 px-3 rounded-md bg-ink text-white text-xs font-semibold hover:bg-ink-soft"
+                  className="inline-flex items-center justify-center h-9 px-3.5 rounded-xl bg-ink text-white text-xs font-semibold hover:bg-ink-soft"
                 >
                   @{env.botUsername} botga o&apos;tish
                 </a>

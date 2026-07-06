@@ -19,8 +19,8 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
       {label ? <span className="text-sm font-medium text-ink-soft">{label}</span> : null}
       <span
         className={cn(
-          "flex items-center h-12 rounded-xl border border-line bg-surface px-3.5 transition-colors",
-          "focus-within:border-brand-400 focus-within:ring-2 focus-within:ring-brand-200",
+          "flex items-center h-12 rounded-xl border border-line bg-surface px-4 transition-colors",
+          "focus-within:border-brand-400 focus-within:ring-4 focus-within:ring-brand-100",
           error && "border-danger focus-within:border-danger focus-within:ring-red-100",
         )}
       >

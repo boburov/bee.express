@@ -120,7 +120,7 @@ export default function CartPage() {
                   const busy = busyItemId === item.id;
                   return (
                     <li key={item.id} className="p-4 flex gap-3">
-                      <div className="h-16 w-16 shrink-0 rounded-lg bg-surface-3 border border-line-soft overflow-hidden">
+                      <div className="h-18 w-18 shrink-0 rounded-2xl bg-surface-3 border border-line-soft overflow-hidden">
                         {item.product.image ? (
                           // eslint-disable-next-line @next/next/no-img-element
                           <img src={item.product.image} alt={item.product.title} className="h-full w-full object-cover" />
@@ -141,36 +141,38 @@ export default function CartPage() {
                           </p>
                         ) : null}
                         <div className="flex items-center justify-between mt-1">
-                          <p className="text-sm font-semibold text-ink">{formatSum(item.subtotal)}</p>
-                          <div className="flex items-center gap-1">
-                            <button
-                              type="button"
-                              onClick={() => onQtyChange(item.id, item.qty - 1)}
-                              disabled={busy || item.qty <= 1}
-                              aria-label="Kamaytirish"
-                              className="inline-flex h-7 w-7 items-center justify-center rounded-md border border-line text-ink-muted hover:bg-surface-3 disabled:opacity-40"
-                            >
-                              <Minus className="h-3.5 w-3.5" />
-                            </button>
-                            <span className="w-7 text-center text-sm font-medium text-ink">{item.qty}</span>
-                            <button
-                              type="button"
-                              onClick={() => onQtyChange(item.id, item.qty + 1)}
-                              disabled={busy || item.qty >= item.stock}
-                              aria-label="Ko'paytirish"
-                              className="inline-flex h-7 w-7 items-center justify-center rounded-md border border-line text-ink-muted hover:bg-surface-3 disabled:opacity-40"
-                            >
-                              <Plus className="h-3.5 w-3.5" />
-                            </button>
+                          <p className="text-base font-bold text-ink tabular-nums">{formatSum(item.subtotal)}</p>
+                          <div className="flex items-center gap-2">
                             <button
                               type="button"
                               onClick={() => onRemove(item.id)}
                               disabled={busy}
                               aria-label="O'chirish"
-                              className="inline-flex h-7 w-7 items-center justify-center rounded-md text-ink-muted hover:bg-red-50 hover:text-danger disabled:opacity-40 ml-1"
+                              className="press inline-flex h-8 w-8 items-center justify-center rounded-full text-ink-faint hover:bg-red-50 hover:text-danger disabled:opacity-40"
                             >
-                              <Trash2 className="h-3.5 w-3.5" />
+                              <Trash2 className="h-4 w-4" />
                             </button>
+                            <div className="inline-flex items-center rounded-full bg-surface-3 p-1">
+                              <button
+                                type="button"
+                                onClick={() => onQtyChange(item.id, item.qty - 1)}
+                                disabled={busy || item.qty <= 1}
+                                aria-label="Kamaytirish"
+                                className="press inline-flex h-8 w-8 items-center justify-center rounded-full bg-surface text-ink shadow-card hover:text-brand-600 disabled:opacity-40"
+                              >
+                                <Minus className="h-4 w-4" />
+                              </button>
+                              <span className="w-8 text-center text-sm font-bold text-ink tabular-nums">{item.qty}</span>
+                              <button
+                                type="button"
+                                onClick={() => onQtyChange(item.id, item.qty + 1)}
+                                disabled={busy || item.qty >= item.stock}
+                                aria-label="Ko'paytirish"
+                                className="press inline-flex h-8 w-8 items-center justify-center rounded-full bg-gradient-premium text-white shadow-cta disabled:opacity-40"
+                              >
+                                <Plus className="h-4 w-4" />
+                              </button>
+                            </div>
                           </div>
                         </div>
                       </div>
@@ -181,15 +183,19 @@ export default function CartPage() {
             </Card>
           ))}
 
-          <Card>
-            <div className="p-4 flex items-center justify-between">
-              <div>
-                <p className="text-xs text-ink-muted">Jami ({cart!.itemCount} ta)</p>
-                <p className="text-lg font-semibold text-ink">{formatSum(cart!.subtotal)}</p>
-                <p className="text-[11px] text-ink-faint mt-0.5">Yetkazib berish narxi keyingi qadamda hisoblanadi</p>
+          <Card className="sticky bottom-20 lg:bottom-4 z-20">
+            <div className="p-4 flex flex-col gap-3">
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-ink-muted">Jami ({cart!.itemCount} ta)</span>
+                <span className="text-xl font-bold text-ink tabular-nums">{formatSum(cart!.subtotal)}</span>
               </div>
-              <Link href="/checkout">
-                <Button rightIcon={<ArrowRight className="h-4 w-4" />}>Buyurtma berish</Button>
+              <p className="text-[11px] text-ink-faint -mt-1.5">
+                Yetkazib berish narxi keyingi qadamda hisoblanadi
+              </p>
+              <Link href="/checkout" className="block">
+                <Button block size="lg" rightIcon={<ArrowRight className="h-5 w-5" />}>
+                  Buyurtma berish
+                </Button>
               </Link>
             </div>
           </Card>
