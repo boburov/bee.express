@@ -198,7 +198,7 @@ export default function HomePage() {
                     ) : (
                       <div className="h-full w-full bg-gradient-premium" />
                     )}
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/35 to-transparent" aria-hidden />
+                    <div className="absolute inset-0 bg-linear-to-t from-black/35 to-transparent" aria-hidden />
                     {s.ratingCount > 0 ? (
                       <span className="absolute left-2 top-2 inline-flex items-center gap-1 rounded-full bg-surface/95 px-2 py-0.5 text-[11px] font-bold text-ink shadow-card">
                         <Star className="h-3 w-3 fill-accent-400 text-accent-400" />
