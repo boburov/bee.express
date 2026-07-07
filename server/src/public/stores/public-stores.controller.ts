@@ -7,6 +7,21 @@ import { PublicStoresService } from './public-stores.service';
 export class PublicStoresController {
   constructor(private readonly stores: PublicStoresService) {}
 
+  @Get()
+  list(
+    @Query('lat') lat?: string,
+    @Query('lng') lng?: string,
+    @Query('limit') limit?: string,
+    @Query('q') q?: string,
+  ) {
+    return this.stores.list({
+      lat: lat !== undefined ? Number(lat) : undefined,
+      lng: lng !== undefined ? Number(lng) : undefined,
+      limit: limit ? Number(limit) : undefined,
+      q,
+    });
+  }
+
   @Get('nearby')
   nearby(
     @Query('lat') lat?: string,

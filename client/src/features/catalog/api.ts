@@ -8,6 +8,7 @@ import type {
   ProductDetail,
   ProductsListResponse,
   StoreMenu,
+  StoreSummary,
 } from "./types";
 
 /**
@@ -62,6 +63,15 @@ export const catalogApi = {
     const { data } = await api.get<FeaturedStore[]>("/v1/stores/featured", {
       params: query,
     });
+    return data;
+  },
+  storesList: async (query: {
+    lat?: number;
+    lng?: number;
+    limit?: number;
+    q?: string;
+  }): Promise<StoreSummary[]> => {
+    const { data } = await api.get<StoreSummary[]>("/v1/stores", { params: query });
     return data;
   },
 };

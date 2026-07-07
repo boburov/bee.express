@@ -11,6 +11,7 @@ import type {
   ProductDetail,
   ProductsListResponse,
   StoreMenu,
+  StoreSummary,
 } from "./types";
 
 function useAsync<T, A>(
@@ -88,6 +89,19 @@ export function useStoresNearby(
     (q) => catalogApi.storesNearby(q),
     { lat: geo?.lat ?? 0, lng: geo?.lng ?? 0, limit },
     Boolean(geo),
+  );
+}
+
+export function useStores(
+  geo?: { lat: number; lng: number } | null,
+  limit = 30,
+) {
+  // General restaurant list — loads regardless of location (not radius-gated);
+  // geo only sorts nearest-first and adds distance.
+  return useAsync<StoreSummary[], { lat?: number; lng?: number; limit: number }>(
+    (q) => catalogApi.storesList(q),
+    { lat: geo?.lat, lng: geo?.lng, limit },
+    true,
   );
 }
 

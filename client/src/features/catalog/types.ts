@@ -126,10 +126,11 @@ export interface NearbyStore {
   ratingCount: number;
 }
 
-// ─── Featured stores (home "TOP restaurants" slider) ────────────────
-// Mirrors server/src/public/stores/public-stores.service.ts `featured()`.
+// ─── Store summary — home slider + general restaurants list ─────────
+// Mirrors server/src/public/stores/public-stores.service.ts `list()` /
+// `featured()`. Shared shape for restaurant cards.
 
-export interface FeaturedStore {
+export interface StoreSummary {
   id: string;
   slug: string;
   name: string;
@@ -144,6 +145,9 @@ export interface FeaturedStore {
   ratingAvg: number;
   ratingCount: number;
 }
+
+/** Curated "most popular" store — same shape as a general store summary. */
+export type FeaturedStore = StoreSummary;
 
 // ─── Store menu (restaurant page) ───────────────────────────────────
 // Mirrors server/src/public/stores/public-stores.service.ts `menu()`.

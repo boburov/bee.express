@@ -18,7 +18,7 @@ import { useAuthStore } from "@/shared/auth/store";
 import {
   useCategoriesTree,
   useFeaturedStores,
-  useStoresNearby,
+  useStores,
 } from "@/features/catalog/hooks";
 import { useActiveLocation } from "@/features/location/hooks";
 import type { CategoryType, FeaturedStore } from "@/features/catalog/types";
@@ -46,7 +46,7 @@ export default function HomePage() {
 
   const geo = location ? { lat: location.lat, lng: location.lng } : null;
   const { data: featured, loading: featuredLoading } = useFeaturedStores(geo, 10);
-  const { data: nearby, loading: nearbyLoading } = useStoresNearby(geo, 12);
+  const { data: stores, loading: storesLoading } = useStores(geo, 30);
 
   return (
     <div className="flex flex-col gap-6">
@@ -93,7 +93,7 @@ export default function HomePage() {
       {/* ─── ① TOP restaurants — editorially-curated slider ───────── */}
       {featuredLoading && !featured ? (
         <section className="flex flex-col gap-3">
-          <h2 className="text-lg font-bold tracking-tight text-ink">TOP restoranlar</h2>
+          <h2 className="text-lg font-bold tracking-tight text-ink">Eng mashhur</h2>
           <div className="-mx-4 px-4 flex gap-3 overflow-hidden">
             {Array.from({ length: 3 }).map((_, i) => (
               <div key={i} className="w-[78%] max-w-xs shrink-0 overflow-hidden rounded-2xl bg-surface shadow-card">
@@ -110,7 +110,7 @@ export default function HomePage() {
         <section className="flex flex-col gap-3">
           <h2 className="inline-flex items-center gap-1.5 text-lg font-bold tracking-tight text-ink">
             <Flame className="h-5 w-5 text-hot-500" strokeWidth={2} />
-            TOP restoranlar
+            Eng mashhur
           </h2>
           <ul className="-mx-4 px-4 flex gap-3 overflow-x-auto no-scrollbar snap-x snap-mandatory pb-1">
             {featured.map((s) => (
@@ -124,21 +124,18 @@ export default function HomePage() {
 
       {/* ─── ② Restaurants & shops near the buyer ─────────────────── */}
       <section className="flex flex-col gap-3">
-        <h2 className="text-lg font-bold tracking-tight text-ink">Sizga yaqin restoranlar</h2>
-        {!geo ? (
-          <div className="flex flex-col items-center gap-2 rounded-2xl border border-dashed border-line bg-surface p-6 text-center shadow-card">
-            <span className="inline-flex h-12 w-12 items-center justify-center rounded-full bg-brand-50 text-brand-600">
-              <Store className="h-6 w-6" strokeWidth={1.75} />
-            </span>
-            <p className="text-sm font-semibold text-ink">Manzilingizni qo&apos;shing</p>
-            <p className="max-w-xs text-xs text-ink-muted">
-              Manzil tanlanganda — yaqin atrofdagi restoran va do&apos;konlar hamda yetkazib berish vaqti ko&apos;rinadi.
-            </p>
-            <Link href="/addresses" className="text-xs font-semibold text-brand-700 hover:underline">
-              Manzil qo&apos;shish
+        <div className="flex items-center justify-between gap-2">
+          <h2 className="text-lg font-bold tracking-tight text-ink">Restoranlar</h2>
+          {!geo ? (
+            <Link
+              href="/addresses"
+              className="inline-flex items-center gap-1 text-xs font-semibold text-brand-700 hover:underline"
+            >
+              <MapPin className="h-3.5 w-3.5" /> Manzil qo&apos;shish
             </Link>
-          </div>
-        ) : nearbyLoading && !nearby ? (
+          ) : null}
+        </div>
+        {storesLoading && !stores ? (
           <ul className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             {Array.from({ length: 4 }).map((_, i) => (
               <li key={i} className="overflow-hidden rounded-2xl bg-surface shadow-card">
@@ -150,13 +147,13 @@ export default function HomePage() {
               </li>
             ))}
           </ul>
-        ) : !nearby || nearby.length === 0 ? (
+        ) : !stores || stores.length === 0 ? (
           <p className="text-sm text-ink-muted">
-            Yaqin atrofda hozir ochiq restoran yoki do&apos;kon topilmadi.
+            Hozircha ochiq restoran topilmadi.
           </p>
         ) : (
           <ul className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            {nearby.map((s) => (
+            {stores.map((s) => (
               <li key={s.id}>
                 <Link
                   href={`/store/${s.slug}`}
@@ -206,9 +203,11 @@ export default function HomePage() {
                       <p className="mt-0.5 truncate text-[11px] text-ink-muted">{s.address}</p>
                     ) : null}
                     <div className="mt-2 flex flex-wrap items-center gap-1.5 text-[11px]">
-                      <span className="inline-flex items-center gap-1 rounded-full bg-surface-3 px-2 py-0.5 font-medium text-ink-soft tabular-nums">
-                        <MapPin className="h-3 w-3 text-ink-muted" /> {s.distanceKm} km
-                      </span>
+                      {s.distanceKm !== null ? (
+                        <span className="inline-flex items-center gap-1 rounded-full bg-surface-3 px-2 py-0.5 font-medium text-ink-soft tabular-nums">
+                          <MapPin className="h-3 w-3 text-ink-muted" /> {s.distanceKm} km
+                        </span>
+                      ) : null}
                       {s.deliveryBaseFee && s.deliveryBaseFee > 0 ? (
                         <span className="rounded-full bg-surface-3 px-2 py-0.5 font-medium text-ink-soft">
                           {formatSum(s.deliveryBaseFee)} dan

@@ -78,6 +78,75 @@ export class PublicStoresService {
   }
 
   /**
+   * General restaurant/shop list for the home "Restoranlar" section — ALL open
+   * ACTIVE stores (not gated by the buyer's delivery radius, unlike `nearby`).
+   * When geo is supplied we sort nearest-first and show distance; otherwise the
+   * most-popular (by rating) lead. Deliverability is still enforced at checkout.
+   */
+  async list(opts: { lat?: number; lng?: number; limit?: number; q?: string }) {
+    const limit = opts.limit ?? 30;
+    const hasGeo = opts.lat !== undefined && opts.lng !== undefined;
+    const stores = await this.prisma.store.findMany({
+      where: {
+        status: 'ACTIVE',
+        isOpen: true,
+        ...(opts.q ? { name: { contains: opts.q } } : {}),
+      },
+      take: 200,
+      select: {
+        id: true,
+        slug: true,
+        name: true,
+        logoUrl: true,
+        bannerUrl: true,
+        address: true,
+        latitude: true,
+        longitude: true,
+        openingHours: true,
+        deliveryEtaMinutes: true,
+        deliveryBaseFee: true,
+      },
+    });
+
+    // Only stores that can actually take an order right now.
+    const openStores = stores.filter((s) => isStoreOpenNow(s.openingHours));
+    const ratings = await this.ratingsFor(openStores.map((s) => s.id));
+
+    const mapped = openStores.map((s) => {
+      const lat = decimalToNumber(s.latitude);
+      const lng = decimalToNumber(s.longitude);
+      const distanceKm =
+        hasGeo && lat !== null && lng !== null
+          ? Math.round(
+              haversineKm({ lat: opts.lat!, lng: opts.lng! }, { lat, lng }) * 10,
+            ) / 10
+          : null;
+      return {
+        id: s.id,
+        slug: s.slug,
+        name: s.name,
+        logoUrl: s.logoUrl,
+        bannerUrl: s.bannerUrl,
+        address: s.address,
+        openNow: true,
+        deliveryEtaMinutes: s.deliveryEtaMinutes,
+        deliveryBaseFee: decimalToNumber(s.deliveryBaseFee),
+        distanceKm,
+        ratingAvg: ratings.get(s.id)?.avg ?? 0,
+        ratingCount: ratings.get(s.id)?.count ?? 0,
+      };
+    });
+
+    mapped.sort((a, b) => {
+      if (hasGeo) return (a.distanceKm ?? Infinity) - (b.distanceKm ?? Infinity);
+      if (b.ratingAvg !== a.ratingAvg) return b.ratingAvg - a.ratingAvg;
+      return b.ratingCount - a.ratingCount;
+    });
+
+    return mapped.slice(0, limit);
+  }
+
+  /**
    * Editorially-curated "top restaurants" for the home slider. Admin flags a
    * store featured + gives it a rank; here we return ACTIVE featured stores in
    * rank order. Unlike `nearby`, this is location-independent (it's a promoted
