@@ -83,14 +83,46 @@ export class PublicStoresService {
    * When geo is supplied we sort nearest-first and show distance; otherwise the
    * most-popular (by rating) lead. Deliverability is still enforced at checkout.
    */
-  async list(opts: { lat?: number; lng?: number; limit?: number; q?: string }) {
+  async list(opts: {
+    lat?: number;
+    lng?: number;
+    limit?: number;
+    q?: string;
+    categorySlug?: string;
+  }) {
     const limit = opts.limit ?? 30;
     const hasGeo = opts.lat !== undefined && opts.lng !== undefined;
+
+    // Category filter → stores that sell at least one active, in-stock product
+    // in this category (or any of its descendants). Unknown slug → no stores.
+    let categoryIds: string[] | null = null;
+    if (opts.categorySlug) {
+      const cat = await this.prisma.category.findUnique({
+        where: { slug: opts.categorySlug },
+        select: { id: true },
+      });
+      if (!cat) return [];
+      categoryIds = await this.descendantCategoryIds(cat.id);
+    }
+
     const stores = await this.prisma.store.findMany({
       where: {
         status: 'ACTIVE',
         isOpen: true,
         ...(opts.q ? { name: { contains: opts.q } } : {}),
+        ...(categoryIds
+          ? {
+              offers: {
+                some: {
+                  isActive: true,
+                  stock: { gt: 0 },
+                  variant: {
+                    product: { status: 'ACTIVE', categoryId: { in: categoryIds } },
+                  },
+                },
+              },
+            }
+          : {}),
       },
       take: 200,
       select: {
@@ -385,6 +417,32 @@ export class PublicStoresService {
       itemCount: categories.reduce((n, c) => n + c.items.length, 0),
       categories,
     };
+  }
+
+  /** A category id plus every descendant id (any depth). Categories are few, so
+   *  we load the (id, parentId) pairs once and walk the tree in memory. */
+  private async descendantCategoryIds(rootId: string): Promise<string[]> {
+    const all = await this.prisma.category.findMany({
+      select: { id: true, parentId: true },
+    });
+    const childrenOf = new Map<string, string[]>();
+    for (const c of all) {
+      if (c.parentId) {
+        const arr = childrenOf.get(c.parentId) ?? [];
+        arr.push(c.id);
+        childrenOf.set(c.parentId, arr);
+      }
+    }
+    const ids = [rootId];
+    const queue = [rootId];
+    while (queue.length) {
+      const cur = queue.shift()!;
+      for (const ch of childrenOf.get(cur) ?? []) {
+        ids.push(ch);
+        queue.push(ch);
+      }
+    }
+    return ids;
   }
 
   /** Aggregate visible-review ratings for a set of stores → id → {avg,count}. */

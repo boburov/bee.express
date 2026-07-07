@@ -13,12 +13,14 @@ export class PublicStoresController {
     @Query('lng') lng?: string,
     @Query('limit') limit?: string,
     @Query('q') q?: string,
+    @Query('categorySlug') categorySlug?: string,
   ) {
     return this.stores.list({
       lat: lat !== undefined ? Number(lat) : undefined,
       lng: lng !== undefined ? Number(lng) : undefined,
       limit: limit ? Number(limit) : undefined,
       q,
+      categorySlug,
     });
   }
 
