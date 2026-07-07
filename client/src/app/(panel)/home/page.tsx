@@ -7,6 +7,7 @@ import {
   Search,
   ShoppingBasket,
   Sparkles,
+  Star,
   Store,
   Truck,
   UtensilsCrossed,
@@ -39,7 +40,7 @@ export default function HomePage() {
   const topCategories = (tree ?? []).slice(0, 12);
 
   const geo = location ? { lat: location.lat, lng: location.lng } : null;
-  const { data: nearby, loading: nearbyLoading } = useStoresNearby(geo);
+  const { data: nearby, loading: nearbyLoading } = useStoresNearby(geo, 12);
 
   return (
     <div className="flex flex-col gap-6">
@@ -145,9 +146,10 @@ export default function HomePage() {
         </ul>
       </section>
 
-      {/* Nearby stores — ACTIVE+open sellers within the buyer's delivery radius */}
+      {/* Restaurants & shops — ACTIVE+open sellers within the delivery radius.
+          Tapping a card opens that store's menu (/store/[slug]). */}
       <section className="flex flex-col gap-3">
-        <h2 className="text-lg font-bold tracking-tight text-ink">Yaqin sotuvchilar</h2>
+        <h2 className="text-lg font-bold tracking-tight text-ink">Restoranlar va do&apos;konlar</h2>
         {!geo ? (
           <div className="flex flex-col items-center gap-2 rounded-2xl border border-dashed border-line bg-surface p-6 text-center shadow-card">
             <span className="inline-flex h-12 w-12 items-center justify-center rounded-full bg-brand-50 text-brand-600">
@@ -155,18 +157,18 @@ export default function HomePage() {
             </span>
             <p className="text-sm font-semibold text-ink">Manzilingizni qo&apos;shing</p>
             <p className="max-w-xs text-xs text-ink-muted">
-              Manzil tanlanganda — yaqin atrofdagi sotuvchilar va yetkazib berish vaqti ko&apos;rinadi.
+              Manzil tanlanganda — yaqin atrofdagi restoran va do&apos;konlar hamda yetkazib berish vaqti ko&apos;rinadi.
             </p>
             <Link href="/addresses" className="text-xs font-semibold text-brand-700 hover:underline">
               Manzil qo&apos;shish
             </Link>
           </div>
         ) : nearbyLoading && !nearby ? (
-          <ul className="flex flex-col gap-3">
+          <ul className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             {Array.from({ length: 4 }).map((_, i) => (
-              <li key={i} className="flex items-center gap-3 rounded-2xl bg-surface p-3 shadow-card">
-                <Skeleton className="h-14 w-14" rounded="2xl" />
-                <div className="flex-1 flex flex-col gap-2">
+              <li key={i} className="overflow-hidden rounded-2xl bg-surface shadow-card">
+                <Skeleton className="h-32 w-full" rounded="md" />
+                <div className="flex flex-col gap-2 p-3">
                   <Skeleton className="h-4 w-2/5" />
                   <Skeleton className="h-3 w-3/5" />
                 </div>
@@ -175,32 +177,63 @@ export default function HomePage() {
           </ul>
         ) : !nearby || nearby.length === 0 ? (
           <p className="text-sm text-ink-muted">
-            Yaqin atrofda hozir ochiq sotuvchi topilmadi.
+            Yaqin atrofda hozir ochiq restoran yoki do&apos;kon topilmadi.
           </p>
         ) : (
-          <ul className="flex flex-col gap-3">
+          <ul className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             {nearby.map((s) => (
               <li key={s.id}>
-                <div className="press flex items-center gap-3 rounded-2xl bg-surface p-3 shadow-card hover:shadow-hover">
-                  <span className="inline-flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-brand-50 text-brand-600 ring-1 ring-line/60">
-                    {s.logoUrl ? (
+                <Link
+                  href={`/store/${s.slug}`}
+                  className="press block h-full overflow-hidden rounded-2xl bg-surface shadow-card hover:shadow-hover"
+                >
+                  {/* Cover */}
+                  <div className="relative h-32 w-full overflow-hidden">
+                    {s.bannerUrl ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={s.bannerUrl} alt="" className="h-full w-full object-cover" />
+                    ) : s.logoUrl ? (
                       // eslint-disable-next-line @next/next/no-img-element
                       <img src={s.logoUrl} alt="" className="h-full w-full object-cover" />
                     ) : (
-                      <Store className="h-6 w-6" strokeWidth={1.75} />
+                      <div className="h-full w-full bg-gradient-premium" />
                     )}
-                  </span>
-                  <div className="min-w-0 flex-1">
-                    <p className="truncate text-sm font-bold text-ink">{s.name}</p>
-                    <div className="mt-1 flex flex-wrap items-center gap-1.5 text-[11px]">
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/35 to-transparent" aria-hidden />
+                    {s.ratingCount > 0 ? (
+                      <span className="absolute left-2 top-2 inline-flex items-center gap-1 rounded-full bg-surface/95 px-2 py-0.5 text-[11px] font-bold text-ink shadow-card">
+                        <Star className="h-3 w-3 fill-accent-400 text-accent-400" />
+                        {s.ratingAvg.toFixed(1)}
+                      </span>
+                    ) : (
+                      <span className="absolute left-2 top-2 inline-flex items-center rounded-full bg-surface/95 px-2 py-0.5 text-[11px] font-bold text-brand-700 shadow-card">
+                        Yangi
+                      </span>
+                    )}
+                    {s.deliveryEtaMinutes ? (
+                      <span className="absolute bottom-2 left-2 inline-flex items-center gap-1 rounded-full bg-black/55 px-2 py-0.5 text-[11px] font-semibold text-white backdrop-blur">
+                        <Truck className="h-3 w-3" /> ~{s.deliveryEtaMinutes} daq
+                      </span>
+                    ) : null}
+                    {/* Logo chip */}
+                    <span className="absolute -bottom-4 right-3 inline-flex h-11 w-11 items-center justify-center overflow-hidden rounded-xl bg-surface shadow-pop ring-2 ring-surface">
+                      {s.logoUrl ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img src={s.logoUrl} alt="" className="h-full w-full object-cover" />
+                      ) : (
+                        <Store className="h-5 w-5 text-brand-600" strokeWidth={1.75} />
+                      )}
+                    </span>
+                  </div>
+                  {/* Body */}
+                  <div className="p-3">
+                    <p className="truncate pr-10 text-sm font-bold text-ink">{s.name}</p>
+                    {s.address ? (
+                      <p className="mt-0.5 truncate text-[11px] text-ink-muted">{s.address}</p>
+                    ) : null}
+                    <div className="mt-2 flex flex-wrap items-center gap-1.5 text-[11px]">
                       <span className="inline-flex items-center gap-1 rounded-full bg-surface-3 px-2 py-0.5 font-medium text-ink-soft tabular-nums">
                         <MapPin className="h-3 w-3 text-ink-muted" /> {s.distanceKm} km
                       </span>
-                      {s.deliveryEtaMinutes ? (
-                        <span className="inline-flex items-center gap-1 rounded-full bg-surface-3 px-2 py-0.5 font-medium text-ink-soft">
-                          <Truck className="h-3 w-3 text-ink-muted" /> ~{s.deliveryEtaMinutes} daq
-                        </span>
-                      ) : null}
                       {s.deliveryBaseFee && s.deliveryBaseFee > 0 ? (
                         <span className="rounded-full bg-surface-3 px-2 py-0.5 font-medium text-ink-soft">
                           {formatSum(s.deliveryBaseFee)} dan
@@ -212,8 +245,7 @@ export default function HomePage() {
                       )}
                     </div>
                   </div>
-                  <ArrowRight className="h-4 w-4 shrink-0 text-ink-faint" />
-                </div>
+                </Link>
               </li>
             ))}
           </ul>

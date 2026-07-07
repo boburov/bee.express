@@ -6,6 +6,7 @@ import type {
   NearbyStore,
   ProductDetail,
   ProductsListResponse,
+  StoreMenu,
 } from "./types";
 
 /**
@@ -41,6 +42,15 @@ export const catalogApi = {
     limit?: number;
   }): Promise<NearbyStore[]> => {
     const { data } = await api.get<NearbyStore[]>("/v1/stores/nearby", { params: query });
+    return data;
+  },
+  storeMenu: async (
+    slug: string,
+    geo?: { lat: number; lng: number },
+  ): Promise<StoreMenu> => {
+    const { data } = await api.get<StoreMenu>(`/v1/stores/${slug}/menu`, {
+      params: geo,
+    });
     return data;
   },
 };

@@ -2,6 +2,7 @@
 
 ## Muammo
 
+
 7.5 GB RAM li mashina + Next.js 16 + Turbopack dev rejimi = `admin` panelni ishga
 tushirganda RAM to'lib qolar edi. Swap fayl ham band bo'lar va tizim qotib
 qolar edi.

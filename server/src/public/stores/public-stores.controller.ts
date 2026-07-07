@@ -29,4 +29,17 @@ export class PublicStoresController {
   getBySlug(@Param('slug') slug: string) {
     return this.stores.getBySlug(slug);
   }
+
+  @Get(':slug/menu')
+  menu(
+    @Param('slug') slug: string,
+    @Query('lat') lat?: string,
+    @Query('lng') lng?: string,
+  ) {
+    const geo =
+      lat !== undefined && lng !== undefined
+        ? { lat: Number(lat), lng: Number(lng) }
+        : undefined;
+    return this.stores.menu(slug, geo);
+  }
 }

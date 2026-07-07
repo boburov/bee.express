@@ -9,6 +9,7 @@ import type {
   NearbyStore,
   ProductDetail,
   ProductsListResponse,
+  StoreMenu,
 } from "./types";
 
 function useAsync<T, A>(
@@ -86,5 +87,16 @@ export function useStoresNearby(
     (q) => catalogApi.storesNearby(q),
     { lat: geo?.lat ?? 0, lng: geo?.lng ?? 0, limit },
     Boolean(geo),
+  );
+}
+
+export function useStoreMenu(
+  slug: string | null | undefined,
+  geo?: { lat: number; lng: number } | null,
+) {
+  return useAsync<StoreMenu, { slug: string; geo?: { lat: number; lng: number } }>(
+    ({ slug: s, geo: g }) => catalogApi.storeMenu(s, g),
+    { slug: slug ?? "", geo: geo ?? undefined },
+    Boolean(slug),
   );
 }

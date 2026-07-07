@@ -118,9 +118,66 @@ export interface NearbyStore {
   name: string;
   logoUrl: string | null;
   bannerUrl: string | null;
+  address: string | null;
   deliveryEtaMinutes: number | null;
   deliveryBaseFee: number | null;
   distanceKm: number;
+  ratingAvg: number;
+  ratingCount: number;
+}
+
+// ─── Store menu (restaurant page) ───────────────────────────────────
+// Mirrors server/src/public/stores/public-stores.service.ts `menu()`.
+
+export interface StoreMenuItem {
+  productId: string;
+  slug: string;
+  title: string;
+  description: string | null;
+  imageUrl: string | null;
+  ratingAvg: number;
+  ratingCount: number;
+  /** The store's representative (cheapest in-stock) offer — added to cart. */
+  offerId: string;
+  price: number;
+  oldPrice: number | null;
+  stock: number;
+  /** >1 → open the product page for the full variant picker instead of 1-tap add. */
+  variantCount: number;
+}
+
+export interface StoreMenuCategory {
+  id: string;
+  slug: string;
+  name: string;
+  items: StoreMenuItem[];
+}
+
+export interface StoreMenuHeader {
+  id: string;
+  slug: string;
+  name: string;
+  description: string | null;
+  logoUrl: string | null;
+  bannerUrl: string | null;
+  phone: string | null;
+  address: string | null;
+  isOpen: boolean;
+  openNow: boolean;
+  deliverable: boolean;
+  distanceKm: number | null;
+  deliveryFee: number | null;
+  deliveryEtaMinutes: number | null;
+  deliveryBaseFee: number | null;
+  minOrderAmount: number | null;
+  ratingAvg: number;
+  ratingCount: number;
+}
+
+export interface StoreMenu {
+  store: StoreMenuHeader;
+  itemCount: number;
+  categories: StoreMenuCategory[];
 }
 
 // ─── Product detail ─────────────────────────────────────────────────
