@@ -77,6 +77,63 @@ export class PublicStoresService {
     }));
   }
 
+  /**
+   * Editorially-curated "top restaurants" for the home slider. Admin flags a
+   * store featured + gives it a rank; here we return ACTIVE featured stores in
+   * rank order. Unlike `nearby`, this is location-independent (it's a promoted
+   * shelf) — but when geo is supplied we still surface distance + open-now so
+   * the card can show them. Ordering is gated at checkout, not here.
+   */
+  async featured(opts: { lat?: number; lng?: number; limit?: number }) {
+    const limit = opts.limit ?? 12;
+    const stores = await this.prisma.store.findMany({
+      where: { status: 'ACTIVE', isFeatured: true },
+      orderBy: [{ featuredRank: 'asc' }, { approvedAt: 'desc' }],
+      take: limit,
+      select: {
+        id: true,
+        slug: true,
+        name: true,
+        logoUrl: true,
+        bannerUrl: true,
+        address: true,
+        latitude: true,
+        longitude: true,
+        isOpen: true,
+        openingHours: true,
+        deliveryEtaMinutes: true,
+        deliveryBaseFee: true,
+      },
+    });
+
+    const ratings = await this.ratingsFor(stores.map((s) => s.id));
+    const hasGeo = opts.lat !== undefined && opts.lng !== undefined;
+    return stores.map((s) => {
+      const lat = decimalToNumber(s.latitude);
+      const lng = decimalToNumber(s.longitude);
+      const distanceKm =
+        hasGeo && lat !== null && lng !== null
+          ? Math.round(
+              haversineKm({ lat: opts.lat!, lng: opts.lng! }, { lat, lng }) * 10,
+            ) / 10
+          : null;
+      return {
+        id: s.id,
+        slug: s.slug,
+        name: s.name,
+        logoUrl: s.logoUrl,
+        bannerUrl: s.bannerUrl,
+        address: s.address,
+        openNow: s.isOpen && isStoreOpenNow(s.openingHours),
+        deliveryEtaMinutes: s.deliveryEtaMinutes,
+        deliveryBaseFee: decimalToNumber(s.deliveryBaseFee),
+        distanceKm,
+        ratingAvg: ratings.get(s.id)?.avg ?? 0,
+        ratingCount: ratings.get(s.id)?.count ?? 0,
+      };
+    });
+  }
+
   async getBySlug(slug: string) {
     const store = await this.prisma.store.findUnique({
       where: { slug },

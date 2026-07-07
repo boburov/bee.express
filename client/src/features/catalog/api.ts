@@ -2,6 +2,7 @@ import { api } from "@/shared/auth/api";
 import type {
   CategoryDetail,
   CategoryNode,
+  FeaturedStore,
   ListProductsQuery,
   NearbyStore,
   ProductDetail,
@@ -50,6 +51,16 @@ export const catalogApi = {
   ): Promise<StoreMenu> => {
     const { data } = await api.get<StoreMenu>(`/v1/stores/${slug}/menu`, {
       params: geo,
+    });
+    return data;
+  },
+  storesFeatured: async (query: {
+    lat?: number;
+    lng?: number;
+    limit?: number;
+  }): Promise<FeaturedStore[]> => {
+    const { data } = await api.get<FeaturedStore[]>("/v1/stores/featured", {
+      params: query,
     });
     return data;
   },

@@ -497,6 +497,11 @@ model Store {
   isOpen       Boolean @default(true)
   openingHours Json?
 
+  // Editorially-curated "top restaurants" — admin flags a store featured and
+  // gives it a rank; the customer home slider shows them first (rank asc).
+  isFeatured   Boolean @default(false)
+  featuredRank Int     @default(0)
+
   rejectionReason String?   @db.Text
   approvedAt      DateTime?
 
@@ -517,6 +522,7 @@ model Store {
   // setup so two cheap composite indexes beat a single 2D index here.
   @@index([latitude, longitude])
   @@index([status, isOpen])
+  @@index([isFeatured, featuredRank])
 }
 
 // ─── Seller Offer (Store × Variant) ───

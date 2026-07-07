@@ -78,6 +78,21 @@ export interface PendingStore {
   createdAt: string;
 }
 
+// ─── Active store curation ("Top restaurants") ──────────────────────
+
+export interface ActiveStore {
+  id: string;
+  slug: string;
+  name: string;
+  logoUrl: string | null;
+  bannerUrl: string | null;
+  address: string | null;
+  isOpen: boolean;
+  isFeatured: boolean;
+  featuredRank: number;
+  createdAt: string;
+}
+
 // ─── Courier application moderation ──────────────────────────────────
 
 export interface PendingApplication {

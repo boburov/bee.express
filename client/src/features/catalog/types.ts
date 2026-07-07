@@ -126,6 +126,25 @@ export interface NearbyStore {
   ratingCount: number;
 }
 
+// ─── Featured stores (home "TOP restaurants" slider) ────────────────
+// Mirrors server/src/public/stores/public-stores.service.ts `featured()`.
+
+export interface FeaturedStore {
+  id: string;
+  slug: string;
+  name: string;
+  logoUrl: string | null;
+  bannerUrl: string | null;
+  address: string | null;
+  openNow: boolean;
+  deliveryEtaMinutes: number | null;
+  deliveryBaseFee: number | null;
+  /** null when the buyer has no active location yet. */
+  distanceKm: number | null;
+  ratingAvg: number;
+  ratingCount: number;
+}
+
 // ─── Store menu (restaurant page) ───────────────────────────────────
 // Mirrors server/src/public/stores/public-stores.service.ts `menu()`.
 

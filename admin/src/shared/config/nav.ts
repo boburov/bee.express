@@ -13,6 +13,7 @@ import {
   ScrollText,
   Settings,
   Bell,
+  Star,
   type LucideIcon,
 } from "lucide-react";
 
@@ -50,6 +51,7 @@ export const adminNav: NavSection[] = [
     items: [
       { href: "/dashboard/orders", label: "Buyurtmalar", icon: ShoppingBag },
       { href: "/dashboard/moderation", label: "Moderatsiya", icon: ShieldAlert },
+      { href: "/dashboard/featured", label: "Top restoranlar", icon: Star },
       { href: "/dashboard/notifications", label: "Bildirishnomalar", icon: Bell },
     ],
   },

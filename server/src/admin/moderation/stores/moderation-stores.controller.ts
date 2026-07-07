@@ -5,11 +5,13 @@ import {
   HttpCode,
   HttpStatus,
   Param,
+  Patch,
   Post,
   Query,
 } from '@nestjs/common';
 import { SuperAdminOnly } from '../../../auth/decorators/roles.decorator';
 import { RejectModerationDto } from '../dto/reject.dto';
+import { SetFeaturedDto } from './dto/set-featured.dto';
 import { ModerationStoresService } from './moderation-stores.service';
 
 @Controller('admin/moderation/stores')
@@ -23,6 +25,27 @@ export class ModerationStoresController {
       page: q.page ? Number(q.page) : undefined,
       pageSize: q.pageSize ? Number(q.pageSize) : undefined,
       q: q.q,
+    });
+  }
+
+  /** ACTIVE stores for the "Top restaurants" curation screen. */
+  @Get('active')
+  listActive(
+    @Query() q: { page?: string; pageSize?: string; q?: string; onlyFeatured?: string },
+  ) {
+    return this.service.listActive({
+      page: q.page ? Number(q.page) : undefined,
+      pageSize: q.pageSize ? Number(q.pageSize) : undefined,
+      q: q.q,
+      onlyFeatured: q.onlyFeatured === 'true' || q.onlyFeatured === '1',
+    });
+  }
+
+  @Patch(':id/featured')
+  setFeatured(@Param('id') id: string, @Body() dto: SetFeaturedDto) {
+    return this.service.setFeatured(id, {
+      isFeatured: dto.isFeatured,
+      featuredRank: dto.featuredRank,
     });
   }
 

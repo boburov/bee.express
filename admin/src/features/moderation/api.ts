@@ -1,5 +1,6 @@
 import { api } from "@/shared/auth/api";
 import type {
+  ActiveStore,
   Paginated,
   PendingApplication,
   PendingProduct,
@@ -10,6 +11,10 @@ export interface ListQuery {
   page?: number;
   pageSize?: number;
   q?: string;
+}
+
+export interface ActiveStoreListQuery extends ListQuery {
+  onlyFeatured?: boolean;
 }
 
 export const moderationApi = {
@@ -41,6 +46,27 @@ export const moderationApi = {
   },
   rejectStore: async (id: string, reason: string): Promise<void> => {
     await api.post(`/admin/moderation/stores/${id}/reject`, { reason });
+  },
+
+  // Active stores + "Top restaurants" curation
+  listActiveStores: async (
+    params: ActiveStoreListQuery = {},
+  ): Promise<Paginated<ActiveStore>> => {
+    const { data } = await api.get<Paginated<ActiveStore>>(
+      "/admin/moderation/stores/active",
+      { params },
+    );
+    return data;
+  },
+  setStoreFeatured: async (
+    id: string,
+    body: { isFeatured: boolean; featuredRank?: number },
+  ): Promise<ActiveStore> => {
+    const { data } = await api.patch<ActiveStore>(
+      `/admin/moderation/stores/${id}/featured`,
+      body,
+    );
+    return data;
   },
 
   // Courier applications

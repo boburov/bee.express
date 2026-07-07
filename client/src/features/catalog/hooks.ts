@@ -5,6 +5,7 @@ import { catalogApi } from "./api";
 import type {
   CategoryDetail,
   CategoryNode,
+  FeaturedStore,
   ListProductsQuery,
   NearbyStore,
   ProductDetail,
@@ -87,6 +88,19 @@ export function useStoresNearby(
     (q) => catalogApi.storesNearby(q),
     { lat: geo?.lat ?? 0, lng: geo?.lng ?? 0, limit },
     Boolean(geo),
+  );
+}
+
+export function useFeaturedStores(
+  geo?: { lat: number; lng: number } | null,
+  limit = 10,
+) {
+  // Featured is a curated shelf — it loads even without a location; geo only
+  // enriches the cards with distance when available.
+  return useAsync<FeaturedStore[], { lat?: number; lng?: number; limit: number }>(
+    (q) => catalogApi.storesFeatured(q),
+    { lat: geo?.lat, lng: geo?.lng, limit },
+    true,
   );
 }
 

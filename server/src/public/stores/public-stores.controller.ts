@@ -25,6 +25,19 @@ export class PublicStoresController {
     });
   }
 
+  @Get('featured')
+  featured(
+    @Query('lat') lat?: string,
+    @Query('lng') lng?: string,
+    @Query('limit') limit?: string,
+  ) {
+    return this.stores.featured({
+      lat: lat !== undefined ? Number(lat) : undefined,
+      lng: lng !== undefined ? Number(lng) : undefined,
+      limit: limit ? Number(limit) : undefined,
+    });
+  }
+
   @Get(':slug')
   getBySlug(@Param('slug') slug: string) {
     return this.stores.getBySlug(slug);
