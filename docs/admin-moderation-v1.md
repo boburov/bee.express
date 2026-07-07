@@ -5,6 +5,7 @@ do'kon va mahsulotlarni admin ko'rib chiqib tasdiqlaydi yoki rad etadi.
 Bundan oldin sotuvchi mahsuloti abadiy PENDING'da qolar edi — endi to'liq
 oqim yopiladi.
 
+
 **Tegishli TZ:** §18.6 Buyurtmalar (qisman) · §18.2 Sotuvchilar moderatsiya.
 
 ## Schema o'zgarishi

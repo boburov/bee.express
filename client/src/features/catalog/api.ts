@@ -70,6 +70,7 @@ export const catalogApi = {
     lng?: number;
     limit?: number;
     q?: string;
+    categorySlug?: string;
   }): Promise<StoreSummary[]> => {
     const { data } = await api.get<StoreSummary[]>("/v1/stores", { params: query });
     return data;

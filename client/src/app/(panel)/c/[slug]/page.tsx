@@ -2,27 +2,19 @@
 
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { useState } from "react";
-import { ArrowLeft, ChevronRight, ShoppingBag } from "lucide-react";
-import { Button } from "@/shared/ui/Button";
-import { Card } from "@/shared/ui/Card";
+import { ArrowLeft, ChevronRight, Store as StoreIcon } from "lucide-react";
 import { EmptyState } from "@/shared/ui/EmptyState";
+import { Skeleton } from "@/shared/ui/Skeleton";
 import { Spinner } from "@/shared/ui/Spinner";
-import { ProductCard } from "@/features/catalog/ProductCard";
-import { useCategory, useProducts } from "@/features/catalog/hooks";
+import { StoreCard } from "@/features/catalog/StoreCard";
+import { useCategory, useCategoryStores } from "@/features/catalog/hooks";
 import { useActiveLocation } from "@/features/location/hooks";
 
-const PAGE_SIZE = 24;
-
-const SORTS = [
-  { value: "rating_desc", label: "Reyting" },
-  { value: "newest",      label: "Yangi" },
-  { value: "price_asc",   label: "Arzon" },
-  { value: "price_desc",  label: "Qimmat" },
-] as const;
-
-type SortValue = (typeof SORTS)[number]["value"];
-
+/**
+ * Category page — restaurant-first. Tapping a category shows the STORES that
+ * sell something in it (or its sub-categories), not a flat product grid. Pick a
+ * store → its menu (/store/[slug]). Sub-category chips drill down further.
+ */
 export default function CategoryPage() {
   const params = useParams<{ slug: string }>();
   const slug = params?.slug ?? null;
@@ -30,20 +22,7 @@ export default function CategoryPage() {
   const { data: cat, loading: catLoading } = useCategory(slug);
   const location = useActiveLocation();
   const geo = location ? { lat: location.lat, lng: location.lng } : null;
-  const [sort, setSort] = useState<SortValue>("rating_desc");
-  const [page, setPage] = useState(1);
-
-  // FOOD categories MUST send geo; without it the backend 400's. Once the
-  // buyer has an active location (seeded from their default address) we can
-  // browse FOOD too. MARKETPLACE works regardless; geo is passed when known
-  // so distance/delivery-fee surface there as well.
-  const enabled = cat ? cat.type !== "FOOD" || Boolean(geo) : false;
-
-  const { data: products, loading: prodLoading, error } = useProducts(
-    enabled && slug
-      ? { categorySlug: slug, sort, page, pageSize: PAGE_SIZE, ...(geo ?? {}) }
-      : { sort, page, pageSize: PAGE_SIZE },
-  );
+  const { data: stores, loading, error } = useCategoryStores(slug, geo);
 
   if (catLoading || !cat) {
     return <div className="flex justify-center py-10"><Spinner /></div>;
@@ -61,24 +40,24 @@ export default function CategoryPage() {
           <ArrowLeft className="h-4.5 w-4.5" />
         </Link>
         <div className="flex-1 min-w-0">
-          <h1 className="text-2xl font-bold tracking-tight text-ink truncate">
-            {cat.name}
-          </h1>
+          <h1 className="text-2xl font-bold tracking-tight text-ink truncate">{cat.name}</h1>
           {cat.parent ? (
             <p className="text-xs text-ink-muted truncate">{cat.parent.name}</p>
-          ) : null}
+          ) : (
+            <p className="text-xs text-ink-muted">Shu kategoriyadagi restoranlar</p>
+          )}
         </div>
       </div>
 
       {/* Sub-categories — horizontal scroll chips */}
       {cat.children.length > 0 ? (
-        <div className="-mx-4 px-4 overflow-x-auto">
+        <div className="-mx-4 px-4 overflow-x-auto no-scrollbar">
           <ul className="flex gap-2 w-max pb-1">
             {cat.children.map((child) => (
               <li key={child.id}>
                 <Link
                   href={`/c/${child.slug}`}
-                  className="h-8 px-3 inline-flex items-center rounded-full text-xs font-medium bg-surface-3 text-ink-soft hover:bg-brand-50 hover:text-brand-700 transition-colors whitespace-nowrap"
+                  className="press h-8 px-3.5 inline-flex items-center rounded-full text-xs font-semibold bg-surface-3 text-ink-soft hover:bg-brand-50 hover:text-brand-700 transition-colors whitespace-nowrap"
                 >
                   {child.name}
                   <ChevronRight className="h-3 w-3 ml-1 -mr-1" />
@@ -89,77 +68,35 @@ export default function CategoryPage() {
         </div>
       ) : null}
 
-      {/* Sort pills */}
-      <div className="flex items-center gap-2 text-xs">
-        <span className="text-ink-muted">Saralash:</span>
-        {SORTS.map((s) => (
-          <button
-            key={s.value}
-            type="button"
-            onClick={() => { setSort(s.value); setPage(1); }}
-            className={`press h-8 px-3.5 rounded-full font-semibold transition-colors ${
-              sort === s.value
-                ? "bg-gradient-premium text-white shadow-cta"
-                : "bg-surface-3 text-ink-soft hover:bg-brand-50 hover:text-brand-700"
-            }`}
-          >
-            {s.label}
-          </button>
-        ))}
-      </div>
-
-      {/* FOOD without an active location — show address prompt */}
-      {cat.type === "FOOD" && !geo ? (
-        <EmptyState
-          icon={<ShoppingBag className="h-6 w-6" />}
-          title="Manzil tanlanmagan"
-          description="Ovqat kategoriyalarini ko'rish uchun avval manzilingizni qo'shing — yetkazib berish radiusi shu manzildan hisoblanadi."
-          action={<Link href="/addresses"><Button>Manzil qo'shish</Button></Link>}
-        />
-      ) : prodLoading && !products ? (
-        <div className="flex justify-center py-10"><Spinner /></div>
+      {/* Stores in this category */}
+      {loading && !stores ? (
+        <ul className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <li key={i} className="overflow-hidden rounded-2xl bg-surface shadow-card">
+              <Skeleton className="h-32 w-full" rounded="md" />
+              <div className="flex flex-col gap-2 p-3">
+                <Skeleton className="h-4 w-2/5" />
+                <Skeleton className="h-3 w-3/5" />
+              </div>
+            </li>
+          ))}
+        </ul>
       ) : error ? (
         <p className="text-sm text-danger">{error}</p>
-      ) : !products || products.items.length === 0 ? (
+      ) : !stores || stores.length === 0 ? (
         <EmptyState
-          icon={<ShoppingBag className="h-6 w-6" />}
-          title="Bu kategoriyada mahsulot yo'q"
-          description="Sotuvchilar mahsulot qo'shganda shu yerda paydo bo'ladi."
+          icon={<StoreIcon className="h-6 w-6" />}
+          title="Bu kategoriyada restoran yo'q"
+          description="Hozircha bu kategoriyaga mos ochiq restoran yoki do'kon topilmadi."
         />
       ) : (
-        <>
-          <ul className="grid grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-3">
-            {products.items.map((p) => (
-              <li key={p.id}><ProductCard product={p} /></li>
-            ))}
-          </ul>
-
-          {products.total > PAGE_SIZE ? (
-            <Card>
-              <div className="p-3 flex items-center justify-between text-xs">
-                <button
-                  type="button"
-                  onClick={() => setPage((p) => Math.max(1, p - 1))}
-                  disabled={page <= 1}
-                  className="px-2 py-1 text-ink-muted disabled:opacity-40 hover:text-ink"
-                >
-                  ← Oldingi
-                </button>
-                <span className="text-ink-muted tabular-nums">
-                  {page} / {Math.ceil(products.total / PAGE_SIZE)}
-                </span>
-                <button
-                  type="button"
-                  onClick={() => setPage((p) => p + 1)}
-                  disabled={page * PAGE_SIZE >= products.total}
-                  className="px-2 py-1 text-ink-muted disabled:opacity-40 hover:text-ink"
-                >
-                  Keyingi →
-                </button>
-              </div>
-            </Card>
-          ) : null}
-        </>
+        <ul className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          {stores.map((s) => (
+            <li key={s.id}>
+              <StoreCard store={s} />
+            </li>
+          ))}
+        </ul>
       )}
     </div>
   );

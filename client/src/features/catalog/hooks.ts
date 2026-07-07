@@ -105,6 +105,22 @@ export function useStores(
   );
 }
 
+export function useCategoryStores(
+  categorySlug: string | null | undefined,
+  geo?: { lat: number; lng: number } | null,
+  limit = 50,
+) {
+  // Stores that sell something in this category (or its sub-categories).
+  return useAsync<
+    StoreSummary[],
+    { categorySlug: string; lat?: number; lng?: number; limit: number }
+  >(
+    (q) => catalogApi.storesList(q),
+    { categorySlug: categorySlug ?? "", lat: geo?.lat, lng: geo?.lng, limit },
+    Boolean(categorySlug),
+  );
+}
+
 export function useFeaturedStores(
   geo?: { lat: number; lng: number } | null,
   limit = 10,
