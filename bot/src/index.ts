@@ -12,6 +12,22 @@ async function main(): Promise<void> {
   await prisma.$connect();
   console.log("[db] connected");
 
+  // Botning pastdagi menu tugmasini ("Open App") to'g'ridan-to'g'ri Mini App'ga ulash
+  if (config.miniAppUrl) {
+    try {
+      await bot.api.setChatMenuButton({
+        menu_button: {
+          type: "web_app",
+          text: "🐝 BeeExpress",
+          web_app: { url: config.miniAppUrl },
+        },
+      });
+      console.log(`[bot] menu button -> ${config.miniAppUrl}`);
+    } catch (err) {
+      console.error(`[bot] setChatMenuButton failed: ${(err as Error).message}`);
+    }
+  }
+
   bot.start({
     onStart: (info) => console.log(`[bot] @${info.username} online (long polling)`),
   }).catch((err) => {
